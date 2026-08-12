@@ -34,6 +34,35 @@ Items collected during implementation reviews that are real but out of scope for
   summary: Concurrent 401 dedup unit test is unreliable due to mock-adapter's async response scheduling; needs an integration test.
   evidence: The localStorage-based gate is correct in production (synchronous clear is visible immediately) but two mock responses arrive in separate event-loop ticks, so each interceptor sees the token as non-null. Requires an e2e or integration test to verify.
 
-- source_spec: `spec-1-1-project-scaffold-development-environment.md`
-  summary: No ESLint or Prettier configuration — code style and lint rules are entirely unenforced across the client.
-  evidence: Blind hunter finding; should be added in a dedicated tooling story before the team grows.
+- source_spec: `spec-1-2-user-registration-patient-doctor.md`
+  summary: isAuthenticated is plain state, not a derived getter — can diverge from token.
+  evidence: Blind hunter finding; should become a Pinia getter in Story 1.3 when auth state ownership is fully established.
+
+- source_spec: `spec-1-2-user-registration-patient-doctor.md`
+  summary: authStore does not persist user to localStorage — page refresh sets user back to null.
+  evidence: Verification gap; any component reading authStore.user after refresh gets null even though isAuthenticated is true. Story 1.3 will add a /me endpoint or token-parsing to rehydrate user.
+
+- source_spec: `spec-1-2-user-registration-patient-doctor.md`
+  summary: No clearAuth/logout action in authStore — logout will be ad-hoc until Story 1.3.
+  evidence: Blind hunter finding; Story 1.3 will introduce proper session termination.
+
+- source_spec: `spec-1-2-user-registration-patient-doctor.md`
+  summary: Token expiry is not checked at store init — an expired token in localStorage makes isAuthenticated true until the first 401.
+  evidence: Blind hunter finding; Story 1.3 JWT validation filter and auth guard will handle this.
+
+- source_spec: `spec-1-2-user-registration-patient-doctor.md`
+  summary: password has no minimum-length constraint on either client or server.
+  evidence: Blind hunter / edge case hunter; flagged as Ask First in spec — deliberately deferred until password policy is defined.
+
+- source_spec: `spec-1-2-user-registration-patient-doctor.md`
+  summary: Admin seeded with mustChangePassword=false using the well-known default password — privileged account has no forced rotation in dev.
+  evidence: Blind hunter; production deployments must set ADMIN_PASSWORD env var; noted in application.yml comments.
+
+- source_spec: `spec-1-2-user-registration-patient-doctor.md`
+  summary: No submit-button loading/disabled state — double-click can submit duplicate registration requests.
+  evidence: Blind hunter; UX improvement not in spec scope.
+
+- source_spec: `spec-1-2-user-registration-patient-doctor.md`
+  summary: setAuth-before-push ordering is untested — a future refactor could invert them, breaking navigation guards.
+  evidence: Verification gap; ordering is correct today but Story 1.4 navigation guards will make this observable and testable.
+

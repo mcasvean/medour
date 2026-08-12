@@ -37,7 +37,7 @@ story_location: D:\Projects\learning\GIT\bmad-v2\_bmad-output\implementation-art
 development_status:
   epic-1: in-progress
   1-1-project-scaffold-development-environment: review
-  1-2-user-registration-patient-doctor: backlog
+  1-2-user-registration-patient-doctor: review
   1-3-user-login-jwt-session: backlog
   1-4-role-display-route-guards: backlog
   1-5-my-preferences-account-info: backlog

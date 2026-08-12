@@ -18,3 +18,10 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+jwt:
+  secret: ${JWT_SECRET:medour-jwt-secret-dev-only-change-in-prod}
+
+admin:
+  email: ${ADMIN_EMAIL:admin@medour.com}
+  password: ${ADMIN_PASSWORD:Admin1234!}
