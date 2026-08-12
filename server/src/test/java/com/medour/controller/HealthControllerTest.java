@@ -13,12 +13,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 class HealthControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+  @Autowired
+  private MockMvc mockMvc;
 
-    @Test
-    void healthEndpointReturns200() throws Exception {
-        mockMvc.perform(get("/api/v1/health"))
-               .andExpect(status().isOk());
-    }
+  @Test
+  void healthEndpointReturns200() throws Exception {
+    mockMvc.perform(get("/api/v1/health"))
+        .andExpect(status().isOk());
+  }
 }
