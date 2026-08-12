@@ -16,75 +16,75 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class UserService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
+  private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
+  private final JwtUtil jwtUtil;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
+  public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+    this.userRepository = userRepository;
+    this.passwordEncoder = passwordEncoder;
+    this.jwtUtil = jwtUtil;
+  }
+
+  @Transactional
+  public AuthResponse register(RegisterRequest req) {
+    if (userRepository.findByEmail(req.getEmail()).isPresent()) {
+      throw new EmailAlreadyUsedException();
     }
 
-    @Transactional
-    public AuthResponse register(RegisterRequest req) {
-        if (userRepository.findByEmail(req.getEmail()).isPresent()) {
-            throw new EmailAlreadyUsedException();
-        }
-
-        Role role;
-        try {
-            role = Role.valueOf(req.getRole());
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid role");
-        }
-        if (role == Role.ADMIN) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot self-register as ADMIN");
-        }
-
-        if (role == Role.DOCTOR) {
-            if (req.getCounty() == null || req.getCounty().isBlank()
-                    || req.getSpeciality() == null || req.getSpeciality().isBlank()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "county and speciality are required for DOCTOR");
-            }
-        }
-
-        User user = User.builder()
-                .email(req.getEmail())
-                .passwordHash(passwordEncoder.encode(req.getPassword()))
-                .firstName(req.getFirstName())
-                .surname(req.getSurname())
-                .age(req.getAge())
-                .gender(req.getGender())
-                .city(req.getCity())
-                .address(req.getAddress())
-                .county(req.getCounty())
-                .speciality(req.getSpeciality())
-                .role(role)
-                .mustChangePassword(false)
-                .build();
-
-        User saved = userRepository.save(user);
-        String token = jwtUtil.generateToken(saved);
-
-        return new AuthResponse(token, saved.getId(), saved.getEmail(),
-                saved.getFirstName(), saved.getSurname(), saved.getRole().name());
+    Role role;
+    try {
+      role = Role.valueOf(req.getRole());
+    } catch (IllegalArgumentException e) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid role");
+    }
+    if (role == Role.ADMIN) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot self-register as ADMIN");
     }
 
-    @Transactional
-    public void seedAdmin(String email, String rawPassword) {
-        if (userRepository.existsByRole(Role.ADMIN)) {
-            return;
-        }
-        User admin = User.builder()
-                .email(email)
-                .passwordHash(passwordEncoder.encode(rawPassword))
-                .firstName("Admin")
-                .surname("User")
-                .role(Role.ADMIN)
-                .mustChangePassword(false)
-                .build();
-        userRepository.save(admin);
+    if (role == Role.DOCTOR) {
+      if (req.getCounty() == null || req.getCounty().isBlank()
+          || req.getSpeciality() == null || req.getSpeciality().isBlank()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "county and speciality are required for DOCTOR");
+      }
     }
+
+    User user = User.builder()
+        .email(req.getEmail())
+        .passwordHash(passwordEncoder.encode(req.getPassword()))
+        .firstName(req.getFirstName())
+        .surname(req.getSurname())
+        .age(req.getAge())
+        .gender(req.getGender())
+        .city(req.getCity())
+        .address(req.getAddress())
+        .county(req.getCounty())
+        .speciality(req.getSpeciality())
+        .role(role)
+        .mustChangePassword(false)
+        .build();
+
+    User saved = userRepository.save(user);
+    String token = jwtUtil.generateToken(saved);
+
+    return new AuthResponse(token, saved.getId(), saved.getEmail(),
+        saved.getFirstName(), saved.getSurname(), saved.getRole().name());
+  }
+
+  @Transactional
+  public void seedAdmin(String email, String rawPassword) {
+    if (userRepository.existsByRole(Role.ADMIN)) {
+      return;
+    }
+    User admin = User.builder()
+        .email(email)
+        .passwordHash(passwordEncoder.encode(rawPassword))
+        .firstName("Admin")
+        .surname("User")
+        .role(Role.ADMIN)
+        .mustChangePassword(false)
+        .build();
+    userRepository.save(admin);
+  }
 }

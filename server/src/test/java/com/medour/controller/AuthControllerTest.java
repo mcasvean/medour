@@ -27,73 +27,75 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 class AuthControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+  @Autowired
+  private MockMvc mockMvc;
 
-    @MockBean
-    private UserService userService;
+  @MockBean
+  private UserService userService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+  @Autowired
+  private ObjectMapper objectMapper;
 
-    @Test
-    void register_validPatient_returns200WithToken() throws Exception {
-        var response = new AuthResponse("tok-123", 1L, "p@test.com", "Pat", "Ient", "PATIENT");
-        given(userService.register(any())).willReturn(response);
+  @Test
+  void register_validPatient_returns200WithToken() throws Exception {
+    var response = new AuthResponse("tok-123", 1L, "p@test.com", "Pat", "Ient", "PATIENT");
+    given(userService.register(any())).willReturn(response);
 
-        mockMvc.perform(post("/api/v1/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(buildRequest("PATIENT", null, null))))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.token").value("tok-123"));
-    }
+    mockMvc.perform(post("/api/v1/auth/register")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(buildRequest("PATIENT", null, null))))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.token").value("tok-123"));
+  }
 
-    @Test
-    void register_validDoctor_returns200() throws Exception {
-        var response = new AuthResponse("tok-456", 2L, "d@test.com", "Doc", "Tor", "DOCTOR");
-        given(userService.register(any())).willReturn(response);
+  @Test
+  void register_validDoctor_returns200() throws Exception {
+    var response = new AuthResponse("tok-456", 2L, "d@test.com", "Doc", "Tor", "DOCTOR");
+    given(userService.register(any())).willReturn(response);
 
-        mockMvc.perform(post("/api/v1/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(buildRequest("DOCTOR", "Galway", "Cardiology"))))
-                .andExpect(status().isCreated());
-    }
+    mockMvc.perform(post("/api/v1/auth/register")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(buildRequest("DOCTOR", "Galway", "Cardiology"))))
+        .andExpect(status().isCreated());
+  }
 
-    @Test
-    void register_duplicateEmail_returns409() throws Exception {
-        given(userService.register(any())).willThrow(new EmailAlreadyUsedException());
+  @Test
+  void register_duplicateEmail_returns409() throws Exception {
+    given(userService.register(any())).willThrow(new EmailAlreadyUsedException());
 
-        mockMvc.perform(post("/api/v1/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(buildRequest("PATIENT", null, null))))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error").value("Email already in use"));
-    }
+    mockMvc.perform(post("/api/v1/auth/register")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(buildRequest("PATIENT", null, null))))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.error").value("Email already in use"));
+  }
 
-    @Test
-    void register_missingDoctorFields_returns400() throws Exception {
-        given(userService.register(any())).willThrow(
-                new ResponseStatusException(HttpStatus.BAD_REQUEST, "county and speciality are required for DOCTOR"));
+  @Test
+  void register_missingDoctorFields_returns400() throws Exception {
+    given(userService.register(any())).willThrow(
+        new ResponseStatusException(HttpStatus.BAD_REQUEST, "county and speciality are required for DOCTOR"));
 
-        mockMvc.perform(post("/api/v1/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(buildRequest("DOCTOR", null, null))))
-                .andExpect(status().isBadRequest());
-    }
+    mockMvc.perform(post("/api/v1/auth/register")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(buildRequest("DOCTOR", null, null))))
+        .andExpect(status().isBadRequest());
+  }
 
-    private Map<String, Object> buildRequest(String role, String county, String speciality) {
-        Map<String, Object> req = new HashMap<>();
-        req.put("email", "test@medour.com");
-        req.put("password", "Password1!");
-        req.put("firstName", "First");
-        req.put("surname", "Last");
-        req.put("age", 30);
-        req.put("gender", "M");
-        req.put("city", "Dublin");
-        req.put("address", "1 Main St");
-        req.put("role", role);
-        if (county != null) req.put("county", county);
-        if (speciality != null) req.put("speciality", speciality);
-        return req;
-    }
+  private Map<String, Object> buildRequest(String role, String county, String speciality) {
+    Map<String, Object> req = new HashMap<>();
+    req.put("email", "test@medour.com");
+    req.put("password", "Password1!");
+    req.put("firstName", "First");
+    req.put("surname", "Last");
+    req.put("age", 30);
+    req.put("gender", "M");
+    req.put("city", "Dublin");
+    req.put("address", "1 Main St");
+    req.put("role", role);
+    if (county != null)
+      req.put("county", county);
+    if (speciality != null)
+      req.put("speciality", speciality);
+    return req;
+  }
 }

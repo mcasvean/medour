@@ -8,20 +8,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class DataSeeder implements CommandLineRunner {
 
-    private final UserService userService;
+  private final UserService userService;
 
-    @Value("${admin.email}")
-    private String adminEmail;
+  @Value("${admin.email}")
+  private String adminEmail;
 
-    @Value("${admin.password}")
-    private String adminPassword;
+  @Value("${admin.password}")
+  private String adminPassword;
 
-    public DataSeeder(UserService userService) {
-        this.userService = userService;
-    }
+  public DataSeeder(UserService userService) {
+    this.userService = userService;
+  }
 
-    @Override
-    public void run(String... args) {
-        userService.seedAdmin(adminEmail, adminPassword);
-    }
+  @Override
+  public void run(String... args) {
+    userService.seedAdmin(adminEmail, adminPassword);
+  }
 }

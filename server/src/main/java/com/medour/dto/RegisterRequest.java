@@ -14,37 +14,37 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RegisterRequest {
 
-    @NotBlank
-    @Email
-    private String email;
+  @NotBlank
+  @Email
+  private String email;
 
-    @NotBlank
-    private String password;
+  @NotBlank
+  private String password;
 
-    @NotBlank
-    private String firstName;
+  @NotBlank
+  private String firstName;
 
-    @NotBlank
-    private String surname;
+  @NotBlank
+  private String surname;
 
-    @NotNull
-    @Min(1)
-    @Max(150)
-    private Integer age;
+  @NotNull
+  @Min(1)
+  @Max(150)
+  private Integer age;
 
-    @NotBlank
-    private String gender;
+  @NotBlank
+  private String gender;
 
-    @NotBlank
-    private String city;
+  @NotBlank
+  private String city;
 
-    @NotBlank
-    private String address;
+  @NotBlank
+  private String address;
 
-    private String county;
+  private String county;
 
-    private String speciality;
+  private String speciality;
 
-    @NotBlank
-    private String role;
+  @NotBlank
+  private String role;
 }

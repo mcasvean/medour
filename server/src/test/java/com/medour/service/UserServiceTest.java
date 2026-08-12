@@ -18,9 +18,12 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
-  @Mock private UserRepository userRepository;
-  @Mock private PasswordEncoder passwordEncoder;
-  @Mock private JwtUtil jwtUtil;
+  @Mock
+  private UserRepository userRepository;
+  @Mock
+  private PasswordEncoder passwordEncoder;
+  @Mock
+  private JwtUtil jwtUtil;
 
   @InjectMocks
   private UserService userService;

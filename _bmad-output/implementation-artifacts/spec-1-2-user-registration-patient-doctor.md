@@ -19,6 +19,7 @@ context: []
 ## Boundaries & Constraints
 
 **Always:**
+
 - Passwords stored as BCrypt hash only — `PasswordEncoder` bean must be `BCryptPasswordEncoder`
 - `county` and `speciality` are required for `DOCTOR`; must be rejected with an error if absent
 - Duplicate email returns 409 — no account is created, no password info leaked
@@ -31,9 +32,11 @@ context: []
 - On successful registration the client calls `authStore.setAuth(token, user)` before navigating
 
 **Ask First:**
+
 - If any required field should also be validated server-side beyond null/empty checks (e.g. email format, password strength)
 
 **Never:**
+
 - No login endpoint in this story (Story 1.3)
 - No JWT validation filter — SecurityConfig still permits all requests (Story 1.3 adds the filter)
 - No route guards (Story 1.4)
@@ -41,12 +44,12 @@ context: []
 
 ## I/O & Edge-Case Matrix
 
-| Scenario | Input / State | Expected Output / Behavior | Error Handling |
-|---|---|---|---|
-| Valid patient registration | `POST /api/v1/auth/register` with `role=PATIENT` + all base fields | 200 + `AuthResponse` (token, user); `PATIENT` user created in DB | N/A |
-| Valid doctor registration | Same with `role=DOCTOR` + `county` + `speciality` | 200 + `AuthResponse`; `DOCTOR` user created | N/A |
-| Duplicate email | `POST` with already-registered email | 409 + `{ error: "Email already in use" }` | No user created; no password info in response |
-| Admin seed on startup | Server starts; no admin in DB | Admin account created from `application.yml` creds | Idempotent — second startup does nothing |
+| Scenario                   | Input / State                                                      | Expected Output / Behavior                                       | Error Handling                                |
+| -------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------- | --------------------------------------------- |
+| Valid patient registration | `POST /api/v1/auth/register` with `role=PATIENT` + all base fields | 200 + `AuthResponse` (token, user); `PATIENT` user created in DB | N/A                                           |
+| Valid doctor registration  | Same with `role=DOCTOR` + `county` + `speciality`                  | 200 + `AuthResponse`; `DOCTOR` user created                      | N/A                                           |
+| Duplicate email            | `POST` with already-registered email                               | 409 + `{ error: "Email already in use" }`                        | No user created; no password info in response |
+| Admin seed on startup      | Server starts; no admin in DB                                      | Admin account created from `application.yml` creds               | Idempotent — second startup does nothing      |
 
 </frozen-after-approval>
 
@@ -60,6 +63,7 @@ context: []
 ## Tasks & Acceptance
 
 **Execution:**
+
 - [x] `server/src/main/java/com/medour/model/Role.java` -- create enum: `PATIENT`, `DOCTOR`, `ADMIN`
 - [x] `server/src/main/java/com/medour/model/User.java` -- create `@Entity @Table(name="users")`; fields: `id` (IDENTITY PK), `email` (unique), `passwordHash`, `firstName`, `surname`, `age` (Integer), `gender`, `city`, `address`, `county` (nullable), `speciality` (nullable), `role` (@Enumerated STRING), `deletedAt` (LocalDateTime nullable), `mustChangePassword` (Boolean, default false); use Lombok `@Data @Builder @NoArgsConstructor @AllArgsConstructor`
 - [x] `server/src/main/java/com/medour/repository/UserRepository.java` -- interface extending `JpaRepository<User, Long>`; method `Optional<User> findByEmail(String email)`
@@ -81,6 +85,7 @@ context: []
 - [x] `server/src/test/java/com/medour/config/DataSeederTest.java` -- plain JUnit + Mockito; verify `userService.seedAdmin()` called with configured credentials (matrix row 4)
 
 **Acceptance Criteria:**
+
 - Given the `/register` page, when "Register as Patient" is clicked, the patient form with base fields is shown.
 - Given the `/register` page, when "Register as Doctor" is clicked, the doctor form with base + county + speciality fields is shown.
 - Given a valid patient form submission, the server creates a `PATIENT` user, returns a JWT, the client stores it in `authStore` and localStorage, and navigates to `/`.
@@ -92,6 +97,7 @@ context: []
 ## Verification
 
 **Commands:**
+
 - `cd server && ./mvnw test` -- expected: 8 tests pass (4 AuthControllerTest + 1 HealthControllerTest + 1 DataSeederTest + 1 JwtUtilTest + 1 UserServiceTest)
 - `cd client && npm run build` -- expected: zero TS errors
 

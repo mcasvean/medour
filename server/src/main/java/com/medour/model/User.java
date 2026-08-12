@@ -16,42 +16,42 @@ import java.time.LocalDateTime;
 @Table(name = "users")
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String email;
+  @Column(unique = true, nullable = false)
+  private String email;
 
-    @Column(name = "password_hash", nullable = false)
-    private String passwordHash;
+  @Column(name = "password_hash", nullable = false)
+  private String passwordHash;
 
-    @Column(name = "first_name", nullable = false)
-    private String firstName;
+  @Column(name = "first_name", nullable = false)
+  private String firstName;
 
-    @Column(nullable = false)
-    private String surname;
+  @Column(nullable = false)
+  private String surname;
 
-    private Integer age;
+  private Integer age;
 
-    private String gender;
+  private String gender;
 
-    private String city;
+  private String city;
 
-    private String address;
+  private String address;
 
-    private String county;
+  private String county;
 
-    private String speciality;
+  private String speciality;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private Role role;
 
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
+  @Column(name = "deleted_at")
+  private LocalDateTime deletedAt;
 
-    @Column(name = "must_change_password", nullable = false)
-    @Builder.Default
-    private Boolean mustChangePassword = false;
+  @Column(name = "must_change_password", nullable = false)
+  @Builder.Default
+  private Boolean mustChangePassword = false;
 }

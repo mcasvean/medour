@@ -65,4 +65,3 @@ Items collected during implementation reviews that are real but out of scope for
 - source_spec: `spec-1-2-user-registration-patient-doctor.md`
   summary: setAuth-before-push ordering is untested — a future refactor could invert them, breaking navigation guards.
   evidence: Verification gap; ordering is correct today but Story 1.4 navigation guards will make this observable and testable.
-

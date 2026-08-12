@@ -15,14 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
-    private final UserService userService;
+  private final UserService userService;
 
-    public AuthController(UserService userService) {
-        this.userService = userService;
-    }
+  public AuthController(UserService userService) {
+    this.userService = userService;
+  }
 
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest req) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.register(req));
-    }
+  @PostMapping("/register")
+  public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest req) {
+    return ResponseEntity.status(HttpStatus.CREATED).body(userService.register(req));
+  }
 }
