@@ -1,0 +1,39 @@
+# Deferred Work
+
+Items collected during implementation reviews that are real but out of scope for the originating story.
+
+- source_spec: `spec-1-1-project-scaffold-development-environment.md`
+  summary: No /login route — router.push('/login') in the 401 interceptor silently no-ops until Story 1.3 adds the route.
+  evidence: Edge case hunter finding; router has only the placeholder '/' route in this scaffold.
+
+- source_spec: `spec-1-1-project-scaffold-development-environment.md`
+  summary: authStore stays stale (isAuthenticated=true, token populated) after a forced 401 logout because the interceptor only clears localStorage, not the Pinia store.
+  evidence: Verification gap finding; the SPA store instance survives navigation so components and guards will see stale auth state until reload or until Story 1.3 redesigns the auth flow.
+
+- source_spec: `spec-1-1-project-scaffold-development-environment.md`
+  summary: HealthControllerTest uses @AutoConfigureMockMvc(addFilters=false) so it never validates the assembled SecurityFilterChain.
+  evidence: Verification gap finding; a change from anyRequest().permitAll() to anyRequest().authenticated() would not be caught by this test.
+
+- source_spec: `spec-1-1-project-scaffold-development-environment.md`
+  summary: spring.jpa.hibernate.ddl-auto is set to 'update', which mutates schema on every boot; Flyway or Liquibase should own migrations.
+  evidence: Blind hunter finding; ddl-auto:update will silently drop renamed columns and cause schema drift across environments.
+
+- source_spec: `spec-1-1-project-scaffold-development-environment.md`
+  summary: No PasswordEncoder @Bean in SecurityConfig; will throw NoSuchBeanDefinitionException once UserDetailsService is introduced.
+  evidence: Blind hunter finding; JJWT and Spring Security auth beans are wired in Story 1.3.
+
+- source_spec: `spec-1-1-project-scaffold-development-environment.md`
+  summary: CORS allowed origin is hardcoded to http://localhost:5173 — all cross-origin requests rejected in non-local deployments.
+  evidence: Edge case hunter finding; should be externalized to an environment property before any staging or production deployment.
+
+- source_spec: `spec-1-1-project-scaffold-development-environment.md`
+  summary: vitest.config.ts is missing the '@/' path alias; any future unit test that uses @/ imports will fail to resolve.
+  evidence: Blind hunter finding; no current test uses @/ so it is not broken today.
+
+- source_spec: `spec-1-1-project-scaffold-development-environment.md`
+  summary: Concurrent 401 dedup unit test is unreliable due to mock-adapter's async response scheduling; needs an integration test.
+  evidence: The localStorage-based gate is correct in production (synchronous clear is visible immediately) but two mock responses arrive in separate event-loop ticks, so each interceptor sees the token as non-null. Requires an e2e or integration test to verify.
+
+- source_spec: `spec-1-1-project-scaffold-development-environment.md`
+  summary: No ESLint or Prettier configuration — code style and lint rules are entirely unenforced across the client.
+  evidence: Blind hunter finding; should be added in a dedicated tooling story before the team grows.
