@@ -19,6 +19,7 @@ context: []
 ## Boundaries & Constraints
 
 **Always:**
+
 - Header renders only when `authStore.isAuthenticated` is true; `/login` and `/register` show no header
 - Navigation guard is a single global `router.beforeEach`; no per-component guard
 - Unauthenticated access to any `requiresAuth` route → redirect to `/login`
@@ -32,22 +33,24 @@ context: []
 - `/account` and `/change-password` routes are NOT created in this story — links appear but routes are added in Stories 1.5 and 1.6
 
 **Ask First:**
+
 - (none)
 
 **Never:**
+
 - No server-side role check added to non-admin endpoints in this story
 - No per-route component-level navigation guards — global guard only
 
 ## I/O & Edge-Case Matrix
 
-| Scenario | Input / State | Expected Output / Behavior | Error Handling |
-|---|---|---|---|
-| Unauthenticated → protected route | No token; navigate to `/` | Guard redirects to `/login` | N/A |
-| Authenticated → guest-only route | Valid token; navigate to `/login` | Guard redirects to `/` | N/A |
-| PATIENT → `/admin/users` | Authenticated as PATIENT; navigate to `/admin/users` | Guard redirects to `/` | N/A |
-| ADMIN → `/admin/users` | Authenticated as ADMIN; navigate to `/admin/users` | Admin stub page renders | N/A |
-| Server admin endpoint — non-admin token | PATIENT JWT hits `GET /api/v1/admin/**` | 403 `{ "error": "Forbidden" }` | N/A |
-| Logout | Authenticated user clicks Logout | `clearAuth()` called; all localStorage cleared; redirected to `/login` | N/A |
+| Scenario                                | Input / State                                        | Expected Output / Behavior                                             | Error Handling |
+| --------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------- | -------------- |
+| Unauthenticated → protected route       | No token; navigate to `/`                            | Guard redirects to `/login`                                            | N/A            |
+| Authenticated → guest-only route        | Valid token; navigate to `/login`                    | Guard redirects to `/`                                                 | N/A            |
+| PATIENT → `/admin/users`                | Authenticated as PATIENT; navigate to `/admin/users` | Guard redirects to `/`                                                 | N/A            |
+| ADMIN → `/admin/users`                  | Authenticated as ADMIN; navigate to `/admin/users`   | Admin stub page renders                                                | N/A            |
+| Server admin endpoint — non-admin token | PATIENT JWT hits `GET /api/v1/admin/**`              | 403 `{ "error": "Forbidden" }`                                         | N/A            |
+| Logout                                  | Authenticated user clicks Logout                     | `clearAuth()` called; all localStorage cleared; redirected to `/login` | N/A            |
 
 </frozen-after-approval>
 
@@ -84,6 +87,7 @@ context: []
 ## Verification
 
 **Commands:**
+
 - `cd server && ./mvnw test` -- expected: all 13 tests pass
 - `cd client && npm run test` -- expected: 4 existing API tests + 4 new router guard tests pass (8 total)
 - `cd client && npm run build` -- expected: zero TypeScript errors
@@ -91,6 +95,7 @@ context: []
 ## Spec Change Log
 
 **Review loop 1 patches applied:**
+
 - `App.vue` — added `watch(() => route.path, ...)` to close burger menu on navigation; `logout()` also sets `menuOpen = false`; imported `useRoute`
 - `SecurityConfig.java` — `accessDeniedHandler` now sets `charset UTF-8` and flushes the writer
 
