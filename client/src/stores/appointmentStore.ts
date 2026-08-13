@@ -89,6 +89,8 @@ export const useAppointmentStore = defineStore('appointment', {
       const rid = this.reservationId
       try {
         await api.delete(`/slots/reserve/${rid}`)
+      } catch {
+        // best-effort cancel; cleanup always runs regardless
       } finally {
         const slot = this.slots.find(s => s.startTime === this.lockedStartTime)
         if (slot) slot.state = 'AVAILABLE'
@@ -100,10 +102,14 @@ export const useAppointmentStore = defineStore('appointment', {
 
     async confirmBooking() {
       if (this.reservationId === null) return
-      await api.post('/appointments', { reservationId: this.reservationId })
-      this.bookingStep = 'done'
-      this.reservationId = null
-      this.lockedStartTime = null
+      try {
+        await api.post('/appointments', { reservationId: this.reservationId })
+        this.bookingStep = 'done'
+        this.reservationId = null
+        this.lockedStartTime = null
+      } catch {
+        this.errorMessage = 'Booking failed. Please try again.'
+      }
     },
   },
 })

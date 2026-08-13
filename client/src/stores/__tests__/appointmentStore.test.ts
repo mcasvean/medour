@@ -5,7 +5,9 @@ import type { SlotDisplay } from '../appointmentStore'
 
 vi.mock('../../api/index', () => ({
   default: {
-    get: vi.fn()
+    get: vi.fn(),
+    post: vi.fn(),
+    delete: vi.fn(),
   }
 }))
 
@@ -94,5 +96,73 @@ describe('appointmentStore', () => {
     expect(store._eventSource).toBeNull()
 
     globalThis.EventSource = origEventSource
+  })
+
+  it('lockSlot success sets reservationId and bookingStep=confirming', async () => {
+    vi.mocked(api.post).mockResolvedValueOnce({ data: { reservationId: 42 } })
+    const store = useAppointmentStore()
+    store.selectedDoctorId = 1
+    store.selectedDate = '2026-09-01'
+    store.slots = mockSlots.map(s => ({ ...s }))
+
+    await store.lockSlot('08:00')
+
+    expect(store.reservationId).toBe(42)
+    expect(store.bookingStep).toBe('confirming')
+    expect(store.lockedStartTime).toBe('08:00')
+    expect(store.slots[0].state).toBe('LOCKED')
+  })
+
+  it('lockSlot error reverts slot state and sets errorMessage', async () => {
+    vi.mocked(api.post).mockRejectedValueOnce(new Error('conflict'))
+    const store = useAppointmentStore()
+    store.selectedDoctorId = 1
+    store.selectedDate = '2026-09-01'
+    store.slots = mockSlots.map(s => ({ ...s }))
+
+    await store.lockSlot('08:00')
+
+    expect(store.slots[0].state).toBe('AVAILABLE')
+    expect(store.errorMessage).toBe('Slot already reserved')
+    expect(store.bookingStep).toBe('searching')
+  })
+
+  it('cancelBooking resets store even when api.delete rejects', async () => {
+    vi.mocked(api.delete).mockRejectedValueOnce(new Error('network'))
+    const store = useAppointmentStore()
+    store.reservationId = 10
+    store.lockedStartTime = '08:00'
+    store.bookingStep = 'confirming'
+    store.slots = [{ startTime: '08:00', endTime: '08:30', state: 'LOCKED' }]
+
+    await store.cancelBooking()
+
+    expect(store.bookingStep).toBe('searching')
+    expect(store.reservationId).toBeNull()
+    expect(store.slots[0].state).toBe('AVAILABLE')
+  })
+
+  it('confirmBooking sets bookingStep=done on success', async () => {
+    vi.mocked(api.post).mockResolvedValueOnce({ data: { id: 99 } })
+    const store = useAppointmentStore()
+    store.reservationId = 10
+    store.bookingStep = 'confirming'
+
+    await store.confirmBooking()
+
+    expect(store.bookingStep).toBe('done')
+    expect(store.reservationId).toBeNull()
+  })
+
+  it('confirmBooking sets errorMessage on failure', async () => {
+    vi.mocked(api.post).mockRejectedValueOnce(new Error('server error'))
+    const store = useAppointmentStore()
+    store.reservationId = 10
+    store.bookingStep = 'confirming'
+
+    await store.confirmBooking()
+
+    expect(store.bookingStep).toBe('confirming')
+    expect(store.errorMessage).toBe('Booking failed. Please try again.')
   })
 })

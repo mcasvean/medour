@@ -87,6 +87,10 @@ public class AppointmentService {
     if (!reservation.getReservedByPatient().getId().equals(patientId)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
+    if (reservation.getExpiresAt().isBefore(LocalDateTime.now())) {
+      slotReservationRepository.delete(reservation);
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Reservation expired");
+    }
     Appointment appointment = Appointment.builder()
         .patient(reservation.getReservedByPatient())
         .doctor(reservation.getDoctor())

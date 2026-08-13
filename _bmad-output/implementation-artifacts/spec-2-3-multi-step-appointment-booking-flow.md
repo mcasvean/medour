@@ -2,7 +2,7 @@
 title: "Multi-Step Appointment Booking Flow"
 type: "feature"
 created: "2026-08-13"
-status: "in-progress"
+status: "done"
 review_loop_iteration: 0
 baseline_commit: "7e14398f3d7337252892e3d9c7b8b16f4cf201a4"
 context: []
@@ -107,3 +107,51 @@ context: []
 - `cd client && npm run build` -- expected: zero TypeScript errors
 
 ## Spec Change Log
+
+**Review loop 1 patches applied:**
+- `AppointmentService.createAppointment()` — added expiry check: if `reservation.getExpiresAt().isBefore(now)`, delete the stale row and throw 409 `Reservation expired`
+- `appointmentStore.cancelBooking()` — added `catch` block so API errors are swallowed (cleanup in `finally` always runs without propagating rejection to callers)
+- `appointmentStore.confirmBooking()` — added `catch` block setting `errorMessage = 'Booking failed...'`; `bookingStep` stays `'confirming'` on failure so the user can retry or cancel
+- `appointmentStore.test.ts` — 5 new booking-flow tests: `lockSlot` success (state transitions), `lockSlot` error (slot reverts), `cancelBooking` cleanup on API rejection, `confirmBooking` success, `confirmBooking` error; fixed shared `mockSlots` mutation by using `mockSlots.map(s => ({...s}))`
+
+## Suggested Review Order
+
+**Atomic slot reservation (concurrency invariant)**
+
+- DataIntegrityViolationException → SlotAlreadyReservedException (409); unique constraint is the sole guard
+  [`AppointmentService.java:55`](../../server/src/main/java/com/medour/service/AppointmentService.java#L55)
+
+**Confirm → appointment creation**
+
+- Expiry check before commit; delete reservation + save appointment in one @Transactional; SSE UNAVAILABLE
+  [`AppointmentService.java:84`](../../server/src/main/java/com/medour/service/AppointmentService.java#L84)
+
+**Cancel flow**
+
+- Ownership check; delete; SSE AVAILABLE
+  [`AppointmentService.java:68`](../../server/src/main/java/com/medour/service/AppointmentService.java#L68)
+
+**SecurityConfig role guards**
+
+- POST /slots/reserve and POST /appointments restricted to PATIENT
+  [`SecurityConfig.java:40`](../../server/src/main/java/com/medour/config/SecurityConfig.java#L40)
+
+**Client booking state machine**
+
+- lockSlot: optimistic update, POST reserve, revert on error
+- cancelBooking: always cleans up state (catch swallows API errors)
+- confirmBooking: sets done on success, errorMessage on failure
+  [`appointmentStore.ts:65`](../../client/src/stores/appointmentStore.ts#L65)
+
+**SlotGrid emit guard**
+
+- 'select' event emitted only for AVAILABLE slots
+  [`SlotGrid.vue:12`](../../client/src/components/SlotGrid.vue#L12)
+
+**Tests**
+
+- Service: duplicate slot → 409; wrong-patient cancel → 403
+  [`AppointmentServiceTest.java:1`](../../server/src/test/java/com/medour/service/AppointmentServiceTest.java#L1)
+
+- Store: lockSlot success/error, cancelBooking cleanup, confirmBooking success/error
+  [`appointmentStore.test.ts:107`](../../client/src/stores/__tests__/appointmentStore.test.ts#L107)
