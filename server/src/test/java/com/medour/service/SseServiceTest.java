@@ -23,7 +23,8 @@ class SseServiceTest {
 
     AppointmentStatusEventDto dto = new AppointmentStatusEventDto(1L, "CANCELED");
 
-    // send() on an unconnected emitter throws; broadcastAppointmentStatus must catch it
+    // send() on an unconnected emitter throws; broadcastAppointmentStatus must
+    // catch it
     assertThatNoException().isThrownBy(() -> service.broadcastAppointmentStatus(dto));
 
     // verifies the correct DTO was serialized (not the slot DTO or raw string)

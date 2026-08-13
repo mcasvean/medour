@@ -19,6 +19,7 @@ context: []
 ## Boundaries & Constraints
 
 **Always:**
+
 - Named event `"appointment-status"` on the existing `/api/v1/sse/slots` SSE channel — no new endpoint needed
 - `SseEmitter.event().name("appointment-status").data(json)` is the send pattern; the client listens with `EventSource.addEventListener("appointment-status", handler)`
 - SSE event payload: `{ "appointmentId": Long, "newStatus": String }` — sufficient for the client to locate and patch the appointment card
@@ -28,20 +29,22 @@ context: []
 - The method is defined here but first called by Stories 3.4 and 3.6 — no caller in this story
 
 **Ask First:**
+
 - (none)
 
 **Never:**
+
 - Do not merge the slot and appointment SSE handlers into the same `EventSource.onmessage` — named events (`addEventListener`) are semantically distinct from the default event
 - Do not fire any `broadcastAppointmentStatus()` call in this story (Stories 3.4 / 3.6 do that)
 
 ## I/O & Edge-Case Matrix
 
-| Scenario | Input / State | Expected Output / Behavior | Error Handling |
-|---|---|---|---|
-| Appointment status event received | SSE `"appointment-status"` for appointment in `patientAppointments` | Matching card's status badge updates in real time | N/A |
-| Unknown appointment ID in event | appointmentId not in `patientAppointments` | Event silently ignored | N/A |
-| Malformed JSON in SSE event | Unparseable data | try/catch, silently dropped | N/A |
-| `disconnectAppointmentSse()` called | `_appointmentEventSource` open | EventSource closed and nulled | N/A |
+| Scenario                            | Input / State                                                       | Expected Output / Behavior                        | Error Handling |
+| ----------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------- | -------------- |
+| Appointment status event received   | SSE `"appointment-status"` for appointment in `patientAppointments` | Matching card's status badge updates in real time | N/A            |
+| Unknown appointment ID in event     | appointmentId not in `patientAppointments`                          | Event silently ignored                            | N/A            |
+| Malformed JSON in SSE event         | Unparseable data                                                    | try/catch, silently dropped                       | N/A            |
+| `disconnectAppointmentSse()` called | `_appointmentEventSource` open                                      | EventSource closed and nulled                     | N/A            |
 
 </frozen-after-approval>
 
@@ -72,6 +75,7 @@ context: []
 ## Verification
 
 **Commands:**
+
 - `cd server && ./mvnw test` -- expected: 50 tests pass (49 existing + 1 SseServiceTest)
 - `cd client && npm run test` -- expected: all 29 tests pass + 2 new appointmentStore tests for SSE
 - `cd client && npm run build` -- expected: zero TypeScript errors
@@ -79,5 +83,6 @@ context: []
 ## Spec Change Log
 
 **Review loop 1 patches applied:**
+
 - `appointmentStore.test.ts` — added `disconnectAppointmentSse` test (close + null); added malformed JSON test (no throw, status unchanged)
 - Known limitation noted: `SseServiceTest` cannot verify the `"appointment-status"` event name without a real HTTP SSE connection; `SseEmitter.SseEventBuilder` does not expose the name field for assertion. The client-side tests exercise the named-event handler directly and provide the practical regression coverage.
