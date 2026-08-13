@@ -32,6 +32,16 @@ export interface DoctorAppointment {
   wherebyRoomUrl: string | null
 }
 
+export interface AdminAppointmentDto {
+  id: number
+  patientName: string
+  doctorName: string
+  scheduledDate: string
+  startTime: string
+  status: string
+  wherebyRoomUrl: string | null
+}
+
 interface SlotEventPayload {
   doctorId: number
   date: string
@@ -53,6 +63,7 @@ export const useAppointmentStore = defineStore('appointment', {
     wherebyRoomUrl: null as string | null,
     patientAppointments: [] as PatientAppointment[],
     doctorAppointments: [] as DoctorAppointment[],
+    adminAppointments: [] as AdminAppointmentDto[],
   }),
 
   actions: {
@@ -172,6 +183,20 @@ export const useAppointmentStore = defineStore('appointment', {
     async fetchDoctorAppointments() {
       const response = await api.get<DoctorAppointment[]>('/appointments/doctor/my')
       this.doctorAppointments = response.data
+    },
+
+    async fetchAdminAppointments() {
+      const res = await api.get<AdminAppointmentDto[]>('/admin/appointments')
+      this.adminAppointments = res.data
+    },
+
+    async deleteAdminAppointment(id: number) {
+      await api.delete('/admin/appointments/' + id)
+      try {
+        await this.fetchAdminAppointments()
+      } catch {
+        // ignore refresh failure
+      }
     },
 
     async updateDoctorAppointmentStatus(id: number, newStatus: 'CANCELED' | 'COMPLETED') {

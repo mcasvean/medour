@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 08-12-2026 13:37
-last_updated: 08-12-2026 13:37
+last_updated: 08-13-2026 13:37
 project: medour
 project_key: NOKEY
 tracking_system: file-system
@@ -64,7 +64,7 @@ development_status:
   4-1-admin-user-list-detail-view: review
   4-2-admin-add-edit-user: review
   4-3-admin-delete-user-soft-delete: review
-  4-4-admin-appointment-management: backlog
+  4-4-admin-appointment-management: review
   epic-4-retrospective: optional
 
   epic-5: backlog

@@ -1,11 +1,13 @@
 package com.medour.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.medour.dto.AdminAppointmentDto;
 import com.medour.dto.AdminSetPasswordRequest;
 import com.medour.dto.AdminUserCreateRequest;
 import com.medour.dto.AdminUserDto;
 import com.medour.dto.AdminUserUpdateRequest;
 import com.medour.security.JwtUtil;
+import com.medour.service.AdminAppointmentService;
 import com.medour.service.AdminUserService;
 import com.medour.service.UserService;
 import org.junit.jupiter.api.Test;
@@ -16,6 +18,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -45,6 +49,9 @@ class AdminControllerTest {
 
   @MockBean
   private AdminUserService adminUserService;
+
+  @MockBean
+  private AdminAppointmentService adminAppointmentService;
 
   @Autowired
   private ObjectMapper objectMapper;
@@ -103,6 +110,31 @@ class AdminControllerTest {
         .andExpect(status().isNoContent());
 
     verify(adminUserService).deleteUser(1L);
+  }
+
+  @Test
+  @WithMockUser(username = "1", roles = "ADMIN")
+  void getAppointments_asAdmin_returns200WithArray() throws Exception {
+    var dto = new AdminAppointmentDto(1L, "Alice Jones", "Dr Smith",
+        LocalDate.of(2026, 9, 1), LocalTime.of(10, 0), "OPEN", null);
+    when(adminAppointmentService.getAllAppointments()).thenReturn(List.of(dto));
+
+    mockMvc.perform(get("/api/v1/admin/appointments"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].patientName").value("Alice Jones"));
+  }
+
+  @Test
+  @WithMockUser(username = "1", roles = "ADMIN")
+  void deleteAppointment_asAdmin_returns204() throws Exception {
+    doNothing().when(adminAppointmentService).deleteAppointment(1L);
+
+    mockMvc.perform(delete("/api/v1/admin/appointments/1")
+        .with(csrf()))
+        .andExpect(status().isNoContent());
+
+    verify(adminAppointmentService).deleteAppointment(1L);
   }
 
   @Test

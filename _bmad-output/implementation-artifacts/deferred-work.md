@@ -2,8 +2,13 @@
 
 Items collected during implementation reviews that are real but out of scope for the originating story.
 
-- source_spec: `spec-1-1-project-scaffold-development-environment.md`
-  summary: No /login route — router.push('/login') in the 401 interceptor silently no-ops until Story 1.3 adds the route.
+- source_spec: `spec-4-4-admin-appointment-management.md`
+  summary: Admin appointments list has no pagination — fetches all rows unbounded; will degrade for large datasets.
+  evidence: Blind hunter finding; pre-existing pattern across the codebase; no pagination spec'd for this story.
+
+- source_spec: `spec-4-4-admin-appointment-management.md`
+  summary: No 403 test for non-admin JWT on GET/DELETE /api/v1/admin/appointments; protected by SecurityConfig blanket rule but not asserted.
+  evidence: Verification gap finding; same gap exists for all prior /admin/** endpoints.
   evidence: Edge case hunter finding; router has only the placeholder '/' route in this scaffold.
 
 - source_spec: `spec-1-1-project-scaffold-development-environment.md`

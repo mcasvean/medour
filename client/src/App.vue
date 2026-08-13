@@ -7,6 +7,7 @@
       <RouterLink to="/change-password">Change Password</RouterLink>
       <RouterLink v-if="authStore.user?.role === 'DOCTOR'" to="/appointments/doctor">My Appointments</RouterLink>
       <RouterLink v-if="isAdmin" to="/admin/users">Users</RouterLink>
+      <RouterLink v-if="isAdmin" to="/admin/appointments">Appointments</RouterLink>
       <button @click="logout">Logout</button>
     </nav>
   </header>

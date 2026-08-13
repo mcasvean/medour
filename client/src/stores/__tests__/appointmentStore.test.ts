@@ -292,4 +292,39 @@ describe('isJoinActive', () => {
     expect(isJoinActive('2026-09-01', '10:00:00', 'CANCELED')).toBe(false)
     expect(isJoinActive('2026-09-01', '10:00:00', 'AUTO_CANCELED')).toBe(false)
   })
+
+  describe('fetchAdminAppointments', () => {
+    it('populates adminAppointments from API response', async () => {
+      const mockData = [{ id: 1, patientName: 'Alice Jones', doctorName: 'Dr Smith',
+        scheduledDate: '2026-09-01', startTime: '10:00:00', status: 'OPEN', wherebyRoomUrl: null }]
+      vi.mocked(api.get).mockResolvedValueOnce({ data: mockData })
+      const store = useAppointmentStore()
+
+      await store.fetchAdminAppointments()
+
+      expect(api.get).toHaveBeenCalledWith('/admin/appointments')
+      expect(store.adminAppointments).toEqual(mockData)
+    })
+  })
+
+  describe('deleteAdminAppointment', () => {
+    it('calls DELETE and refreshes the list on success', async () => {
+      vi.mocked(api.delete).mockResolvedValueOnce({})
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
+      const store = useAppointmentStore()
+
+      await store.deleteAdminAppointment(1)
+
+      expect(api.delete).toHaveBeenCalledWith('/admin/appointments/1')
+      expect(api.get).toHaveBeenCalledWith('/admin/appointments')
+    })
+
+    it('resolves (does not rethrow) when delete succeeds but refresh fails', async () => {
+      vi.mocked(api.delete).mockResolvedValueOnce({})
+      vi.mocked(api.get).mockRejectedValueOnce(new Error('network'))
+      const store = useAppointmentStore()
+
+      await expect(store.deleteAdminAppointment(1)).resolves.toBeUndefined()
+    })
+  })
 })
