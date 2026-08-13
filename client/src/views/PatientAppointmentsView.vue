@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useAppointmentStore } from '../stores/appointmentStore'
 
 const appointmentStore = useAppointmentStore()
@@ -55,7 +55,10 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+  appointmentStore.connectAppointmentSse()
 })
+
+onUnmounted(() => appointmentStore.disconnectAppointmentSse())
 </script>
 
 <style scoped>

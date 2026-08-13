@@ -32,6 +32,7 @@ export const useAppointmentStore = defineStore('appointment', {
     selectedDate: '' as string,
     slots: [] as SlotDisplay[],
     _eventSource: null as EventSource | null,
+    _appointmentEventSource: null as EventSource | null,
     reservationId: null as number | null,
     bookingStep: 'searching' as 'searching' | 'confirming' | 'done',
     lockedStartTime: null as string | null,
@@ -73,6 +74,28 @@ export const useAppointmentStore = defineStore('appointment', {
       if (this._eventSource) {
         this._eventSource.close()
         this._eventSource = null
+      }
+    },
+
+    connectAppointmentSse() {
+      this.disconnectAppointmentSse()
+      const es = new EventSource('/api/v1/sse/slots')
+      this._appointmentEventSource = es
+      es.addEventListener('appointment-status', (e: MessageEvent) => {
+        try {
+          const p = JSON.parse(e.data)
+          const appt = this.patientAppointments.find(a => a.id === p.appointmentId)
+          if (appt) appt.status = p.newStatus
+        } catch {
+          // malformed JSON — silently drop
+        }
+      })
+    },
+
+    disconnectAppointmentSse() {
+      if (this._appointmentEventSource) {
+        this._appointmentEventSource.close()
+        this._appointmentEventSource = null
       }
     },
 

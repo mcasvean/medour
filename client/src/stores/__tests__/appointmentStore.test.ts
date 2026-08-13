@@ -18,9 +18,20 @@ const mockSlots: SlotDisplay[] = [
   { startTime: '10:00', endTime: '10:30', state: 'AVAILABLE' },
 ]
 
-// Minimal EventSource mock that captures the onmessage handler
+// Minimal EventSource mock that captures the onmessage handler and named listeners
 function makeMockEventSource() {
-  const es = { close: vi.fn(), onmessage: null as ((e: MessageEvent) => void) | null }
+  const listeners: Record<string, ((e: MessageEvent) => void)[]> = {}
+  const es = {
+    close: vi.fn(),
+    onmessage: null as ((e: MessageEvent) => void) | null,
+    addEventListener: vi.fn((event: string, handler: (e: MessageEvent) => void) => {
+      if (!listeners[event]) listeners[event] = []
+      listeners[event].push(handler)
+    }),
+    _trigger: (event: string, data: string) => {
+      listeners[event]?.forEach(h => h({ data } as MessageEvent))
+    },
+  }
   return es
 }
 
@@ -180,5 +191,79 @@ describe('appointmentStore', () => {
     expect(api.get).toHaveBeenCalledWith('/appointments/my')
     expect(store.patientAppointments).toHaveLength(1)
     expect(store.patientAppointments[0].doctorRemoved).toBe(false)
+  })
+
+  it('connectAppointmentSse updates matching appointment status on named event', () => {
+    const store = useAppointmentStore()
+    store.patientAppointments = [
+      { id: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
+        doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
+        status: 'OPEN', createdAt: '2026-08-01T12:00:00' },
+    ]
+
+    const mockEs = makeMockEventSource()
+    const origEventSource = globalThis.EventSource
+    globalThis.EventSource = vi.fn(() => mockEs) as unknown as typeof EventSource
+
+    store.connectAppointmentSse()
+    mockEs._trigger('appointment-status', JSON.stringify({ appointmentId: 1, newStatus: 'CANCELED' }))
+
+    expect(store.patientAppointments[0].status).toBe('CANCELED')
+
+    globalThis.EventSource = origEventSource
+  })
+
+  it('connectAppointmentSse silently ignores unknown appointmentId in event', () => {
+    const store = useAppointmentStore()
+    store.patientAppointments = [
+      { id: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
+        doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
+        status: 'OPEN', createdAt: '2026-08-01T12:00:00' },
+    ]
+
+    const mockEs = makeMockEventSource()
+    const origEventSource = globalThis.EventSource
+    globalThis.EventSource = vi.fn(() => mockEs) as unknown as typeof EventSource
+
+    store.connectAppointmentSse()
+    mockEs._trigger('appointment-status', JSON.stringify({ appointmentId: 999, newStatus: 'CANCELED' }))
+
+    expect(store.patientAppointments[0].status).toBe('OPEN')
+
+    globalThis.EventSource = origEventSource
+  })
+
+  it('connectAppointmentSse silently drops malformed JSON', () => {
+    const store = useAppointmentStore()
+    store.patientAppointments = [
+      { id: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
+        doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
+        status: 'OPEN', createdAt: '2026-08-01T12:00:00' },
+    ]
+
+    const mockEs = makeMockEventSource()
+    const origEventSource = globalThis.EventSource
+    globalThis.EventSource = vi.fn(() => mockEs) as unknown as typeof EventSource
+
+    store.connectAppointmentSse()
+    expect(() => mockEs._trigger('appointment-status', 'not-json')).not.toThrow()
+    expect(store.patientAppointments[0].status).toBe('OPEN')
+
+    globalThis.EventSource = origEventSource
+  })
+
+  it('disconnectAppointmentSse closes and nulls the appointment EventSource', () => {
+    const mockEs = makeMockEventSource()
+    const origEventSource = globalThis.EventSource
+    globalThis.EventSource = vi.fn(() => mockEs) as unknown as typeof EventSource
+    const store = useAppointmentStore()
+
+    store.connectAppointmentSse()
+    store.disconnectAppointmentSse()
+
+    expect(mockEs.close).toHaveBeenCalledOnce()
+    expect(store._appointmentEventSource).toBeNull()
+
+    globalThis.EventSource = origEventSource
   })
 })
