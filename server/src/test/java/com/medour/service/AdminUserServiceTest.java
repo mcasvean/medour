@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -122,6 +123,31 @@ class AdminUserServiceTest {
 
     assertThatThrownBy(() -> adminUserService.createUser(req))
         .isInstanceOf(EmailAlreadyUsedException.class);
+  }
+
+  @Test
+  void deleteUser_activeUser_deletedAtBecomesNonNull() {
+    User user = User.builder()
+        .id(10L).email("del@test.com").passwordHash("hash")
+        .firstName("Del").surname("User").role(Role.PATIENT).mustChangePassword(false)
+        .deletedAt(null)
+        .build();
+    when(userRepository.findById(10L)).thenReturn(Optional.of(user));
+    when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+    adminUserService.deleteUser(10L);
+
+    assertThat(user.getDeletedAt()).isNotNull();
+    verify(userRepository).save(user);
+  }
+
+  @Test
+  void deleteUser_nonExistentId_throws404() {
+    when(userRepository.findById(999L)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> adminUserService.deleteUser(999L))
+        .isInstanceOf(ResponseStatusException.class)
+        .satisfies(e -> assertThat(((ResponseStatusException) e).getStatusCode().value()).isEqualTo(404));
   }
 
   @Test

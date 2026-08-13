@@ -33,6 +33,11 @@ export const useUserStore = defineStore('user', {
     async updateAdminUser(id: number, data: Partial<AdminUser>) {
       await api.put(`/admin/users/${id}`, data)
       await this.fetchAdminUsers()
+    },
+    async deleteAdminUser(id: number) {
+      await api.delete(`/admin/users/${id}`)
+      // refresh is best-effort; a refresh failure doesn't mean the delete failed
+      try { await this.fetchAdminUsers() } catch { /* ignored */ }
     }
   }
 })

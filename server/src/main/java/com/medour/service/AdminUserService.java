@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -55,6 +56,14 @@ public class AdminUserService {
         .mustChangePassword(false)
         .build();
     return toDto(userRepository.save(user));
+  }
+
+  @Transactional
+  public void deleteUser(Long userId) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    user.setDeletedAt(LocalDateTime.now());
+    userRepository.save(user);
   }
 
   @Transactional

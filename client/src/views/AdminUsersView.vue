@@ -6,7 +6,9 @@
     </div>
     <div v-if="loading" class="loading">Loading...</div>
     <div v-else-if="errorMessage" class="error">{{ errorMessage }}</div>
-    <ul v-else class="user-list">
+    <template v-else>
+      <div v-if="deleteError" class="error">{{ deleteError }}</div>
+      <ul class="user-list">
       <li
         v-for="user in userStore.adminUsers"
         :key="user.id"
@@ -19,6 +21,7 @@
           <span class="user-role">{{ user.role }}</span>
           <span v-if="user.isDeleted" class="deleted-badge">Deleted</span>
           <button class="btn-edit" @click.stop="openEdit(user)">Edit</button>
+          <button class="btn-delete" @click.stop="deleteUser(user)">Delete</button>
         </div>
         <div v-if="expandedUserId === user.id" class="user-detail" @click.stop>
           <dl>
@@ -39,6 +42,7 @@
         </div>
       </li>
     </ul>
+    </template>
 
     <AdminUserForm
       v-if="showForm"
@@ -66,6 +70,7 @@ const showForm = ref(false)
 const formMode = ref<'create' | 'edit'>('create')
 const editingUser = ref<AdminUser | null>(null)
 const formSaveError = ref('')
+const deleteError = ref('')
 
 onMounted(async () => {
   loading.value = true
@@ -106,6 +111,16 @@ async function handleSave(payload: Partial<AdminUser> & { password?: string }) {
     formSaveError.value = ''
   } catch {
     formSaveError.value = 'Failed to save user.'
+  }
+}
+
+async function deleteUser(user: AdminUser) {
+  deleteError.value = ''
+  if (!window.confirm(`Delete ${user.firstName} ${user.surname}?`)) return
+  try {
+    await userStore.deleteAdminUser(user.id)
+  } catch {
+    deleteError.value = 'Failed to delete user.'
   }
 }
 </script>
@@ -186,6 +201,16 @@ async function handleSave(payload: Partial<AdminUser> & { password?: string }) {
   border-radius: 4px;
   cursor: pointer;
   background: #fff;
+}
+
+.btn-delete {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.8rem;
+  border: 1px solid #e53e3e;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #fff;
+  color: #e53e3e;
 }
 
 .user-detail {

@@ -40,6 +40,12 @@ public class AdminController {
     return ResponseEntity.ok(adminUserService.updateUser(id, req));
   }
 
+  @DeleteMapping("/users/{id}")
+  public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    adminUserService.deleteUser(id);
+    return ResponseEntity.noContent().build();
+  }
+
   @PostMapping("/users/{id}/password")
   public ResponseEntity<Void> adminSetPassword(@PathVariable Long id,
       @Valid @RequestBody AdminSetPasswordRequest req) {
