@@ -28,7 +28,8 @@ public class PatientAppointmentService {
             a.getDoctor().getSpeciality(),
             a.getDoctor().getDeletedAt() != null,
             a.getStatus().name(),
-            a.getCreatedAt()))
+            a.getCreatedAt(),
+            a.getWherebyRoomUrl()))
         .toList();
   }
 }

@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { useAppointmentStore } from '../appointmentStore'
+import { useAppointmentStore, isJoinActive } from '../appointmentStore'
 import type { SlotDisplay } from '../appointmentStore'
 
 vi.mock('../../api/index', () => ({
@@ -198,7 +198,7 @@ describe('appointmentStore', () => {
     store.patientAppointments = [
       { id: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
         doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
-        status: 'OPEN', createdAt: '2026-08-01T12:00:00' },
+        status: 'OPEN', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null },
     ]
 
     const mockEs = makeMockEventSource()
@@ -218,7 +218,7 @@ describe('appointmentStore', () => {
     store.patientAppointments = [
       { id: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
         doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
-        status: 'OPEN', createdAt: '2026-08-01T12:00:00' },
+        status: 'OPEN', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null },
     ]
 
     const mockEs = makeMockEventSource()
@@ -238,7 +238,7 @@ describe('appointmentStore', () => {
     store.patientAppointments = [
       { id: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
         doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
-        status: 'OPEN', createdAt: '2026-08-01T12:00:00' },
+        status: 'OPEN', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null },
     ]
 
     const mockEs = makeMockEventSource()
@@ -265,5 +265,31 @@ describe('appointmentStore', () => {
     expect(store._appointmentEventSource).toBeNull()
 
     globalThis.EventSource = origEventSource
+  })
+})
+
+describe('isJoinActive', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('returns true when status is OPEN and now is within the join window', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-09-01T09:55:00')) // 5 min before 10:00 start — inside window
+    expect(isJoinActive('2026-09-01', '10:00:00', 'OPEN')).toBe(true)
+  })
+
+  it('returns false when status is OPEN but now is before the join window', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-09-01T09:45:00')) // 15 min before 10:00 start — outside window
+    expect(isJoinActive('2026-09-01', '10:00:00', 'OPEN')).toBe(false)
+  })
+
+  it('returns false for non-OPEN status even when inside the window', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-09-01T09:55:00')) // inside window
+    expect(isJoinActive('2026-09-01', '10:00:00', 'COMPLETED')).toBe(false)
+    expect(isJoinActive('2026-09-01', '10:00:00', 'CANCELED')).toBe(false)
+    expect(isJoinActive('2026-09-01', '10:00:00', 'AUTO_CANCELED')).toBe(false)
   })
 })

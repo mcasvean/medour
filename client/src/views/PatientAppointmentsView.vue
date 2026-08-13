@@ -33,6 +33,11 @@
           <span>{{ appt.doctorSpeciality }}</span>
           <span>{{ appt.scheduledDate }} at {{ appt.startTime }}</span>
         </div>
+        <button
+          v-if="appt.status === 'OPEN' && appt.wherebyRoomUrl"
+          :disabled="!isJoinActive(appt.scheduledDate, appt.startTime, appt.status)"
+          @click="join(appt.wherebyRoomUrl!)"
+        >Join</button>
         <div class="card-footer">
           <small class="created-at">Booked: {{ appt.createdAt }}</small>
         </div>
@@ -43,10 +48,14 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
-import { useAppointmentStore } from '../stores/appointmentStore'
+import { useAppointmentStore, isJoinActive } from '../stores/appointmentStore'
 
 const appointmentStore = useAppointmentStore()
 const loading = ref(false)
+
+function join(url: string) {
+  window.open(url, '_blank', 'noopener,noreferrer')
+}
 
 onMounted(async () => {
   loading.value = true

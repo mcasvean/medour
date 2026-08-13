@@ -38,6 +38,7 @@ class PatientAppointmentServiceTest {
         .scheduledDate(LocalDate.of(2026, 9, 1))
         .startTime(LocalTime.of(10, 0))
         .status(AppointmentStatus.OPEN)
+        .wherebyRoomUrl("https://whereby.com/test-room")
         .build();
     when(appointmentRepository.findByPatientIdOrderByScheduledDateDesc(1L))
         .thenReturn(List.of(appt));
@@ -47,6 +48,7 @@ class PatientAppointmentServiceTest {
     assertThat(result).hasSize(1);
     assertThat(result.get(0).doctorRemoved()).isFalse();
     assertThat(result.get(0).status()).isEqualTo("OPEN");
+    assertThat(result.get(0).wherebyRoomUrl()).isEqualTo("https://whereby.com/test-room");
   }
 
   @Test
@@ -59,6 +61,7 @@ class PatientAppointmentServiceTest {
         .scheduledDate(LocalDate.of(2026, 9, 1))
         .startTime(LocalTime.of(10, 0))
         .status(AppointmentStatus.CANCELED)
+        .wherebyRoomUrl("https://whereby.com/test-room")
         .build();
     when(appointmentRepository.findByPatientIdOrderByScheduledDateDesc(1L))
         .thenReturn(List.of(appt));
@@ -67,5 +70,25 @@ class PatientAppointmentServiceTest {
 
     assertThat(result).hasSize(1);
     assertThat(result.get(0).doctorRemoved()).isTrue();
+  }
+
+  @Test
+  void getHistory_nullWherebyRoomUrl_mapsToNull() {
+    User doctor = User.builder().id(10L).firstName("Doc").surname("Tor")
+        .speciality("Cardiology").deletedAt(null).build();
+    User patient = User.builder().id(1L).build();
+    Appointment appt = Appointment.builder()
+        .id(3L).patient(patient).doctor(doctor)
+        .scheduledDate(LocalDate.of(2026, 9, 1))
+        .startTime(LocalTime.of(10, 0))
+        .status(AppointmentStatus.OPEN)
+        .wherebyRoomUrl(null)
+        .build();
+    when(appointmentRepository.findByPatientIdOrderByScheduledDateDesc(1L))
+        .thenReturn(List.of(appt));
+
+    List<PatientAppointmentDto> result = patientAppointmentService.getHistory(1L);
+
+    assertThat(result.get(0).wherebyRoomUrl()).isNull();
   }
 }

@@ -17,6 +17,7 @@ export interface PatientAppointment {
   doctorRemoved: boolean
   status: string
   createdAt: string
+  wherebyRoomUrl: string | null
 }
 
 interface SlotEventPayload {
@@ -157,3 +158,10 @@ export const useAppointmentStore = defineStore('appointment', {
   },
 })
 
+export function isJoinActive(scheduledDate: string, startTime: string, status: string): boolean {
+  const start = new Date(`${scheduledDate}T${startTime}`)
+  const windowStart = new Date(start.getTime() - 10 * 60 * 1000)
+  const windowEnd = new Date(start.getTime() + 30 * 60 * 1000)
+  const now = new Date()
+  return status === 'OPEN' && now >= windowStart && now <= windowEnd
+}

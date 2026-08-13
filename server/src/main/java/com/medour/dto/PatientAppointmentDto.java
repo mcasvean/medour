@@ -13,5 +13,6 @@ public record PatientAppointmentDto(
     String doctorSpeciality,
     boolean doctorRemoved,
     String status,
-    LocalDateTime createdAt) {
+    LocalDateTime createdAt,
+    String wherebyRoomUrl) {
 }
