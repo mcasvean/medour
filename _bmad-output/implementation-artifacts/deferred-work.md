@@ -8,7 +8,7 @@ Items collected during implementation reviews that are real but out of scope for
 
 - source_spec: `spec-4-4-admin-appointment-management.md`
   summary: No 403 test for non-admin JWT on GET/DELETE /api/v1/admin/appointments; protected by SecurityConfig blanket rule but not asserted.
-  evidence: Verification gap finding; same gap exists for all prior /admin/** endpoints.
+  evidence: Verification gap finding; same gap exists for all prior /admin/\*\* endpoints.
   evidence: Edge case hunter finding; router has only the placeholder '/' route in this scaffold.
 
 - source_spec: `spec-1-1-project-scaffold-development-environment.md`

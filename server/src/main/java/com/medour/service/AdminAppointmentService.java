@@ -31,8 +31,7 @@ public class AdminAppointmentService {
             a.getScheduledDate(),
             a.getStartTime(),
             a.getStatus().name(),
-            a.getWherebyRoomUrl()
-        ))
+            a.getWherebyRoomUrl()))
         .toList();
   }
 

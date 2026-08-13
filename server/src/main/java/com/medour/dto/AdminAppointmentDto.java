@@ -10,5 +10,5 @@ public record AdminAppointmentDto(
     LocalDate scheduledDate,
     LocalTime startTime,
     String status,
-    String wherebyRoomUrl
-) {}
+    String wherebyRoomUrl) {
+}

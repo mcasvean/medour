@@ -38,13 +38,13 @@ context: []
 
 ## I/O & Edge-Case Matrix
 
-| Scenario | Input / State | Expected Output / Behavior | Error Handling |
-|----------|--------------|---------------------------|----------------|
-| List all appointments | `GET /api/v1/admin/appointments` (ADMIN) | 200 + array of `AdminAppointmentDto`, sorted by scheduledDate DESC | N/A |
-| Delete existing appointment | `DELETE /api/v1/admin/appointments/{id}` (ADMIN) | 204; row removed from DB | N/A |
-| Delete non-existent appointment | Unknown id | 404 | N/A |
-| Cancel confirmation | User clicks Cancel | No API call; list unchanged | N/A |
-| Non-admin access | PATIENT or DOCTOR JWT | 403; Vue Router also redirects non-admin to `/` | N/A |
+| Scenario                        | Input / State                                    | Expected Output / Behavior                                         | Error Handling |
+| ------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------ | -------------- |
+| List all appointments           | `GET /api/v1/admin/appointments` (ADMIN)         | 200 + array of `AdminAppointmentDto`, sorted by scheduledDate DESC | N/A            |
+| Delete existing appointment     | `DELETE /api/v1/admin/appointments/{id}` (ADMIN) | 204; row removed from DB                                           | N/A            |
+| Delete non-existent appointment | Unknown id                                       | 404                                                                | N/A            |
+| Cancel confirmation             | User clicks Cancel                               | No API call; list unchanged                                        | N/A            |
+| Non-admin access                | PATIENT or DOCTOR JWT                            | 403; Vue Router also redirects non-admin to `/`                    | N/A            |
 
 </frozen-after-approval>
 
