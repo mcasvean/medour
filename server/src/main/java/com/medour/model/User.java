@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -54,4 +55,7 @@ public class User {
   @Column(name = "must_change_password", nullable = false)
   @Builder.Default
   private Boolean mustChangePassword = false;
+
+  @Column(name = "average_rating", precision = 3, scale = 1)
+  private BigDecimal averageRating;
 }

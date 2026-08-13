@@ -1,0 +1,13 @@
+package com.medour.repository;
+
+import com.medour.model.Appointment;
+import com.medour.model.AppointmentStatus;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.time.LocalDate;
+import java.util.List;
+
+public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
+
+  long countByDoctorIdAndScheduledDateAndStatusIn(Long doctorId, LocalDate date, List<AppointmentStatus> statuses);
+}

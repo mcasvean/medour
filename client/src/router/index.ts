@@ -6,6 +6,7 @@ declare module 'vue-router' {
   interface RouteMeta {
     requiresAuth?: boolean
     requiresAdmin?: boolean
+    requiresPatient?: boolean
     guestOnly?: boolean
   }
 }
@@ -40,6 +41,11 @@ export const routes = [
     path: '/change-password',
     component: () => import('../views/ChangePasswordView.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/booking',
+    component: () => import('../views/BookingSearchView.vue'),
+    meta: { requiresAuth: true, requiresPatient: true }
   }
 ]
 
@@ -49,6 +55,7 @@ export function setupGuard(r: Router) {
     if (to.meta.requiresAuth && !auth.isAuthenticated) return '/login'
     if (to.meta.requiresAuth && auth.user?.mustChangePassword && to.path !== '/change-password') return '/change-password'
     if (to.meta.requiresAdmin && auth.user?.role !== 'ADMIN') return '/'
+    if (to.meta.requiresPatient && auth.user?.role !== 'PATIENT') return '/'
     if (to.meta.guestOnly && auth.isAuthenticated) return '/'
   })
 }

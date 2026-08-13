@@ -44,8 +44,8 @@ development_status:
   1-6-password-management: review
   epic-1-retrospective: optional
 
-  epic-2: backlog
-  2-1-doctor-search-filter: backlog
+  epic-2: in-progress
+  2-1-doctor-search-filter: review
   2-2-slot-availability-display: backlog
   2-3-multi-step-appointment-booking-flow: backlog
   2-4-appointment-confirmation-whereby-room-creation: backlog

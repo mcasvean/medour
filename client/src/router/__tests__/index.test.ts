@@ -67,4 +67,25 @@ describe('Router navigation guard', () => {
     await testRouter.push('/change-password')
     expect(testRouter.currentRoute.value.path).toBe('/change-password')
   })
+
+  it('PATIENT navigating to /booking can access the page', async () => {
+    mockAuth.isAuthenticated = true
+    mockAuth.user = { role: 'PATIENT' }
+    await testRouter.push('/booking')
+    expect(testRouter.currentRoute.value.path).toBe('/booking')
+  })
+
+  it('DOCTOR navigating to /booking is redirected to /', async () => {
+    mockAuth.isAuthenticated = true
+    mockAuth.user = { role: 'DOCTOR' }
+    await testRouter.push('/booking')
+    expect(testRouter.currentRoute.value.path).toBe('/')
+  })
+
+  it('ADMIN navigating to /booking is redirected to /', async () => {
+    mockAuth.isAuthenticated = true
+    mockAuth.user = { role: 'ADMIN' }
+    await testRouter.push('/booking')
+    expect(testRouter.currentRoute.value.path).toBe('/')
+  })
 })
