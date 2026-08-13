@@ -42,7 +42,7 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('token')
       localStorage.removeItem('auth_user')
     },
-    updateUser(updates: Pick<User, 'firstName' | 'surname'>) {
+    updateUser(updates: Partial<Pick<User, 'firstName' | 'surname' | 'mustChangePassword'>>) {
       if (this.user) {
         this.user = { ...this.user, ...updates }
         localStorage.setItem('auth_user', JSON.stringify(this.user))

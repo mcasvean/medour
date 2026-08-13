@@ -4,7 +4,7 @@ import { createPinia, setActivePinia } from 'pinia'
 
 const mockAuth = {
   isAuthenticated: false,
-  user: null as { role: string } | null
+  user: null as { role: string; mustChangePassword?: boolean } | null
 }
 
 vi.mock('../../stores/authStore', () => ({
@@ -52,5 +52,19 @@ describe('Router navigation guard', () => {
   it('unauthenticated user navigating to /account is redirected to /login', async () => {
     await testRouter.push('/account')
     expect(testRouter.currentRoute.value.path).toBe('/login')
+  })
+
+  it('user with mustChangePassword=true navigating to / is redirected to /change-password', async () => {
+    mockAuth.isAuthenticated = true
+    mockAuth.user = { role: 'PATIENT', mustChangePassword: true }
+    await testRouter.push('/')
+    expect(testRouter.currentRoute.value.path).toBe('/change-password')
+  })
+
+  it('user with mustChangePassword=true navigating to /change-password is not re-redirected', async () => {
+    mockAuth.isAuthenticated = true
+    mockAuth.user = { role: 'PATIENT', mustChangePassword: true }
+    await testRouter.push('/change-password')
+    expect(testRouter.currentRoute.value.path).toBe('/change-password')
   })
 })

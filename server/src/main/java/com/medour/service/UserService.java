@@ -1,12 +1,15 @@
 package com.medour.service;
 
+import com.medour.dto.AdminSetPasswordRequest;
 import com.medour.dto.AuthResponse;
+import com.medour.dto.ChangePasswordRequest;
 import com.medour.dto.LoginRequest;
 import com.medour.dto.RegisterRequest;
 import com.medour.dto.UpdateProfileRequest;
 import com.medour.dto.UserProfileResponse;
 import com.medour.exception.EmailAlreadyUsedException;
 import com.medour.exception.InvalidCredentialsException;
+import com.medour.exception.WrongPasswordException;
 import com.medour.model.Role;
 import com.medour.model.User;
 import com.medour.repository.UserRepository;
@@ -134,6 +137,27 @@ public class UserService {
         user.getCounty(),
         user.getSpeciality()
     );
+  }
+
+  @Transactional
+  public void changePassword(Long userId, ChangePasswordRequest req) {
+    User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    if (!passwordEncoder.matches(req.getCurrentPassword(), user.getPasswordHash())) {
+      throw new WrongPasswordException();
+    }
+    user.setPasswordHash(passwordEncoder.encode(req.getNewPassword()));
+    user.setMustChangePassword(false);
+    userRepository.save(user);
+  }
+
+  @Transactional
+  public void adminSetPassword(Long targetId, AdminSetPasswordRequest req) {
+    User user = userRepository.findByIdAndDeletedAtIsNull(targetId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    user.setPasswordHash(passwordEncoder.encode(req.getNewPassword()));
+    user.setMustChangePassword(true);
+    userRepository.save(user);
   }
 
   @Transactional

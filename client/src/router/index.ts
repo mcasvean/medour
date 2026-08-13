@@ -35,6 +35,11 @@ export const routes = [
     path: '/account',
     component: () => import('../views/AccountView.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/change-password',
+    component: () => import('../views/ChangePasswordView.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 
@@ -42,6 +47,7 @@ export function setupGuard(r: Router) {
   r.beforeEach((to) => {
     const auth = useAuthStore()
     if (to.meta.requiresAuth && !auth.isAuthenticated) return '/login'
+    if (to.meta.requiresAuth && auth.user?.mustChangePassword && to.path !== '/change-password') return '/change-password'
     if (to.meta.requiresAdmin && auth.user?.role !== 'ADMIN') return '/'
     if (to.meta.guestOnly && auth.isAuthenticated) return '/'
   })

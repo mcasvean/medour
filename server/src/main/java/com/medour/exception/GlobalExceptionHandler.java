@@ -24,6 +24,12 @@ public class GlobalExceptionHandler {
         .body(Map.of("error", "Invalid credentials"));
   }
 
+  @ExceptionHandler(WrongPasswordException.class)
+  public ResponseEntity<Map<String, String>> handleWrongPassword(WrongPasswordException ex) {
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+        .body(Map.of("error", "Wrong password"));
+  }
+
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException ex) {
     String message = ex.getBindingResult().getFieldErrors().stream()

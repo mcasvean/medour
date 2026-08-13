@@ -1,5 +1,6 @@
 package com.medour.controller;
 
+import com.medour.dto.ChangePasswordRequest;
 import com.medour.dto.UpdateProfileRequest;
 import com.medour.dto.UserProfileResponse;
 import com.medour.service.UserService;
@@ -29,6 +30,13 @@ public class UserController {
   public ResponseEntity<UserProfileResponse> updateMe(Authentication auth,
       @Valid @RequestBody UpdateProfileRequest req) {
     return ResponseEntity.ok(userService.updateProfile(parseUserId(auth), req));
+  }
+
+  @PostMapping("/me/password")
+  public ResponseEntity<Void> changePassword(Authentication auth,
+      @Valid @RequestBody ChangePasswordRequest req) {
+    userService.changePassword(parseUserId(auth), req);
+    return ResponseEntity.noContent().build();
   }
 
   private long parseUserId(Authentication auth) {
