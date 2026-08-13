@@ -173,6 +173,16 @@ export const useAppointmentStore = defineStore('appointment', {
       const response = await api.get<DoctorAppointment[]>('/appointments/doctor/my')
       this.doctorAppointments = response.data
     },
+
+    async updateDoctorAppointmentStatus(id: number, newStatus: 'CANCELED' | 'COMPLETED') {
+      try {
+        await api.patch(`/appointments/doctor/${id}/status`, { newStatus })
+        const appt = this.doctorAppointments.find(a => a.id === id)
+        if (appt) appt.status = newStatus
+      } catch {
+        this.errorMessage = 'Failed to update appointment status.'
+      }
+    },
   },
 })
 

@@ -46,6 +46,15 @@
           <div class="card-body">
             <span>{{ appt.scheduledDate }} at {{ appt.startTime }}</span>
           </div>
+          <div v-if="appt.status === 'OPEN'" class="card-actions">
+            <button @click="cancelAppointment(appt.id)">Cancel</button>
+            <button @click="completeAppointment(appt.id)">Complete</button>
+            <button
+              v-if="appt.wherebyRoomUrl"
+              :disabled="!isJoinActive(appt.scheduledDate, appt.startTime, appt.status)"
+              @click="joinConsultation(appt.wherebyRoomUrl)"
+            >Join</button>
+          </div>
           <div class="card-footer">
             <small class="created-at">Booked: {{ appt.createdAt }}</small>
           </div>
@@ -56,8 +65,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useAppointmentStore } from '../stores/appointmentStore'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useAppointmentStore, isJoinActive } from '../stores/appointmentStore'
 
 const appointmentStore = useAppointmentStore()
 const loading = ref(false)
@@ -80,15 +89,32 @@ const past = computed(() =>
 
 const activeList = computed(() => activeTab.value === 'upcoming' ? upcoming.value : past.value)
 
+async function cancelAppointment(id: number) {
+  await appointmentStore.updateDoctorAppointmentStatus(id, 'CANCELED')
+}
+
+async function completeAppointment(id: number) {
+  await appointmentStore.updateDoctorAppointmentStatus(id, 'COMPLETED')
+}
+
+function joinConsultation(url: string) {
+  window.open(url, '_blank', 'noopener,noreferrer')
+}
+
 onMounted(async () => {
   loading.value = true
   try {
     await appointmentStore.fetchDoctorAppointments()
+    appointmentStore.connectAppointmentSse()
   } catch {
     errorMessage.value = 'Failed to load appointments.'
   } finally {
     loading.value = false
   }
+})
+
+onUnmounted(() => {
+  appointmentStore.disconnectAppointmentSse()
 })
 </script>
 

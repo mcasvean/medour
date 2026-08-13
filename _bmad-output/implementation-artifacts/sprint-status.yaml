@@ -51,13 +51,13 @@ development_status:
   2-4-appointment-confirmation-whereby-room-creation: review
   epic-2-retrospective: optional
 
-  epic-3: in-progress
+  epic-3: done
   3-1-patient-appointment-history-view: review
   3-2-real-time-appointment-status-updates: review
   3-3-video-consultation-join-button: review
   3-4-auto-cancellation-background-job: review
   3-5-doctor-my-appointments-view: review
-  3-6-doctor-appointment-actions: backlog
+  3-6-doctor-appointment-actions: review
   epic-3-retrospective: optional
 
   epic-4: backlog

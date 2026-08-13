@@ -19,6 +19,7 @@ import java.util.List;
 import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.PATCH;
 import static org.springframework.http.HttpMethod.POST;
 
 @Configuration
@@ -43,6 +44,7 @@ public class SecurityConfig {
             .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
             .requestMatchers(GET, "/api/v1/appointments/my").hasRole("PATIENT")
             .requestMatchers(GET, "/api/v1/appointments/doctor/my").hasRole("DOCTOR")
+            .requestMatchers(PATCH, "/api/v1/appointments/doctor/**").hasRole("DOCTOR")
             .requestMatchers(POST, "/api/v1/slots/reserve", "/api/v1/appointments").hasRole("PATIENT")
             .anyRequest().authenticated())
         .exceptionHandling(e -> e
