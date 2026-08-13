@@ -48,4 +48,9 @@ describe('Router navigation guard', () => {
     await testRouter.push('/admin/users')
     expect(testRouter.currentRoute.value.path).toBe('/admin/users')
   })
+
+  it('unauthenticated user navigating to /account is redirected to /login', async () => {
+    await testRouter.push('/account')
+    expect(testRouter.currentRoute.value.path).toBe('/login')
+  })
 })

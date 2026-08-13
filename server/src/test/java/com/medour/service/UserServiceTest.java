@@ -1,6 +1,7 @@
 package com.medour.service;
 
 import com.medour.dto.LoginRequest;
+import com.medour.dto.UpdateProfileRequest;
 import com.medour.exception.InvalidCredentialsException;
 import com.medour.model.Role;
 import com.medour.model.User;
@@ -16,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -55,5 +57,20 @@ class UserServiceTest {
 
     assertThrows(InvalidCredentialsException.class,
         () -> userService.login(new LoginRequest("gone@test.com", "any")));
+  }
+
+  @Test
+  void updateProfile_doctorMissingCounty_throwsBadRequest() {
+    User doctor = User.builder()
+        .id(2L).email("doc@test.com").passwordHash("hash")
+        .role(Role.DOCTOR).mustChangePassword(false)
+        .build();
+    when(userRepository.findByIdAndDeletedAtIsNull(2L)).thenReturn(Optional.of(doctor));
+
+    var req = new UpdateProfileRequest("Doc", "Tor", null, null, null, null, null, null);
+
+    var ex = assertThrows(org.springframework.web.server.ResponseStatusException.class,
+        () -> userService.updateProfile(2L, req));
+    assertThat(ex.getStatusCode().value()).isEqualTo(400);
   }
 }

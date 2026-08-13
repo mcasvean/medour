@@ -40,7 +40,7 @@ development_status:
   1-2-user-registration-patient-doctor: review
   1-3-user-login-jwt-session: review
   1-4-role-display-route-guards: review
-  1-5-my-preferences-account-info: backlog
+  1-5-my-preferences-account-info: review
   1-6-password-management: backlog
   epic-1-retrospective: optional
 

@@ -41,6 +41,12 @@ export const useAuthStore = defineStore('auth', {
       this.user = null
       localStorage.removeItem('token')
       localStorage.removeItem('auth_user')
+    },
+    updateUser(updates: Pick<User, 'firstName' | 'surname'>) {
+      if (this.user) {
+        this.user = { ...this.user, ...updates }
+        localStorage.setItem('auth_user', JSON.stringify(this.user))
+      }
     }
   }
 })

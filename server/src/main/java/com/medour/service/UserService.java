@@ -3,6 +3,8 @@ package com.medour.service;
 import com.medour.dto.AuthResponse;
 import com.medour.dto.LoginRequest;
 import com.medour.dto.RegisterRequest;
+import com.medour.dto.UpdateProfileRequest;
+import com.medour.dto.UserProfileResponse;
 import com.medour.exception.EmailAlreadyUsedException;
 import com.medour.exception.InvalidCredentialsException;
 import com.medour.model.Role;
@@ -87,6 +89,51 @@ public class UserService {
     String token = jwtUtil.generateToken(user);
     return new AuthResponse(token, user.getId(), user.getEmail(),
         user.getFirstName(), user.getSurname(), user.getRole().name(), user.getMustChangePassword());
+  }
+
+  @Transactional(readOnly = true)
+  public UserProfileResponse getProfile(Long userId) {
+    User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    return toProfileResponse(user);
+  }
+
+  @Transactional
+  public UserProfileResponse updateProfile(Long userId, UpdateProfileRequest req) {
+    User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    if (user.getRole() == Role.DOCTOR) {
+      if (req.getCounty() == null || req.getCounty().isBlank()
+          || req.getSpeciality() == null || req.getSpeciality().isBlank()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "county and speciality are required for DOCTOR");
+      }
+    }
+    user.setFirstName(req.getFirstName());
+    user.setSurname(req.getSurname());
+    user.setAge(req.getAge());
+    user.setGender(req.getGender());
+    user.setCity(req.getCity());
+    user.setAddress(req.getAddress());
+    user.setCounty(req.getCounty());
+    user.setSpeciality(req.getSpeciality());
+    return toProfileResponse(userRepository.save(user));
+  }
+
+  private UserProfileResponse toProfileResponse(User user) {
+    return new UserProfileResponse(
+        user.getId(),
+        user.getEmail(),
+        user.getFirstName(),
+        user.getSurname(),
+        user.getRole().name(),
+        user.getAge(),
+        user.getGender(),
+        user.getCity(),
+        user.getAddress(),
+        user.getCounty(),
+        user.getSpeciality()
+    );
   }
 
   @Transactional
