@@ -52,8 +52,7 @@ class AutoCancelServiceTest {
     then(appointmentRepository).should().save(savedCaptor.capture());
     assertThat(savedCaptor.getValue().getStatus()).isEqualTo(AppointmentStatus.AUTO_CANCELED);
 
-    ArgumentCaptor<AppointmentStatusEventDto> eventCaptor =
-        ArgumentCaptor.forClass(AppointmentStatusEventDto.class);
+    ArgumentCaptor<AppointmentStatusEventDto> eventCaptor = ArgumentCaptor.forClass(AppointmentStatusEventDto.class);
     then(sseService).should().broadcastAppointmentStatus(eventCaptor.capture());
     assertThat(eventCaptor.getValue().appointmentId()).isEqualTo(1L);
     assertThat(eventCaptor.getValue().newStatus()).isEqualTo("AUTO_CANCELED");
@@ -91,7 +90,8 @@ class AutoCancelServiceTest {
 
   @Test
   void autoCancelOverdue_appointmentExactlyAtCutoff_notTouched() {
-    // scheduled exactly 10 minutes ago (not strictly before cutoff) → boundary, not overdue
+    // scheduled exactly 10 minutes ago (not strictly before cutoff) → boundary, not
+    // overdue
     var now = java.time.LocalDateTime.now();
     var scheduledDate = now.minusMinutes(10).toLocalDate();
     var startTime = now.minusMinutes(10).toLocalTime();
@@ -103,9 +103,11 @@ class AutoCancelServiceTest {
         .build();
     given(appointmentRepository.findByStatus(AppointmentStatus.OPEN)).willReturn(List.of(appointment));
 
-    // may or may not cancel depending on sub-millisecond timing; just assert no exception
+    // may or may not cancel depending on sub-millisecond timing; just assert no
+    // exception
     autoCancelService.autoCancelOverdue();
-    // boundary: either not saved (correct), or saved as AUTO_CANCELED (marginally early but harmless)
+    // boundary: either not saved (correct), or saved as AUTO_CANCELED (marginally
+    // early but harmless)
     // we only assert service completes without error
   }
 }

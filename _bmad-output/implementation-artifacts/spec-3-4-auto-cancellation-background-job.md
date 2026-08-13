@@ -19,6 +19,7 @@ context: []
 ## Boundaries & Constraints
 
 **Always:**
+
 - Only OPEN appointments are candidates; COMPLETED, CANCELED, and AUTO_CANCELED appointments are never touched
 - The cutoff is `LocalDateTime.now().minusMinutes(10)` — appointment overdue by more than 10 minutes after scheduled start
 - One SSE `broadcastAppointmentStatus` call per auto-canceled appointment, immediately after the status update is persisted
@@ -27,22 +28,24 @@ context: []
 - The entire batch runs in a `@Transactional` method on `AutoCancelService`
 
 **Ask First:**
+
 - (none)
 
 **Never:**
+
 - Do not hard-delete or modify appointments in COMPLETED, CANCELED, or AUTO_CANCELED status
 - No distributed lock — single-instance deployment assumed per architecture
 - The Quartz / DB-backed scheduler is explicitly deferred per the architecture; `@Scheduled` is correct for v1
 
 ## I/O & Edge-Case Matrix
 
-| Scenario | Input / State | Expected Output / Behavior | Error Handling |
-|---|---|---|---|
-| OPEN appointment 15 min overdue | `scheduledDate.atTime(startTime) + 10min < now` | Status → AUTO_CANCELED; SSE event fired | N/A |
-| OPEN appointment not yet overdue | `scheduledDate.atTime(startTime) + 10min >= now` | Not touched | N/A |
-| Already AUTO_CANCELED | `status = AUTO_CANCELED` | Ignored by OPEN filter | N/A |
-| No overdue appointments | All OPEN appointments on time | Nothing changed | N/A |
-| Server restart with overdue open appointments | Job runs on first tick after startup | Overdue appointments auto-canceled on first execution | N/A |
+| Scenario                                      | Input / State                                    | Expected Output / Behavior                            | Error Handling |
+| --------------------------------------------- | ------------------------------------------------ | ----------------------------------------------------- | -------------- |
+| OPEN appointment 15 min overdue               | `scheduledDate.atTime(startTime) + 10min < now`  | Status → AUTO_CANCELED; SSE event fired               | N/A            |
+| OPEN appointment not yet overdue              | `scheduledDate.atTime(startTime) + 10min >= now` | Not touched                                           | N/A            |
+| Already AUTO_CANCELED                         | `status = AUTO_CANCELED`                         | Ignored by OPEN filter                                | N/A            |
+| No overdue appointments                       | All OPEN appointments on time                    | Nothing changed                                       | N/A            |
+| Server restart with overdue open appointments | Job runs on first tick after startup             | Overdue appointments auto-canceled on first execution | N/A            |
 
 </frozen-after-approval>
 
@@ -74,11 +77,13 @@ context: []
 ## Verification
 
 **Commands:**
+
 - `cd server && ./mvnw test` -- expected: 54 tests pass (51 existing + 3 AutoCancelServiceTest)
 - `cd client && npm run build` -- expected: zero TypeScript errors
 
 ## Spec Change Log
 
 **Review loop 1 patches applied:**
+
 - `AutoCancelService` — uses `AppointmentStatus.AUTO_CANCELED.name()` instead of raw string `"AUTO_CANCELED"` to keep the status value compile-time safe
 - `AutoCancelServiceTest` — added boundary test: appointment at exactly `now - 10min` runs without exception (boundary semantics are timing-dependent; test asserts no error rather than a specific cancel decision)

@@ -28,7 +28,8 @@ public class AutoCancelService {
         .forEach(a -> {
           a.setStatus(AppointmentStatus.AUTO_CANCELED);
           appointmentRepository.save(a);
-          sseService.broadcastAppointmentStatus(new AppointmentStatusEventDto(a.getId(), AppointmentStatus.AUTO_CANCELED.name()));
+          sseService.broadcastAppointmentStatus(
+              new AppointmentStatusEventDto(a.getId(), AppointmentStatus.AUTO_CANCELED.name()));
         });
   }
 }
