@@ -1,5 +1,30 @@
 import { defineStore } from 'pinia'
+import api from '../api/index'
+
+export interface AdminUser {
+  id: number
+  email: string
+  firstName: string
+  surname: string
+  role: string
+  speciality: string | null
+  county: string | null
+  city: string | null
+  age: number | null
+  gender: string | null
+  address: string | null
+  mustChangePassword: boolean
+  isDeleted: boolean
+}
 
 export const useUserStore = defineStore('user', {
-  state: () => ({})
+  state: () => ({
+    adminUsers: [] as AdminUser[]
+  }),
+  actions: {
+    async fetchAdminUsers() {
+      const response = await api.get<AdminUser[]>('/admin/users')
+      this.adminUsers = response.data
+    }
+  }
 })
