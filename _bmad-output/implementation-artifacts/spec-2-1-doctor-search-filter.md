@@ -19,6 +19,7 @@ context: []
 ## Boundaries & Constraints
 
 **Always:**
+
 - Only PATIENT role can access `/booking` — the router guard redirects DOCTOR and ADMIN to `/`
 - `GET /api/v1/doctors` returns doctors where `role = DOCTOR` AND `deleted_at IS NULL`
 - If a `date` query param is provided, only return doctors that have at least one slot not taken by a `slot_reservations` row or a confirmed `appointments` row on that date (24 fixed slots, 08:00–20:00, 30-minute intervals)
@@ -29,9 +30,11 @@ context: []
 - `doctorStore` holds the filters and search results; `BookingSearchView` reads and writes through it
 
 **Ask First:**
+
 - (none)
 
 **Never:**
+
 - No slot grid in this story (Story 2.2)
 - No booking flow in this story (Story 2.3)
 - No SSE in this story (Story 2.2)
@@ -39,14 +42,14 @@ context: []
 
 ## I/O & Edge-Case Matrix
 
-| Scenario | Input / State | Expected Output / Behavior | Error Handling |
-|---|---|---|---|
-| No filters | `GET /api/v1/doctors` | All active doctors returned | N/A |
-| Speciality filter | `GET /api/v1/doctors?speciality=Cardiology` | Only DOCTOR users with that speciality | N/A |
-| Date filter | `GET /api/v1/doctors?date=2026-09-01` | Doctors with ≥1 free slot on that date | N/A |
-| Date + speciality | Combined params | Intersection of both filters | N/A |
-| No matching doctors | All filters applied; no match | Empty list `[]`; client shows empty-state message | N/A |
-| Non-patient accesses `/booking` | DOCTOR or ADMIN role | Router guard redirects to `/` | N/A |
+| Scenario                        | Input / State                               | Expected Output / Behavior                        | Error Handling |
+| ------------------------------- | ------------------------------------------- | ------------------------------------------------- | -------------- |
+| No filters                      | `GET /api/v1/doctors`                       | All active doctors returned                       | N/A            |
+| Speciality filter               | `GET /api/v1/doctors?speciality=Cardiology` | Only DOCTOR users with that speciality            | N/A            |
+| Date filter                     | `GET /api/v1/doctors?date=2026-09-01`       | Doctors with ≥1 free slot on that date            | N/A            |
+| Date + speciality               | Combined params                             | Intersection of both filters                      | N/A            |
+| No matching doctors             | All filters applied; no match               | Empty list `[]`; client shows empty-state message | N/A            |
+| Non-patient accesses `/booking` | DOCTOR or ADMIN role                        | Router guard redirects to `/`                     | N/A            |
 
 </frozen-after-approval>
 
@@ -95,6 +98,7 @@ context: []
 ## Verification
 
 **Commands:**
+
 - `cd server && ./mvnw test` -- expected: 26 tests pass (24 existing + 2 new DoctorControllerTest)
 - `cd client && npm run test` -- expected: all 14 tests pass; router guard test for `/booking` with PATIENT passes; router guard for non-patient redirects passes
 - `cd client && npm run build` -- expected: zero TypeScript errors
@@ -102,6 +106,7 @@ context: []
 ## Spec Change Log
 
 **Review loop 1 patches applied:**
+
 - `SlotReservationRepository` — `countByDoctorIdAndDate` replaced by `countByDoctorIdAndDateAndExpiresAtAfter` so expired reservations are not counted as active slots
 - `DoctorService.searchDoctors()` — date filter now counts `OPEN + COMPLETED` appointments (COMPLETED slots are occupied); uses non-expired reservation count; added `LocalDateTime` import
 - `DoctorControllerTest` — speciality-filter test now uses `eq("Cardiology"), isNull(), isNull(), isNull()` instead of unconstrained `any()` matchers, verifying param forwarding

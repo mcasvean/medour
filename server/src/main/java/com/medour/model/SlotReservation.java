@@ -15,7 +15,8 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "slot_reservations", uniqueConstraints = @UniqueConstraint(columnNames = {"doctor_id", "date", "start_time"}))
+@Table(name = "slot_reservations", uniqueConstraints = @UniqueConstraint(columnNames = { "doctor_id", "date",
+    "start_time" }))
 public class SlotReservation {
 
   @Id

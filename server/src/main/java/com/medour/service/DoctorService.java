@@ -38,7 +38,8 @@ public class DoctorService {
         .filter(u -> isBlank(county) || containsIgnoreCase(u.getCounty(), county))
         .filter(u -> isBlank(city) || containsIgnoreCase(u.getCity(), city))
         .filter(u -> {
-          if (date == null) return true;
+          if (date == null)
+            return true;
           long reservations = slotReservationRepository.countByDoctorIdAndDateAndExpiresAtAfter(
               u.getId(), date, LocalDateTime.now());
           long appointments = appointmentRepository.countByDoctorIdAndScheduledDateAndStatusIn(
