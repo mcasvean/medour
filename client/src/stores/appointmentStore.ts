@@ -24,6 +24,7 @@ export const useAppointmentStore = defineStore('appointment', {
     bookingStep: 'searching' as 'searching' | 'confirming' | 'done',
     lockedStartTime: null as string | null,
     errorMessage: '' as string,
+    wherebyRoomUrl: null as string | null,
   }),
 
   actions: {
@@ -103,7 +104,8 @@ export const useAppointmentStore = defineStore('appointment', {
     async confirmBooking() {
       if (this.reservationId === null) return
       try {
-        await api.post('/appointments', { reservationId: this.reservationId })
+        const response = await api.post<{ id: number, wherebyRoomUrl: string }>('/appointments', { reservationId: this.reservationId })
+        this.wherebyRoomUrl = response.data.wherebyRoomUrl
         this.bookingStep = 'done'
         this.reservationId = null
         this.lockedStartTime = null

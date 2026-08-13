@@ -29,15 +29,18 @@ public class AppointmentService {
   private final AppointmentRepository appointmentRepository;
   private final UserRepository userRepository;
   private final SseService sseService;
+  private final WherebyService wherebyService;
 
   public AppointmentService(SlotReservationRepository slotReservationRepository,
       AppointmentRepository appointmentRepository,
       UserRepository userRepository,
-      SseService sseService) {
+      SseService sseService,
+      WherebyService wherebyService) {
     this.slotReservationRepository = slotReservationRepository;
     this.appointmentRepository = appointmentRepository;
     this.userRepository = userRepository;
     this.sseService = sseService;
+    this.wherebyService = wherebyService;
   }
 
   @Transactional
@@ -91,12 +94,14 @@ public class AppointmentService {
       slotReservationRepository.delete(reservation);
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Reservation expired");
     }
+    String roomUrl = wherebyService.createRoom(reservation.getDate());
     Appointment appointment = Appointment.builder()
         .patient(reservation.getReservedByPatient())
         .doctor(reservation.getDoctor())
         .scheduledDate(reservation.getDate())
         .startTime(reservation.getStartTime())
         .status(AppointmentStatus.OPEN)
+        .wherebyRoomUrl(roomUrl)
         .build();
     Appointment saved = appointmentRepository.save(appointment);
     slotReservationRepository.delete(reservation);
@@ -110,6 +115,7 @@ public class AppointmentService {
         reservation.getDoctor().getId(),
         reservation.getDate(),
         reservation.getStartTime(),
-        AppointmentStatus.OPEN.name());
+        AppointmentStatus.OPEN.name(),
+        saved.getWherebyRoomUrl());
   }
 }

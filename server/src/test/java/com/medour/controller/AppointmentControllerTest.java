@@ -72,7 +72,8 @@ class AppointmentControllerTest {
   void confirm_validReservation_returns201() throws Exception {
     var req = new CreateAppointmentRequest(42L);
     var resp = new AppointmentCreatedResponse(
-        1L, 10L, LocalDate.of(2026, 9, 1), LocalTime.of(10, 0), "OPEN");
+        1L, 10L, LocalDate.of(2026, 9, 1), LocalTime.of(10, 0), "OPEN",
+        "https://whereby.com/test-room");
     given(appointmentService.createAppointment(eq(1L), any())).willReturn(resp);
 
     mockMvc.perform(post("/api/v1/appointments")
@@ -80,6 +81,22 @@ class AppointmentControllerTest {
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(req)))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.id").value(1));
+        .andExpect(jsonPath("$.id").value(1))
+        .andExpect(jsonPath("$.wherebyRoomUrl").value("https://whereby.com/test-room"));
+  }
+
+  @Test
+  @WithMockUser(username = "1", roles = "PATIENT")
+  void confirm_wherebyFails_returns502() throws Exception {
+    var req = new CreateAppointmentRequest(42L);
+    given(appointmentService.createAppointment(eq(1L), any()))
+        .willThrow(new com.medour.exception.WherebyException("API error", null));
+
+    mockMvc.perform(post("/api/v1/appointments")
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(req)))
+        .andExpect(status().isBadGateway())
+        .andExpect(jsonPath("$.error").value("Video room creation failed"));
   }
 }

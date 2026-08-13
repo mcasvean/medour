@@ -44,11 +44,11 @@ development_status:
   1-6-password-management: review
   epic-1-retrospective: optional
 
-  epic-2: in-progress
+  epic-2: done
   2-1-doctor-search-filter: review
   2-2-slot-availability-display: review
   2-3-multi-step-appointment-booking-flow: review
-  2-4-appointment-confirmation-whereby-room-creation: backlog
+  2-4-appointment-confirmation-whereby-room-creation: review
   epic-2-retrospective: optional
 
   epic-3: backlog

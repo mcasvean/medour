@@ -70,6 +70,9 @@
 
     <div v-if="appointmentStore.bookingStep === 'done'" class="booking-success">
       <p>Appointment booked successfully!</p>
+      <p v-if="appointmentStore.wherebyRoomUrl">
+        Your video room: <a :href="appointmentStore.wherebyRoomUrl" target="_blank" rel="noopener">{{ appointmentStore.wherebyRoomUrl }}</a>
+      </p>
     </div>
   </div>
 </template>

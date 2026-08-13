@@ -36,6 +36,12 @@ public class GlobalExceptionHandler {
         .body(Map.of("error", "Slot already reserved"));
   }
 
+  @ExceptionHandler(WherebyException.class)
+  public ResponseEntity<Map<String, String>> handleWhereby(WherebyException ex) {
+    return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+        .body(Map.of("error", "Video room creation failed"));
+  }
+
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException ex) {
     String message = ex.getBindingResult().getFieldErrors().stream()

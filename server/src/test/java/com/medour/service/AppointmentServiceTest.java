@@ -1,7 +1,9 @@
 package com.medour.service;
 
+import com.medour.dto.CreateAppointmentRequest;
 import com.medour.dto.ReserveSlotRequest;
 import com.medour.exception.SlotAlreadyReservedException;
+import com.medour.exception.WherebyException;
 import com.medour.model.SlotReservation;
 import com.medour.model.User;
 import com.medour.repository.AppointmentRepository;
@@ -17,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Optional;
 
@@ -24,6 +27,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 class AppointmentServiceTest {
@@ -36,6 +41,8 @@ class AppointmentServiceTest {
   private UserRepository userRepository;
   @Mock
   private SseService sseService;
+  @Mock
+  private WherebyService wherebyService;
 
   @InjectMocks
   private AppointmentService appointmentService;
@@ -66,5 +73,25 @@ class AppointmentServiceTest {
     var ex = assertThrows(ResponseStatusException.class,
         () -> appointmentService.cancelReservation(1L, 5L));
     assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+  }
+
+  @Test
+  void createAppointment_wherebyFails_throwsAndDoesNotSave() {
+    var patient = User.builder().id(1L).build();
+    var doctor = User.builder().id(10L).build();
+    var reservation = SlotReservation.builder()
+        .id(1L)
+        .reservedByPatient(patient)
+        .doctor(doctor)
+        .date(LocalDate.of(2026, 9, 1))
+        .startTime(LocalTime.of(10, 0))
+        .expiresAt(LocalDateTime.now().plusMinutes(5))
+        .build();
+    given(slotReservationRepository.findById(1L)).willReturn(Optional.of(reservation));
+    given(wherebyService.createRoom(any())).willThrow(new WherebyException("API error", null));
+
+    assertThrows(WherebyException.class,
+        () -> appointmentService.createAppointment(1L, new CreateAppointmentRequest(1L)));
+    then(appointmentRepository).should(never()).save(any());
   }
 }
