@@ -165,4 +165,20 @@ describe('appointmentStore', () => {
     expect(store.bookingStep).toBe('confirming')
     expect(store.errorMessage).toBe('Booking failed. Please try again.')
   })
+
+  it('fetchPatientAppointments sets patientAppointments from API', async () => {
+    const appointments = [
+      { id: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'John',
+        doctorSurname: 'Smith', doctorSpeciality: 'Cardiology', doctorRemoved: false,
+        status: 'OPEN', createdAt: '2026-08-01T12:00:00' }
+    ]
+    vi.mocked(api.get).mockResolvedValueOnce({ data: appointments })
+    const store = useAppointmentStore()
+
+    await store.fetchPatientAppointments()
+
+    expect(api.get).toHaveBeenCalledWith('/appointments/my')
+    expect(store.patientAppointments).toHaveLength(1)
+    expect(store.patientAppointments[0].doctorRemoved).toBe(false)
+  })
 })

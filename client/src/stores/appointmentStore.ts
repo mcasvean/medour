@@ -7,6 +7,18 @@ export interface SlotDisplay {
   state: 'AVAILABLE' | 'LOCKED' | 'UNAVAILABLE'
 }
 
+export interface PatientAppointment {
+  id: number
+  scheduledDate: string
+  startTime: string
+  doctorFirstName: string
+  doctorSurname: string
+  doctorSpeciality: string
+  doctorRemoved: boolean
+  status: string
+  createdAt: string
+}
+
 interface SlotEventPayload {
   doctorId: number
   date: string
@@ -25,6 +37,7 @@ export const useAppointmentStore = defineStore('appointment', {
     lockedStartTime: null as string | null,
     errorMessage: '' as string,
     wherebyRoomUrl: null as string | null,
+    patientAppointments: [] as PatientAppointment[],
   }),
 
   actions: {
@@ -112,6 +125,11 @@ export const useAppointmentStore = defineStore('appointment', {
       } catch {
         this.errorMessage = 'Booking failed. Please try again.'
       }
+    },
+
+    async fetchPatientAppointments() {
+      const response = await api.get<PatientAppointment[]>('/appointments/my')
+      this.patientAppointments = response.data
     },
   },
 })
