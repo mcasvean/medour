@@ -32,4 +32,3 @@ public class AuthController {
     return ResponseEntity.ok(userService.login(req));
   }
 }
-

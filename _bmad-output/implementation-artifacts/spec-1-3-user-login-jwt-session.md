@@ -118,6 +118,7 @@ All three login failure modes throw the same `InvalidCredentialsException` so th
 ## Spec Change Log
 
 **Review loop 1 patches applied:**
+
 - `authStore.ts` — `JSON.parse` wrapped in `loadStoredUser()` with try/catch + `{ mustChangePassword: false, ...parsed }` spread default; avoids app-crash on corrupt localStorage and undefined-field on stale data
 - `AuthResponse.java` — `Boolean` changed to primitive `boolean`; avoids nullable boxed type for a required flag
 - `AuthControllerTest.java` — added `$.mustChangePassword` assertion to `login_validCredentials_returns200WithToken`
