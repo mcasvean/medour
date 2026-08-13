@@ -81,3 +81,11 @@ Items collected during implementation reviews that are real but out of scope for
 - source_spec: `spec-1-3-user-login-jwt-session.md`
   summary: No accessDeniedHandler configured in SecurityConfig — a 403 (authenticated but unauthorized role) returns Spring's default HTML error page, inconsistent with the custom JSON 401 format.
   evidence: Blind hunter; role-based access control becomes active in Story 1.4, at which point an accessDeniedHandler returning JSON should be added.
+
+- source_spec: `spec-1-4-role-display-route-guards.md`
+  summary: App.vue has no component-level tests — logout redirect and isAdmin visibility are unverified by any automated test.
+  evidence: Verification gap; @vue/test-utils is not installed; adding it is deferred to when component testing becomes a broader pattern.
+
+- source_spec: `spec-1-4-role-display-route-guards.md`
+  summary: Server ADMIN route restriction has no integration test — the hasRole("ADMIN") rule is never exercised with filters enabled.
+  evidence: Verification gap; all controller tests use addFilters=false; a @SpringBootTest slice test is deferred until actual admin endpoints are added in Epic 4.

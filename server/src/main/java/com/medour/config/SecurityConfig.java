@@ -16,6 +16,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
@@ -38,8 +39,17 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(GET, "/api/v1/health").permitAll()
             .requestMatchers(POST, "/api/v1/auth/register", "/api/v1/auth/login").permitAll()
+            .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated())
-        .exceptionHandling(e -> e.authenticationEntryPoint((req, res, ex) -> res.sendError(SC_UNAUTHORIZED)))
+        .exceptionHandling(e -> e
+            .authenticationEntryPoint((req, res, ex) -> res.sendError(SC_UNAUTHORIZED))
+            .accessDeniedHandler((req, res, ex) -> {
+              res.setContentType("application/json");
+              res.setCharacterEncoding("UTF-8");
+              res.setStatus(SC_FORBIDDEN);
+              res.getWriter().write("{\"error\":\"Forbidden\"}");
+              res.getWriter().flush();
+            }))
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .cors(cors -> cors.configurationSource(corsConfigurationSource()));
     return http.build();
