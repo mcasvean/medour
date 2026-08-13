@@ -41,9 +41,9 @@ class AdminControllerTest {
     doNothing().when(userService).adminSetPassword(eq(2L), any());
 
     mockMvc.perform(post("/api/v1/admin/users/2/password")
-            .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(req)))
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(req)))
         .andExpect(status().isNoContent());
   }
 }

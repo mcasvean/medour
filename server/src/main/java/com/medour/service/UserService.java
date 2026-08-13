@@ -135,8 +135,7 @@ public class UserService {
         user.getCity(),
         user.getAddress(),
         user.getCounty(),
-        user.getSpeciality()
-    );
+        user.getSpeciality());
   }
 
   @Transactional

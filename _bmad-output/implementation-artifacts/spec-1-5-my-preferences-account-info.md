@@ -19,6 +19,7 @@ context: []
 ## Boundaries & Constraints
 
 **Always:**
+
 - The principal stored by `JwtAuthFilter` is the user ID string (`sub` claim); controllers extract it via `authentication.getName()`
 - `email` and `role` are display-only on the form — never updated via this endpoint
 - `county` and `speciality` are required for DOCTOR; must return 400 if absent or blank when role is DOCTOR; ignored for PATIENT/ADMIN
@@ -27,24 +28,26 @@ context: []
 - The `/account` route requires `{ requiresAuth: true }` (all authenticated roles may access it)
 
 **Ask First:**
+
 - (none)
 
 **Never:**
+
 - No email change in this story
 - No role change in this story (admin role-change is Story 4.2)
 - No admin-editing-another-user endpoint in this story (Story 4.2)
 
 ## I/O & Edge-Case Matrix
 
-| Scenario | Input / State | Expected Output / Behavior | Error Handling |
-|---|---|---|---|
-| GET profile | Valid JWT; user exists | 200 + `UserProfileResponse` with all non-sensitive fields | N/A |
-| PUT profile — patient | Valid JWT + PATIENT; valid base fields | 200 + updated `UserProfileResponse`; county/speciality ignored | N/A |
-| PUT profile — doctor | Valid JWT + DOCTOR; base fields + county + speciality | 200 + updated response | N/A |
-| PUT profile — doctor missing county | Valid JWT + DOCTOR; county blank/absent | 400 `{ "error": "..." }` | Service throws, GlobalExceptionHandler maps |
-| PUT profile — blank firstName | Any role; `firstName: ""` | 400 via `@NotBlank` Bean Validation | GlobalExceptionHandler `MethodArgumentNotValidException` |
-| Page load | User navigates to /account | Form pre-filled with current profile from GET /users/me | N/A |
-| Save success | User submits valid form | 200; form stays; success message shown; authStore.user.firstName updated | N/A |
+| Scenario                            | Input / State                                         | Expected Output / Behavior                                               | Error Handling                                           |
+| ----------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------- |
+| GET profile                         | Valid JWT; user exists                                | 200 + `UserProfileResponse` with all non-sensitive fields                | N/A                                                      |
+| PUT profile — patient               | Valid JWT + PATIENT; valid base fields                | 200 + updated `UserProfileResponse`; county/speciality ignored           | N/A                                                      |
+| PUT profile — doctor                | Valid JWT + DOCTOR; base fields + county + speciality | 200 + updated response                                                   | N/A                                                      |
+| PUT profile — doctor missing county | Valid JWT + DOCTOR; county blank/absent               | 400 `{ "error": "..." }`                                                 | Service throws, GlobalExceptionHandler maps              |
+| PUT profile — blank firstName       | Any role; `firstName: ""`                             | 400 via `@NotBlank` Bean Validation                                      | GlobalExceptionHandler `MethodArgumentNotValidException` |
+| Page load                           | User navigates to /account                            | Form pre-filled with current profile from GET /users/me                  | N/A                                                      |
+| Save success                        | User submits valid form                               | 200; form stays; success message shown; authStore.user.firstName updated | N/A                                                      |
 
 </frozen-after-approval>
 
@@ -85,6 +88,7 @@ context: []
 ## Verification
 
 **Commands:**
+
 - `cd server && ./mvnw test` -- expected: 16 tests pass (13 existing + 3 new UserControllerTest)
 - `cd client && npm run test` -- expected: 8 tests pass (no new client tests in this story)
 - `cd client && npm run build` -- expected: zero TypeScript errors
@@ -92,6 +96,7 @@ context: []
 ## Spec Change Log
 
 **Review loop 1 patches applied:**
+
 - `UserRepository` — added `findByIdAndDeletedAtIsNull(Long id)`; `getProfile` and `updateProfile` use it so soft-deleted users cannot read or update their own profile
 - `UserController` — extracted `parseUserId(Authentication)` helper that wraps `Long.parseLong` in a try/catch returning 401 on `NumberFormatException`
 - `router/__tests__/index.test.ts` — added 5th guard test: unauthenticated push to `/account` → redirected to `/login`

@@ -33,8 +33,12 @@ class UserControllerTest {
   @Autowired
   private MockMvc mockMvc;
 
-  /** Mocking JwtUtil satisfies JwtAuthFilter's dependency while keeping the real filter,
-   *  which passes unauthenticated requests through the chain so the security wrappers run. */
+  /**
+   * Mocking JwtUtil satisfies JwtAuthFilter's dependency while keeping the real
+   * filter,
+   * which passes unauthenticated requests through the chain so the security
+   * wrappers run.
+   */
   @MockBean
   private JwtUtil jwtUtil;
 
@@ -65,9 +69,9 @@ class UserControllerTest {
     given(userService.updateProfile(eq(1L), any())).willReturn(profile);
 
     mockMvc.perform(put("/api/v1/users/me")
-            .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(req)))
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(req)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.firstName").value("NewPat"));
   }
@@ -78,9 +82,9 @@ class UserControllerTest {
     var req = new UpdateProfileRequest("", "Ient", null, null, null, null, null, null);
 
     mockMvc.perform(put("/api/v1/users/me")
-            .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(req)))
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(req)))
         .andExpect(status().isBadRequest());
   }
 
@@ -91,9 +95,9 @@ class UserControllerTest {
     doNothing().when(userService).changePassword(eq(1L), any());
 
     mockMvc.perform(post("/api/v1/users/me/password")
-            .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(req)))
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(req)))
         .andExpect(status().isNoContent());
   }
 
@@ -104,9 +108,9 @@ class UserControllerTest {
     doThrow(new WrongPasswordException()).when(userService).changePassword(eq(1L), any());
 
     mockMvc.perform(post("/api/v1/users/me/password")
-            .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(req)))
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(req)))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.error").value("Wrong password"));
   }
@@ -117,9 +121,9 @@ class UserControllerTest {
     var req = new ChangePasswordRequest("oldPass", "");
 
     mockMvc.perform(post("/api/v1/users/me/password")
-            .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(req)))
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(req)))
         .andExpect(status().isBadRequest());
   }
 }

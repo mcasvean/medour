@@ -11,5 +11,5 @@ public record UserProfileResponse(
     String city,
     String address,
     String county,
-    String speciality
-) {}
+    String speciality) {
+}

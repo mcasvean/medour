@@ -19,6 +19,7 @@ context: []
 ## Boundaries & Constraints
 
 **Always:**
+
 - Self-change requires the current password to be verified; a wrong current password returns 403 `{ "error": "Wrong password" }` — same endpoint, different error from "Invalid credentials"
 - Admin set-password never requires the current password; it always sets `mustChangePassword=true` on the target user
 - Admin cannot view the new password in any response — 204 No Content for both endpoints
@@ -29,9 +30,11 @@ context: []
 - `authStore.updateUser` type is extended to also accept `mustChangePassword` as an optional partial field
 
 **Ask First:**
+
 - (none)
 
 **Never:**
+
 - No current-password verification for admin set-password
 - No password validation rules beyond @NotBlank in this story (Story 1.6 spec item — deliberately deferred from Story 1.2)
 - No admin viewing another user's current password — response is always 204, no body
@@ -39,15 +42,15 @@ context: []
 
 ## I/O & Edge-Case Matrix
 
-| Scenario | Input / State | Expected Output / Behavior | Error Handling |
-|---|---|---|---|
-| Valid self-change | `POST /me/password`; correct `currentPassword`; non-blank `newPassword` | 204; user's `passwordHash` updated; `mustChangePassword=false` | N/A |
-| Wrong current password | `POST /me/password`; wrong `currentPassword` | 403 `{ "error": "Wrong password" }` | `WrongPasswordException` → GlobalExceptionHandler |
-| Blank new password | `POST /me/password`; `newPassword: ""` | 400 via `@NotBlank` Bean Validation | N/A |
-| Admin sets temp password | `POST /admin/users/{id}/password`; valid `newPassword` | 204; target user's hash updated; `mustChangePassword=true` | N/A |
-| mustChangePassword=true navigation | Authenticated; `mustChangePassword=true`; navigate to `/` | Guard redirects to `/change-password` | N/A |
-| Confirm mismatch | Client: `newPassword !== confirmPassword` | Form shows error; no API call made | Client-side only |
-| Forced rotation complete | User successfully changes password on `/change-password` | `mustChangePassword=false` in store; navigates to `/` | N/A |
+| Scenario                           | Input / State                                                           | Expected Output / Behavior                                     | Error Handling                                    |
+| ---------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------- |
+| Valid self-change                  | `POST /me/password`; correct `currentPassword`; non-blank `newPassword` | 204; user's `passwordHash` updated; `mustChangePassword=false` | N/A                                               |
+| Wrong current password             | `POST /me/password`; wrong `currentPassword`                            | 403 `{ "error": "Wrong password" }`                            | `WrongPasswordException` → GlobalExceptionHandler |
+| Blank new password                 | `POST /me/password`; `newPassword: ""`                                  | 400 via `@NotBlank` Bean Validation                            | N/A                                               |
+| Admin sets temp password           | `POST /admin/users/{id}/password`; valid `newPassword`                  | 204; target user's hash updated; `mustChangePassword=true`     | N/A                                               |
+| mustChangePassword=true navigation | Authenticated; `mustChangePassword=true`; navigate to `/`               | Guard redirects to `/change-password`                          | N/A                                               |
+| Confirm mismatch                   | Client: `newPassword !== confirmPassword`                               | Form shows error; no API call made                             | Client-side only                                  |
+| Forced rotation complete           | User successfully changes password on `/change-password`                | `mustChangePassword=false` in store; navigates to `/`          | N/A                                               |
 
 </frozen-after-approval>
 
@@ -97,6 +100,7 @@ context: []
 ## Verification
 
 **Commands:**
+
 - `cd server && ./mvnw test` -- expected: 22 tests pass (17 existing + 3 UserController password tests + 1 AdminController + 1 UserService wrong-password + 1 UserService adminSetPassword)
 - `cd client && npm run test` -- expected: 12 tests pass (no new client unit tests added here)
 - `cd client && npm run build` -- expected: zero TypeScript errors
@@ -104,6 +108,7 @@ context: []
 ## Spec Change Log
 
 **Review loop 1 patches applied:**
+
 - `UserService.java` — fixed stray formatting artifact in `seedAdmin` method (signature and body were on same line)
 - `router/__tests__/index.test.ts` — mock type extended with `mustChangePassword?: boolean`; 2 new guard cases: mustChangePassword=true navigates to `/` → redirected to `/change-password`; mustChangePassword=true navigating to `/change-password` → stays
 - `UserServiceTest.java` — added `changePassword_success_clearsMustChangePassword` to verify `mustChangePassword` becomes `false` after a successful password change (service-layer test)
