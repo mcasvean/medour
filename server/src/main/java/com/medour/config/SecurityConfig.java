@@ -42,6 +42,7 @@ public class SecurityConfig {
             .requestMatchers(POST, "/api/v1/auth/register", "/api/v1/auth/login").permitAll()
             .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
             .requestMatchers(GET, "/api/v1/appointments/my").hasRole("PATIENT")
+            .requestMatchers(GET, "/api/v1/appointments/doctor/my").hasRole("DOCTOR")
             .requestMatchers(POST, "/api/v1/slots/reserve", "/api/v1/appointments").hasRole("PATIENT")
             .anyRequest().authenticated())
         .exceptionHandling(e -> e

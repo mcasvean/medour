@@ -20,6 +20,18 @@ export interface PatientAppointment {
   wherebyRoomUrl: string | null
 }
 
+export interface DoctorAppointment {
+  id: number
+  scheduledDate: string
+  startTime: string
+  patientFirstName: string
+  patientSurname: string
+  patientRemoved: boolean
+  status: string
+  createdAt: string
+  wherebyRoomUrl: string | null
+}
+
 interface SlotEventPayload {
   doctorId: number
   date: string
@@ -40,6 +52,7 @@ export const useAppointmentStore = defineStore('appointment', {
     errorMessage: '' as string,
     wherebyRoomUrl: null as string | null,
     patientAppointments: [] as PatientAppointment[],
+    doctorAppointments: [] as DoctorAppointment[],
   }),
 
   actions: {
@@ -154,6 +167,11 @@ export const useAppointmentStore = defineStore('appointment', {
     async fetchPatientAppointments() {
       const response = await api.get<PatientAppointment[]>('/appointments/my')
       this.patientAppointments = response.data
+    },
+
+    async fetchDoctorAppointments() {
+      const response = await api.get<DoctorAppointment[]>('/appointments/doctor/my')
+      this.doctorAppointments = response.data
     },
   },
 })

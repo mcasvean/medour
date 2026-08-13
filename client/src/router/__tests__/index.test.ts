@@ -100,4 +100,18 @@ describe('Router navigation guard', () => {
     await testRouter.push('/appointments')
     expect(testRouter.currentRoute.value.path).toBe('/')
   })
+
+  it('PATIENT navigating to /appointments/doctor is redirected to /', async () => {
+    mockAuth.isAuthenticated = true
+    mockAuth.user = { role: 'PATIENT' }
+    await testRouter.push('/appointments/doctor')
+    expect(testRouter.currentRoute.value.path).toBe('/')
+  })
+
+  it('DOCTOR navigating to /appointments/doctor can access the page', async () => {
+    mockAuth.isAuthenticated = true
+    mockAuth.user = { role: 'DOCTOR' }
+    await testRouter.push('/appointments/doctor')
+    expect(testRouter.currentRoute.value.path).toBe('/appointments/doctor')
+  })
 })
