@@ -19,6 +19,7 @@ context: []
 ## Boundaries & Constraints
 
 **Always:**
+
 - Join button is only ever rendered for appointments with `status === 'OPEN'`
 - The join window activates at `scheduledStart − 10 minutes` and the check is purely client-side; the server does not validate timing
 - An active Join button opens `wherebyRoomUrl` in a new browser tab (`window.open(url, '_blank', 'noopener')`) — no navigation within the SPA
@@ -27,22 +28,24 @@ context: []
 - The join window upper bound: `now <= scheduledStart + 30 minutes` — this covers the full 30-minute consultation slot; after that window the auto-cancel job fires anyway
 
 **Ask First:**
+
 - (none)
 
 **Never:**
+
 - No server-side endpoint for join authorisation in this story
 - The Join button is NOT added to the doctor view in this story (Story 3.5)
 - Do not navigate within the SPA on join — always open a new tab
 
 ## I/O & Edge-Case Matrix
 
-| Scenario | Input / State | Expected Output / Behavior | Error Handling |
-|---|---|---|---|
-| OPEN appointment, inside join window | `now ∈ [start − 10min, start + 30min]` | Join button rendered and active | N/A |
-| OPEN appointment, outside join window | `now < start − 10min` | Join button rendered but disabled | N/A |
-| Non-OPEN appointment | status = COMPLETED / CANCELED / AUTO_CANCELED | Join button not rendered | N/A |
-| Null `wherebyRoomUrl` | dev-mode appointment | Join button not rendered | N/A |
-| Click active Join button | valid URL | Opens in new tab, no SPA navigation | N/A |
+| Scenario                              | Input / State                                 | Expected Output / Behavior          | Error Handling |
+| ------------------------------------- | --------------------------------------------- | ----------------------------------- | -------------- |
+| OPEN appointment, inside join window  | `now ∈ [start − 10min, start + 30min]`        | Join button rendered and active     | N/A            |
+| OPEN appointment, outside join window | `now < start − 10min`                         | Join button rendered but disabled   | N/A            |
+| Non-OPEN appointment                  | status = COMPLETED / CANCELED / AUTO_CANCELED | Join button not rendered            | N/A            |
+| Null `wherebyRoomUrl`                 | dev-mode appointment                          | Join button not rendered            | N/A            |
+| Click active Join button              | valid URL                                     | Opens in new tab, no SPA navigation | N/A            |
 
 </frozen-after-approval>
 
@@ -75,6 +78,7 @@ context: []
 ## Verification
 
 **Commands:**
+
 - `cd server && ./mvnw test` -- expected: all 50 tests pass (PatientAppointmentServiceTest updated)
 - `cd client && npm run test` -- expected: 33 existing + 2 new `isJoinActive` unit tests pass
 - `cd client && npm run build` -- expected: zero TypeScript errors
@@ -82,5 +86,6 @@ context: []
 ## Spec Change Log
 
 **Review loop 1 patches applied:**
+
 - `PatientAppointmentsView.vue` — `window.open` now uses `'noopener,noreferrer'` to prevent referrer leakage to the Whereby room URL
 - `appointmentStore.test.ts` — added third `isJoinActive` test case asserting COMPLETED, CANCELED, and AUTO_CANCELED all return `false` even when inside the join window
