@@ -49,7 +49,8 @@ public class WherebyService {
       HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
       ResponseEntity<Map> response = restTemplate.postForEntity(apiUrl, request, Map.class);
       String roomUrl = response.getBody() != null ? (String) response.getBody().get("roomUrl") : null;
-      if (roomUrl == null) throw new WherebyException("Missing roomUrl in Whereby response", null);
+      if (roomUrl == null)
+        throw new WherebyException("Missing roomUrl in Whereby response", null);
       return roomUrl;
     } catch (Exception e) {
       throw new WherebyException("Whereby API error", e);

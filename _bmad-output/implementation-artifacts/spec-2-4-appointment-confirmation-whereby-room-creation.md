@@ -19,6 +19,7 @@ context: []
 ## Boundaries & Constraints
 
 **Always:**
+
 - The Whereby call happens **inside** the `@Transactional` method, before `appointmentRepository.save()`. If it throws, `@Transactional` rolls back — no orphaned appointment rows
 - `whereby.api-url` and `whereby.api-key` are externalised to `application.yml` via `@Value("${whereby.api-url}")` / `@Value("${whereby.api-key:}")`
 - If `whereby.api-key` is blank (local dev with no key), `WherebyService.createRoom()` returns a generated placeholder URL (`https://whereby.com/dev-room-<UUID>`) instead of calling the API; this allows bookings to succeed in dev without a Whereby account
@@ -28,19 +29,21 @@ context: []
 - The `roomMode` sent to Whereby is `"group_hd"` per the architecture; `endDate` is the scheduled date + 1 day (ISO-8601 UTC)
 
 **Ask First:**
+
 - (none)
 
 **Never:**
+
 - Do not store the Whereby API key in source control; always use `${WHEREBY_API_KEY:}` with empty default
 - Whereby failure must not silently produce an appointment without a room URL — either a valid URL or a rollback
 
 ## I/O & Edge-Case Matrix
 
-| Scenario | Input / State | Expected Output / Behavior | Error Handling |
-|---|---|---|---|
-| Valid Whereby key, API succeeds | `POST /appointments`; Whereby returns `roomUrl` | 201 + `AppointmentCreatedResponse` with `wherebyRoomUrl` | N/A |
-| Whereby API fails (non-2xx or network error) | `POST /appointments`; Whereby throws | 502 `{ "error": "Video room creation failed" }`; no appointment saved | Rollback; WherebyException |
-| No Whereby key (local dev) | `whereby.api-key` is blank | 201 + placeholder URL `https://whereby.com/dev-room-<UUID>` | N/A |
+| Scenario                                     | Input / State                                   | Expected Output / Behavior                                            | Error Handling             |
+| -------------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------- | -------------------------- |
+| Valid Whereby key, API succeeds              | `POST /appointments`; Whereby returns `roomUrl` | 201 + `AppointmentCreatedResponse` with `wherebyRoomUrl`              | N/A                        |
+| Whereby API fails (non-2xx or network error) | `POST /appointments`; Whereby throws            | 502 `{ "error": "Video room creation failed" }`; no appointment saved | Rollback; WherebyException |
+| No Whereby key (local dev)                   | `whereby.api-key` is blank                      | 201 + placeholder URL `https://whereby.com/dev-room-<UUID>`           | N/A                        |
 
 </frozen-after-approval>
 
@@ -77,12 +80,14 @@ context: []
 ## Verification
 
 **Commands:**
+
 - `cd server && ./mvnw test` -- expected: 44 tests pass (40 existing + 3 WherebyServiceTest + 1 AppointmentServiceTest)
 - `cd client && npm run build` -- expected: zero TypeScript errors (AppointmentCreatedResponse gains wherebyRoomUrl)
 
 ## Spec Change Log
 
 **Review loop 1 patches applied:**
+
 - `WherebyService.createRoom()` — added null check on response body / `roomUrl` field; throws `WherebyException("Missing roomUrl in Whereby response")` if absent, preventing null from being persisted
 - `AppointmentControllerTest.confirm_validReservation_returns201` — added `$.wherebyRoomUrl` JSON path assertion
 - `AppointmentControllerTest` — added `confirm_wherebyFails_returns502` test verifying 502 + `{ "error": "Video room creation failed" }` from `GlobalExceptionHandler`
