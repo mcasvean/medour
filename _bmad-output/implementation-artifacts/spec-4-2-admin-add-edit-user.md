@@ -19,6 +19,7 @@ context: []
 ## Boundaries & Constraints
 
 **Always:**
+
 - Admin create sets any role (PATIENT, DOCTOR, ADMIN); no self-registration restriction
 - Email is unique — duplicate email on create returns 409 `{ "error": "Email already in use" }`
 - `county` and `speciality` are required when role is DOCTOR; 400 returned if absent for DOCTOR
@@ -29,22 +30,24 @@ context: []
 - Both endpoints are auto-protected by the existing SecurityConfig `/api/v1/admin/**` rule
 
 **Ask First:**
+
 - (none)
 
 **Never:**
+
 - No hard-delete in this story (Story 4.3)
 - Never return `passwordHash` in any response
 - Email change via PUT is not supported (Story 4.2 scope excludes it)
 
 ## I/O & Edge-Case Matrix
 
-| Scenario | Input / State | Expected Output / Behavior | Error Handling |
-|---|---|---|---|
-| Create valid patient | POST with role=PATIENT + all base fields | 201 + `AdminUserDto`; user created | N/A |
-| Create doctor missing county | POST with role=DOCTOR, no county | 400 | Service validation |
-| Duplicate email | POST with existing email | 409 `{ "error": "Email already in use" }` | `EmailAlreadyUsedException` |
-| Update role to ADMIN | PUT {id} with role=ADMIN | 200 + updated `AdminUserDto` | N/A |
-| PUT non-existent user | PUT unknown id | 404 | N/A |
+| Scenario                     | Input / State                            | Expected Output / Behavior                | Error Handling              |
+| ---------------------------- | ---------------------------------------- | ----------------------------------------- | --------------------------- |
+| Create valid patient         | POST with role=PATIENT + all base fields | 201 + `AdminUserDto`; user created        | N/A                         |
+| Create doctor missing county | POST with role=DOCTOR, no county         | 400                                       | Service validation          |
+| Duplicate email              | POST with existing email                 | 409 `{ "error": "Email already in use" }` | `EmailAlreadyUsedException` |
+| Update role to ADMIN         | PUT {id} with role=ADMIN                 | 200 + updated `AdminUserDto`              | N/A                         |
+| PUT non-existent user        | PUT unknown id                           | 404                                       | N/A                         |
 
 </frozen-after-approval>
 
@@ -85,12 +88,14 @@ context: []
 ## Verification
 
 **Commands:**
+
 - `cd server && ./mvnw test` -- expected: 71 tests pass (66 existing + 3 AdminUserServiceTest + 2 AdminControllerTest)
 - `cd client && npm run build` -- expected: zero TypeScript errors
 
 ## Spec Change Log
 
 **Review loop 1 patches applied:**
+
 - `AdminUsersView.vue` — `formSaveError` ref added; passed as `:save-error` prop to `AdminUserForm`; `:key` on form to force remount when `editingUser` changes; `handleSave` writes to `formSaveError` not the page-level `errorMessage`
 - `AdminUserForm.vue` — accepts `saveError?: string` prop; displays `saveError || errorMessage` in the form error div
 - `AdminUserServiceTest` — added `createUser_duplicateEmail_throwsEmailAlreadyUsedException` and `updateUser_nonExistentId_throws404` tests
