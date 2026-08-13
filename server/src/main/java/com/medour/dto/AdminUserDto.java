@@ -13,5 +13,5 @@ public record AdminUserDto(
     String gender,
     String address,
     boolean mustChangePassword,
-    boolean isDeleted
-) {}
+    boolean isDeleted) {
+}

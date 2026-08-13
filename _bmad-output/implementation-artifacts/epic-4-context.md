@@ -27,7 +27,8 @@ Give the admin full visibility and control over all users and appointments. The 
 
 ## Technical Decisions
 
-**Endpoints (all under `/api/v1/admin/**`, auto-restricted to ADMIN by SecurityConfig):**
+**Endpoints (all under `/api/v1/admin/**`, auto-restricted to ADMIN by SecurityConfig):\*\*
+
 - `GET /api/v1/admin/users` — all users (no filter for deleted_at)
 - `POST /api/v1/admin/users` — create a new user with any role
 - `PUT /api/v1/admin/users/{id}` — update a user's profile + role

@@ -32,8 +32,7 @@ public class AdminUserService {
             u.getGender(),
             u.getAddress(),
             u.getMustChangePassword(),
-            u.getDeletedAt() != null
-        ))
+            u.getDeletedAt() != null))
         .toList();
   }
 }
