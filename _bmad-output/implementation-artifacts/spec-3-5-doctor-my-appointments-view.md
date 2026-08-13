@@ -19,6 +19,7 @@ context: []
 ## Boundaries & Constraints
 
 **Always:**
+
 - Only DOCTOR role accesses `/appointments/doctor` and `GET /api/v1/appointments/doctor/my`; Spring Security `hasRole("DOCTOR")` guards the endpoint
 - Upcoming tab: OPEN appointments ordered by scheduledDate ascending (soonest first)
 - Past tab: COMPLETED, CANCELED, AUTO_CANCELED appointments ordered by scheduledDate descending (most recent first)
@@ -28,19 +29,21 @@ context: []
 - Burger menu: add "My Appointments" link for DOCTOR role (beside Account Info, Change Password in the nav)
 
 **Ask First:**
+
 - (none)
 
 **Never:**
+
 - No status-change actions in this story (Story 3.6)
 - PATIENT and ADMIN cannot access the doctor appointment view
 
 ## I/O & Edge-Case Matrix
 
-| Scenario | Input / State | Expected Output / Behavior | Error Handling |
-|---|---|---|---|
-| Doctor with appointments | `GET /appointments/doctor/my` | 200 + list | N/A |
-| Patient soft-deleted | patient.deletedAt != null | Card shows name + "Removed" badge | N/A |
-| Non-doctor accesses endpoint | PATIENT or ADMIN JWT | 403 | Spring Security |
+| Scenario                     | Input / State                 | Expected Output / Behavior        | Error Handling  |
+| ---------------------------- | ----------------------------- | --------------------------------- | --------------- |
+| Doctor with appointments     | `GET /appointments/doctor/my` | 200 + list                        | N/A             |
+| Patient soft-deleted         | patient.deletedAt != null     | Card shows name + "Removed" badge | N/A             |
+| Non-doctor accesses endpoint | PATIENT or ADMIN JWT          | 403                               | Spring Security |
 
 </frozen-after-approval>
 
@@ -84,6 +87,7 @@ context: []
 ## Verification
 
 **Commands:**
+
 - `cd server && ./mvnw test` -- expected: 58 tests pass (55 existing + 2 DoctorAppointmentServiceTest + 1 DoctorAppointmentControllerTest)
 - `cd client && npm run test` -- expected: 36 existing + 2 new router guard tests for /appointments/doctor = 38
 - `cd client && npm run build` -- expected: zero TypeScript errors
@@ -91,6 +95,7 @@ context: []
 ## Spec Change Log
 
 **Review loop 1 patches applied:**
+
 - `AppointmentRepository` — `findByDoctorId` renamed to `findByDoctorIdOrderByScheduledDateAsc` so results have deterministic order
 - `DoctorAppointmentService` — uses ordered query method
 - `DoctorAppointmentServiceTest` — both tests now use `findByDoctorIdOrderByScheduledDateAsc`; deleted-patient test adds `createdAt` and `wherebyRoomUrl` to fixture
