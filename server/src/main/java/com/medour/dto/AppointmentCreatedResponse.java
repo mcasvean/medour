@@ -8,6 +8,5 @@ public record AppointmentCreatedResponse(
     Long doctorId,
     LocalDate scheduledDate,
     LocalTime startTime,
-    String status
-) {
+    String status) {
 }

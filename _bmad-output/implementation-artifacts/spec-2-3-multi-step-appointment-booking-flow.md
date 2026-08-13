@@ -19,6 +19,7 @@ context: []
 ## Boundaries & Constraints
 
 **Always:**
+
 - The DB unique constraint on `slot_reservations(doctor_id, date, start_time)` is the **only** guarantee against double-booking. A concurrent INSERT that violates it produces a `DataIntegrityViolationException` → 409 `{ "error": "Slot already reserved" }`
 - Reservation `expiresAt = LocalDateTime.now().plusMinutes(10)` — gives the patient 10 minutes to confirm
 - Both `cancelReservation` and `createAppointment` must verify the reservation belongs to the requesting patient (`reservedByPatientId = currentUserId`); if not → 403
@@ -30,23 +31,25 @@ context: []
 - Only PATIENT role may call reserve/create-appointment endpoints; Spring Security `hasRole("PATIENT")` enforces this on `/api/v1/slots/**` and `POST /api/v1/appointments`
 
 **Ask First:**
+
 - (none)
 
 **Never:**
+
 - No Whereby call in this story (Story 2.4)
 - Doctors and admins cannot create appointments via this flow
 - A patient cannot reserve a slot that is LOCKED or UNAVAILABLE — the DB constraint handles it, but the client also guards it (only Available slots emit `select`)
 
 ## I/O & Edge-Case Matrix
 
-| Scenario | Input / State | Expected Output / Behavior | Error Handling |
-|---|---|---|---|
-| Patient locks available slot | `POST /slots/reserve` with valid doctorId/date/startTime | 201 + `{ reservationId }`, SSE LOCKED broadcast | N/A |
-| Concurrent lock attempt | Two patients POST at same slot simultaneously | One gets 201; the other gets 409 | DB unique constraint → 409 |
-| Patient cancels mid-booking | `DELETE /slots/reserve/{id}` (own reservation) | 204; reservation deleted; SSE AVAILABLE | N/A |
-| Patient confirms booking | `POST /appointments` with `reservationId` | 201 + `AppointmentCreatedResponse`; reservation deleted; appointment OPEN; SSE UNAVAILABLE | N/A |
-| Wrong-patient cancel/confirm | Other patient's reservationId | 403 | Ownership check in service |
-| Navigate away mid-booking | `BookingSearchView` unmounts while confirming | `appointmentStore.cancelBooking()` called automatically; slot released | N/A |
+| Scenario                     | Input / State                                            | Expected Output / Behavior                                                                 | Error Handling             |
+| ---------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------ | -------------------------- |
+| Patient locks available slot | `POST /slots/reserve` with valid doctorId/date/startTime | 201 + `{ reservationId }`, SSE LOCKED broadcast                                            | N/A                        |
+| Concurrent lock attempt      | Two patients POST at same slot simultaneously            | One gets 201; the other gets 409                                                           | DB unique constraint → 409 |
+| Patient cancels mid-booking  | `DELETE /slots/reserve/{id}` (own reservation)           | 204; reservation deleted; SSE AVAILABLE                                                    | N/A                        |
+| Patient confirms booking     | `POST /appointments` with `reservationId`                | 201 + `AppointmentCreatedResponse`; reservation deleted; appointment OPEN; SSE UNAVAILABLE | N/A                        |
+| Wrong-patient cancel/confirm | Other patient's reservationId                            | 403                                                                                        | Ownership check in service |
+| Navigate away mid-booking    | `BookingSearchView` unmounts while confirming            | `appointmentStore.cancelBooking()` called automatically; slot released                     | N/A                        |
 
 </frozen-after-approval>
 
@@ -102,6 +105,7 @@ context: []
 ## Verification
 
 **Commands:**
+
 - `cd server && ./mvnw test` -- expected: 40 tests pass (35 existing + 3 AppointmentControllerTest + 2 AppointmentServiceTest)
 - `cd client && npm run test` -- expected: all 21 tests pass (no new client tests; SlotGrid emit tested via store tests)
 - `cd client && npm run build` -- expected: zero TypeScript errors
@@ -109,6 +113,7 @@ context: []
 ## Spec Change Log
 
 **Review loop 1 patches applied:**
+
 - `AppointmentService.createAppointment()` — added expiry check: if `reservation.getExpiresAt().isBefore(now)`, delete the stale row and throw 409 `Reservation expired`
 - `appointmentStore.cancelBooking()` — added `catch` block so API errors are swallowed (cleanup in `finally` always runs without propagating rejection to callers)
 - `appointmentStore.confirmBooking()` — added `catch` block setting `errorMessage = 'Booking failed...'`; `bookingStep` stays `'confirming'` on failure so the user can retry or cancel
