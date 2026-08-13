@@ -43,19 +43,40 @@
         <span>{{ doctor.speciality }}</span>
         <span>{{ doctor.county }}, {{ doctor.city }}</span>
         <span>Rating: {{ doctor.averageRating !== null ? doctor.averageRating : 'No rating' }}</span>
+        <button @click="selectDoctor(doctor.id)">Select</button>
       </li>
     </ul>
+
+    <SlotGrid
+      v-if="appointmentStore.selectedDoctorId !== null"
+      :slots="appointmentStore.slots"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import { useDoctorStore } from '../stores/doctorStore'
+import { useAppointmentStore } from '../stores/appointmentStore'
+import SlotGrid from '../components/SlotGrid.vue'
 
 const doctorStore = useDoctorStore()
+const appointmentStore = useAppointmentStore()
 const today = new Date().toISOString().split('T')[0]
+
+function selectDoctor(doctorId: number) {
+  const dateToUse = doctorStore.filters.date || today
+  appointmentStore.selectedDoctorId = doctorId
+  appointmentStore.selectedDate = dateToUse
+  appointmentStore.fetchSlots(doctorId, dateToUse)
+  appointmentStore.connectSse(doctorId, dateToUse)
+}
 
 onMounted(() => {
   doctorStore.searchDoctors()
+})
+
+onUnmounted(() => {
+  appointmentStore.disconnectSse()
 })
 </script>

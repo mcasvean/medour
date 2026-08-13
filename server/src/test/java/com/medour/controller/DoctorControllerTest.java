@@ -1,8 +1,11 @@
 package com.medour.controller;
 
 import com.medour.dto.DoctorSearchResult;
+import com.medour.dto.SlotDto;
+import com.medour.model.SlotState;
 import com.medour.security.JwtUtil;
 import com.medour.service.DoctorService;
+import com.medour.service.SlotService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -31,6 +34,9 @@ class DoctorControllerTest {
   private DoctorService doctorService;
 
   @MockBean
+  private SlotService slotService;
+
+  @MockBean
   private JwtUtil jwtUtil;
 
   @Test
@@ -55,5 +61,19 @@ class DoctorControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(1))
         .andExpect(jsonPath("$[0].speciality").value("Cardiology"));
+  }
+
+  @Test
+  void getSlots_validIdAndDate_returns200WithSlotList() throws Exception {
+    var slots = List.of(
+        new SlotDto("08:00", "08:30", SlotState.AVAILABLE),
+        new SlotDto("08:30", "09:00", SlotState.LOCKED));
+    given(slotService.getSlotsForDoctor(eq(1L), any())).willReturn(slots);
+
+    mockMvc.perform(get("/api/v1/doctors/1/slots?date=2026-09-01"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(2))
+        .andExpect(jsonPath("$[0].state").value("AVAILABLE"))
+        .andExpect(jsonPath("$[1].state").value("LOCKED"));
   }
 }
