@@ -19,6 +19,7 @@ context: []
 ## Boundaries & Constraints
 
 **Always:**
+
 - Only PATIENT role accesses `/appointments` and `GET /api/v1/appointments/my`; Spring Security `hasRole("PATIENT")` guards the endpoint
 - All appointments (past and future) are returned — no filtering in this story
 - Appointment card fields: scheduledDate, startTime, doctor firstName + surname, doctor speciality, status badge (colour-coded), createdAt (small corner label)
@@ -28,9 +29,11 @@ context: []
 - The `/appointments` route requires `{ requiresAuth: true, requiresPatient: true }` — the router guard already enforces this via the existing `requiresPatient` meta flag
 
 **Ask First:**
+
 - (none)
 
 **Never:**
+
 - No pagination in this story
 - No real-time updates in this story (Story 3.2)
 - No Join button in this story (Story 3.3)
@@ -38,12 +41,12 @@ context: []
 
 ## I/O & Edge-Case Matrix
 
-| Scenario | Input / State | Expected Output / Behavior | Error Handling |
-|---|---|---|---|
-| Patient with appointments | `GET /appointments/my` | 200 + list of `PatientAppointmentDto`, newest first | N/A |
-| Patient with no appointments | `GET /appointments/my` | 200 + `[]` | N/A |
-| Doctor with soft-deleted | Doctor's `deletedAt != null` | Card shows doctor name + "Removed" badge | N/A |
-| Non-patient accesses endpoint | DOCTOR or ADMIN JWT | 403 | Spring Security |
+| Scenario                      | Input / State                | Expected Output / Behavior                          | Error Handling  |
+| ----------------------------- | ---------------------------- | --------------------------------------------------- | --------------- |
+| Patient with appointments     | `GET /appointments/my`       | 200 + list of `PatientAppointmentDto`, newest first | N/A             |
+| Patient with no appointments  | `GET /appointments/my`       | 200 + `[]`                                          | N/A             |
+| Doctor with soft-deleted      | Doctor's `deletedAt != null` | Card shows doctor name + "Removed" badge            | N/A             |
+| Non-patient accesses endpoint | DOCTOR or ADMIN JWT          | 403                                                 | Spring Security |
 
 </frozen-after-approval>
 
@@ -84,6 +87,7 @@ context: []
 ## Verification
 
 **Commands:**
+
 - `cd server && ./mvnw test` -- expected: 47 tests pass (45 existing + 2 PatientAppointmentControllerTest)
 - `cd client && npm run test` -- expected: all 26 tests pass; 1 new router guard test for /appointments
 - `cd client && npm run build` -- expected: zero TypeScript errors
@@ -91,6 +95,7 @@ context: []
 ## Spec Change Log
 
 **Review loop 1 patches applied:**
+
 - `PatientAppointmentServiceTest.java` — NEW: 2 unit tests verifying `doctorRemoved=false` for active doctor and `doctorRemoved=true` for soft-deleted doctor
 - `router/__tests__/index.test.ts` — added 2 guard tests: unauthenticated → /login; DOCTOR → / for `/appointments` route
 - `appointmentStore.test.ts` — added `fetchPatientAppointments` test verifying API call and state population

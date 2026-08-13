@@ -32,6 +32,7 @@ Make appointment data visible and actionable for both patients and doctors. Pati
 ## Technical Decisions
 
 **New endpoints:**
+
 - `GET /api/v1/appointments/my` (PATIENT) → all patient's appointments ordered by date desc
 - `GET /api/v1/appointments/doctor/my` (DOCTOR) → all doctor's appointments
 - `PATCH /api/v1/appointments/{id}/status` (DOCTOR) → cancel or complete
