@@ -25,6 +25,14 @@ export const useUserStore = defineStore('user', {
     async fetchAdminUsers() {
       const response = await api.get<AdminUser[]>('/admin/users')
       this.adminUsers = response.data
+    },
+    async createAdminUser(data: Omit<AdminUser, 'id' | 'isDeleted'> & { password: string }) {
+      await api.post('/admin/users', data)
+      await this.fetchAdminUsers()
+    },
+    async updateAdminUser(id: number, data: Partial<AdminUser>) {
+      await api.put(`/admin/users/${id}`, data)
+      await this.fetchAdminUsers()
     }
   }
 })

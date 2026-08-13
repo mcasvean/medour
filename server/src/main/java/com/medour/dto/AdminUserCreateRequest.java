@@ -1,0 +1,41 @@
+package com.medour.dto;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class AdminUserCreateRequest {
+
+  @NotBlank
+  @Email
+  private String email;
+
+  @NotBlank
+  private String password;
+
+  @NotBlank
+  private String firstName;
+
+  @NotBlank
+  private String surname;
+
+  private Integer age;
+
+  private String gender;
+
+  private String city;
+
+  private String address;
+
+  private String county;
+
+  private String speciality;
+
+  @NotBlank
+  private String role;
+}

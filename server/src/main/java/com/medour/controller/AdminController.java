@@ -1,7 +1,9 @@
 package com.medour.controller;
 
 import com.medour.dto.AdminSetPasswordRequest;
+import com.medour.dto.AdminUserCreateRequest;
 import com.medour.dto.AdminUserDto;
+import com.medour.dto.AdminUserUpdateRequest;
 import com.medour.service.AdminUserService;
 import com.medour.service.UserService;
 import jakarta.validation.Valid;
@@ -25,6 +27,17 @@ public class AdminController {
   @GetMapping("/users")
   public ResponseEntity<List<AdminUserDto>> getUsers() {
     return ResponseEntity.ok(adminUserService.getAllUsers());
+  }
+
+  @PostMapping("/users")
+  public ResponseEntity<AdminUserDto> createUser(@Valid @RequestBody AdminUserCreateRequest req) {
+    return ResponseEntity.status(201).body(adminUserService.createUser(req));
+  }
+
+  @PutMapping("/users/{id}")
+  public ResponseEntity<AdminUserDto> updateUser(@PathVariable Long id,
+      @Valid @RequestBody AdminUserUpdateRequest req) {
+    return ResponseEntity.ok(adminUserService.updateUser(id, req));
   }
 
   @PostMapping("/users/{id}/password")
