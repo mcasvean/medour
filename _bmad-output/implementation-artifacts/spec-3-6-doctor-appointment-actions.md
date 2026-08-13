@@ -19,6 +19,7 @@ context: []
 ## Boundaries & Constraints
 
 **Always:**
+
 - Only OPEN appointments can be canceled or completed; any other current status returns 409
 - Only the owning doctor can update an appointment; a mismatched doctorId returns 403
 - Valid new statuses for this endpoint: `CANCELED` or `COMPLETED`; any other value returns 400
@@ -28,21 +29,23 @@ context: []
 - After a successful status update the client patches `doctorAppointments` locally — the matching appointment's status is updated without re-fetching
 
 **Ask First:**
+
 - (none)
 
 **Never:**
+
 - Doctors cannot change status to OPEN once it has moved to a terminal state
 - No admin status-change endpoint in this story (Story 4.4)
 
 ## I/O & Edge-Case Matrix
 
-| Scenario | Input / State | Expected Output / Behavior | Error Handling |
-|---|---|---|---|
-| Doctor cancels own OPEN appointment | `PATCH /doctor/{id}/status` `{ "newStatus": "CANCELED" }` | 200; status CANCELED; SSE event fired | N/A |
-| Doctor completes own OPEN appointment | `newStatus: COMPLETED` | 200; status COMPLETED; SSE event fired | N/A |
-| Non-OPEN appointment | appointment status is CANCELED | 409 `{ "error": "Appointment is not in OPEN status" }` | N/A |
-| Wrong doctor | appointment belongs to different doctor | 403 | Ownership check |
-| Invalid new status | `newStatus: OPEN` | 400 | Validation |
+| Scenario                              | Input / State                                             | Expected Output / Behavior                             | Error Handling  |
+| ------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------ | --------------- |
+| Doctor cancels own OPEN appointment   | `PATCH /doctor/{id}/status` `{ "newStatus": "CANCELED" }` | 200; status CANCELED; SSE event fired                  | N/A             |
+| Doctor completes own OPEN appointment | `newStatus: COMPLETED`                                    | 200; status COMPLETED; SSE event fired                 | N/A             |
+| Non-OPEN appointment                  | appointment status is CANCELED                            | 409 `{ "error": "Appointment is not in OPEN status" }` | N/A             |
+| Wrong doctor                          | appointment belongs to different doctor                   | 403                                                    | Ownership check |
+| Invalid new status                    | `newStatus: OPEN`                                         | 400                                                    | Validation      |
 
 </frozen-after-approval>
 
@@ -67,7 +70,7 @@ context: []
 - [ ] `server/src/main/java/com/medour/config/SecurityConfig.java` -- add `.requestMatchers(org.springframework.http.HttpMethod.PATCH, "/api/v1/appointments/doctor/**").hasRole("DOCTOR")` to the auth chain
 - [ ] `server/src/test/java/com/medour/service/DoctorAppointmentServiceTest.java` -- inject `@Mock SseService`; add 3 tests: (1) cancel OPEN appointment → status CANCELED + `broadcastAppointmentStatus` called; (2) different doctor → 403 ResponseStatusException; (3) non-OPEN appointment → 409 ResponseStatusException
 - [ ] `server/src/test/java/com/medour/controller/DoctorAppointmentControllerTest.java` -- add `@MockBean SseService`; add tests: (1) `@WithMockUser(username="1", roles="DOCTOR") PATCH /{id}/status` with `newStatus=CANCELED` → 200 + `$.status`; (2) `newStatus=OPEN` → 400
-- [ ] `client/src/stores/appointmentStore.ts` -- add `updateDoctorAppointmentStatus(id: number, newStatus: string)`: call `api.patch(\`/appointments/doctor/\${id}/status\`, { newStatus })`; find appointment in `doctorAppointments` by id and set `status = newStatus`
+- [ ] `client/src/stores/appointmentStore.ts` -- add `updateDoctorAppointmentStatus(id: number, newStatus: string)`: call `api.patch(\`/appointments/doctor/\${id}/status\`, { newStatus })`; find appointment in `doctorAppointments`by id and set`status = newStatus`
 - [ ] `client/src/views/DoctorAppointmentsView.vue` -- import `isJoinActive`; add `function cancelAppointment(id)`, `function completeAppointment(id)`, `function joinConsultation(url)` in script; on each OPEN card append: Cancel button (`v-if="appt.status === 'OPEN'"` calling `cancelAppointment(appt.id)`), Complete button (same condition), Join button (`v-if="appt.status === 'OPEN' && appt.wherebyRoomUrl"`, `:disabled="!isJoinActive(...)"`, calls `joinConsultation(appt.wherebyRoomUrl)`)
 
 **Acceptance Criteria:**
@@ -82,12 +85,14 @@ context: []
 ## Verification
 
 **Commands:**
+
 - `cd server && ./mvnw test` -- expected: 63 tests pass (58 existing + 3 DoctorAppointmentServiceTest + 2 DoctorAppointmentControllerTest)
 - `cd client && npm run build` -- expected: zero TypeScript errors
 
 ## Spec Change Log
 
 **Review loop 1 patches applied:**
+
 - `StatusUpdateRequest` — added `@NotBlank` on `newStatus`; `DoctorAppointmentController` `@PatchMapping` now uses `@Valid @RequestBody`
 - `appointmentStore.updateDoctorAppointmentStatus` — narrowed type from `string` to `'CANCELED' | 'COMPLETED'`; added catch block writing to `errorMessage`
 - `DoctorAppointmentsView` — added `connectAppointmentSse()` on mount and `disconnectAppointmentSse()` on unmount so the doctor's card list also receives real-time status updates (e.g., auto-cancel fires while doctor is on the page)

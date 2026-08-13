@@ -65,9 +65,9 @@ class DoctorAppointmentControllerTest {
   @WithMockUser(username = "1", roles = "DOCTOR")
   void updateStatus_validCancel_returns200WithStatus() throws Exception {
     mockMvc.perform(patch("/api/v1/appointments/doctor/10/status")
-            .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"newStatus\":\"CANCELED\"}"))
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"newStatus\":\"CANCELED\"}"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("CANCELED"));
   }
@@ -81,9 +81,9 @@ class DoctorAppointmentControllerTest {
         .when(doctorAppointmentService).updateStatus(10L, 1L, "OPEN");
 
     mockMvc.perform(patch("/api/v1/appointments/doctor/10/status")
-            .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"newStatus\":\"OPEN\"}"))
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"newStatus\":\"OPEN\"}"))
         .andExpect(status().isBadRequest());
   }
 }
