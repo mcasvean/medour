@@ -19,6 +19,7 @@ context: []
 ## Boundaries & Constraints
 
 **Always:**
+
 - 24 slots per day, generated from 08:00 to 19:30 in 30-minute steps (last slot: 19:30–20:00)
 - Slot state is derived — never stored as a column. Derivation order (first match wins): (1) non-expired `slot_reservations` row → LOCKED; (2) OPEN `appointments` row → UNAVAILABLE; (3) else → AVAILABLE
 - SSE endpoint `GET /api/v1/sse/slots` is added to `permitAll` in SecurityConfig — slot state is not sensitive data; all clients subscribe regardless of auth
@@ -30,23 +31,25 @@ context: []
 - `appointmentStore.connectSse(doctorId, date)` opens an `EventSource` to `/api/v1/sse/slots`; `disconnectSse()` closes it; the store cleans up on date or doctor change
 
 **Ask First:**
+
 - (none)
 
 **Never:**
+
 - No slot selection or lock in this story (Story 2.3)
 - No SSE events broadcast yet (Story 2.3 triggers them on lock/unlock); Story 2.2 only establishes the subscription infrastructure
 - SSE is server-to-client only — `EventSource` sends no data back
 
 ## I/O & Edge-Case Matrix
 
-| Scenario | Input / State | Expected Output / Behavior | Error Handling |
-|---|---|---|---|
-| All slots free | `GET /slots?date=2026-09-01`; no reservations or appointments | 24 slots all AVAILABLE | N/A |
-| Slot locked | `slot_reservations` non-expired row for slot 10:00 | That slot returns LOCKED | N/A |
-| Slot unavailable | OPEN appointment for slot 14:00 | That slot returns UNAVAILABLE | N/A |
-| Expired reservation | `slot_reservations` row with `expiresAt` < now for slot 08:00 | That slot returns AVAILABLE | N/A |
-| SSE subscribe | `GET /api/v1/sse/slots` | HTTP 200 with `Content-Type: text/event-stream` emitter returned | N/A |
-| SSE event received | `appointmentStore` receives event for active doctorId+date | Matching slot's state updated in store | Unknown events ignored |
+| Scenario            | Input / State                                                 | Expected Output / Behavior                                       | Error Handling         |
+| ------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------- | ---------------------- |
+| All slots free      | `GET /slots?date=2026-09-01`; no reservations or appointments | 24 slots all AVAILABLE                                           | N/A                    |
+| Slot locked         | `slot_reservations` non-expired row for slot 10:00            | That slot returns LOCKED                                         | N/A                    |
+| Slot unavailable    | OPEN appointment for slot 14:00                               | That slot returns UNAVAILABLE                                    | N/A                    |
+| Expired reservation | `slot_reservations` row with `expiresAt` < now for slot 08:00 | That slot returns AVAILABLE                                      | N/A                    |
+| SSE subscribe       | `GET /api/v1/sse/slots`                                       | HTTP 200 with `Content-Type: text/event-stream` emitter returned | N/A                    |
+| SSE event received  | `appointmentStore` receives event for active doctorId+date    | Matching slot's state updated in store                           | Unknown events ignored |
 
 </frozen-after-approval>
 
@@ -101,6 +104,7 @@ context: []
 ## Verification
 
 **Commands:**
+
 - `cd server && ./mvnw test` -- expected: 36 tests pass (29 existing + 4 SlotServiceTest + 1 SseControllerTest + 2 DoctorControllerTest.getSlots-related assertions)
 - `cd client && npm run test` -- expected: all 17 tests pass
 - `cd client && npm run build` -- expected: zero TypeScript errors
@@ -108,6 +112,7 @@ context: []
 ## Spec Change Log
 
 **Review loop 1 patches applied:**
+
 - `SseService.broadcast()` — catches `Exception` (not just `IOException`) so `IllegalStateException` from completed emitters also triggers removal
 - `appointmentStore.connectSse()` — SSE `onmessage` handler wraps `JSON.parse` in try/catch; malformed events are silently dropped
 - `DoctorControllerTest` — added `getSlots_validIdAndDate_returns200WithSlotList` verifying `@DateTimeFormat` param binding and response JSON

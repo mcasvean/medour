@@ -87,8 +87,10 @@ class SlotServiceTest {
 
   @Test
   void expiredReservation_reservationExistReturnsFalse_returnsAvailable() {
-    // expired reservation: existsByDoctorIdAndDateAndStartTimeAndExpiresAtAfter returns false
-    // because the expiresAt is before now — the repo method won't match, so it returns false
+    // expired reservation: existsByDoctorIdAndDateAndStartTimeAndExpiresAtAfter
+    // returns false
+    // because the expiresAt is before now — the repo method won't match, so it
+    // returns false
     when(slotReservationRepository.existsByDoctorIdAndDateAndStartTimeAndExpiresAtAfter(
         eq(DOCTOR_ID), eq(DATE), any(LocalTime.class), any())).thenReturn(false);
     when(appointmentRepository.existsByDoctorIdAndScheduledDateAndStartTimeAndStatus(

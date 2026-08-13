@@ -23,7 +23,7 @@ public class SlotService {
   private final AppointmentRepository appointmentRepository;
 
   public SlotService(SlotReservationRepository slotReservationRepository,
-                     AppointmentRepository appointmentRepository) {
+      AppointmentRepository appointmentRepository) {
     this.slotReservationRepository = slotReservationRepository;
     this.appointmentRepository = appointmentRepository;
   }
