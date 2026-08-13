@@ -65,3 +65,19 @@ Items collected during implementation reviews that are real but out of scope for
 - source_spec: `spec-1-2-user-registration-patient-doctor.md`
   summary: setAuth-before-push ordering is untested — a future refactor could invert them, breaking navigation guards.
   evidence: Verification gap; ordering is correct today but Story 1.4 navigation guards will make this observable and testable.
+
+- source_spec: `spec-1-3-user-login-jwt-session.md`
+  summary: JwtAuthFilter is added to the security chain but every existing test bypasses it with addFilters=false — the filter's token-to-SecurityContext path has no integration test.
+  evidence: Verification gap; a regression that breaks role claim extraction or JwtException handling would not be caught by the controller slice tests.
+
+- source_spec: `spec-1-3-user-login-jwt-session.md`
+  summary: A soft-deleted user who already holds a valid JWT can access protected routes until their token expires (up to 1 hour) — JwtAuthFilter does not check deleted_at on every request.
+  evidence: Edge case hunter; a DB check on every request is expensive; the 1-hour window is the accepted trade-off, but it should be documented as a known gap.
+
+- source_spec: `spec-1-3-user-login-jwt-session.md`
+  summary: clearAuth() resets only authStore — sibling stores (appointmentStore, doctorStore, userStore) retain stale user-scoped data after logout.
+  evidence: Blind hunter; full logout cleanup is within scope of Story 1.5 or a dedicated logout story.
+
+- source_spec: `spec-1-3-user-login-jwt-session.md`
+  summary: No accessDeniedHandler configured in SecurityConfig — a 403 (authenticated but unauthorized role) returns Spring's default HTML error page, inconsistent with the custom JSON 401 format.
+  evidence: Blind hunter; role-based access control becomes active in Story 1.4, at which point an accessDeniedHandler returning JSON should be added.

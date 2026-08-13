@@ -6,20 +6,42 @@ export interface User {
   firstName: string
   surname: string
   role: string
+  mustChangePassword: boolean
+}
+
+function loadStoredUser(): User | null {
+  const raw = localStorage.getItem('auth_user')
+  if (!raw) return null
+  try {
+    // spread ensures mustChangePassword exists even if persisted before this field was added
+    return { mustChangePassword: false, ...JSON.parse(raw) } as User
+  } catch {
+    localStorage.removeItem('auth_user')
+    return null
+  }
 }
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: localStorage.getItem('token') as string | null,
-    user: null as User | null,
-    isAuthenticated: !!localStorage.getItem('token')
+    user: loadStoredUser()
   }),
+  getters: {
+    isAuthenticated: (state): boolean => !!state.token
+  },
   actions: {
     setAuth(token: string, user: User) {
       this.token = token
       this.user = user
-      this.isAuthenticated = true
       localStorage.setItem('token', token)
+      localStorage.setItem('auth_user', JSON.stringify(user))
+    },
+    clearAuth() {
+      this.token = null
+      this.user = null
+      localStorage.removeItem('token')
+      localStorage.removeItem('auth_user')
     }
   }
 })
+

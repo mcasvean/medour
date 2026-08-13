@@ -1,6 +1,8 @@
 package com.medour.security;
 
 import com.medour.model.User;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,5 +28,12 @@ public class JwtUtil {
         .expiration(expiry)
         .signWith(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)))
         .compact();
+  }
+
+  public Jws<Claims> parseToken(String token) {
+    return Jwts.parser()
+        .verifyWith(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)))
+        .build()
+        .parseSignedClaims(token);
   }
 }

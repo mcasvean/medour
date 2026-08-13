@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import MockAdapter from 'axios-mock-adapter'
+import { createPinia, setActivePinia } from 'pinia'
 
 vi.mock('../../router/index', () => ({ router: { push: vi.fn() } }))
 
@@ -42,6 +43,7 @@ describe('Axios 401 interceptor', () => {
     mockAdapter.reset()
     localStorage.clear()
     vi.clearAllMocks()
+    setActivePinia(createPinia())
   })
 
   it('clears localStorage and pushes /login on 401 from a guarded endpoint', async () => {

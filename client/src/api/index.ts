@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { router } from '../router/index'
+import { useAuthStore } from '../stores/authStore'
 
 const api = axios.create({
   baseURL: '/api/v1'
@@ -22,9 +23,9 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       const requestUrl: string = error.config?.url ?? ''
       // localStorage.getItem('token') being non-null means we haven't redirected yet;
-      // the synchronous clear() acts as a once-per-session gate for concurrent 401s
+      // the synchronous removeItem inside clearAuth() acts as a once-per-session gate for concurrent 401s
       if (!requestUrl.endsWith('/auth/login') && localStorage.getItem('token') !== null) {
-        localStorage.clear()
+        useAuthStore().clearAuth()
         router.push('/login')
       }
     }
@@ -33,3 +34,4 @@ api.interceptors.response.use(
 )
 
 export default api
+

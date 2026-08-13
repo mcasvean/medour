@@ -3,6 +3,8 @@ package com.medour.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medour.dto.AuthResponse;
 import com.medour.exception.EmailAlreadyUsedException;
+import com.medour.exception.InvalidCredentialsException;
+import com.medour.security.JwtAuthFilter;
 import com.medour.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,9 @@ class AuthControllerTest {
   private MockMvc mockMvc;
 
   @MockBean
+  private JwtAuthFilter jwtAuthFilter;
+
+  @MockBean
   private UserService userService;
 
   @Autowired
@@ -38,7 +43,7 @@ class AuthControllerTest {
 
   @Test
   void register_validPatient_returns200WithToken() throws Exception {
-    var response = new AuthResponse("tok-123", 1L, "p@test.com", "Pat", "Ient", "PATIENT");
+    var response = new AuthResponse("tok-123", 1L, "p@test.com", "Pat", "Ient", "PATIENT", false);
     given(userService.register(any())).willReturn(response);
 
     mockMvc.perform(post("/api/v1/auth/register")
@@ -50,7 +55,7 @@ class AuthControllerTest {
 
   @Test
   void register_validDoctor_returns200() throws Exception {
-    var response = new AuthResponse("tok-456", 2L, "d@test.com", "Doc", "Tor", "DOCTOR");
+    var response = new AuthResponse("tok-456", 2L, "d@test.com", "Doc", "Tor", "DOCTOR", false);
     given(userService.register(any())).willReturn(response);
 
     mockMvc.perform(post("/api/v1/auth/register")
@@ -81,6 +86,52 @@ class AuthControllerTest {
         .andExpect(status().isBadRequest());
   }
 
+  @Test
+  void login_validCredentials_returns200WithToken() throws Exception {
+    var response = new AuthResponse("tok-789", 1L, "p@test.com", "Pat", "Ient", "PATIENT", false);
+    given(userService.login(any())).willReturn(response);
+
+    mockMvc.perform(post("/api/v1/auth/login")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(Map.of("email", "p@test.com", "password", "Password1!"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.token").value("tok-789"))
+        .andExpect(jsonPath("$.mustChangePassword").value(false));
+  }
+
+  @Test
+  void login_wrongPassword_returns401() throws Exception {
+    given(userService.login(any())).willThrow(new InvalidCredentialsException());
+
+    mockMvc.perform(post("/api/v1/auth/login")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(Map.of("email", "p@test.com", "password", "wrongpass"))))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.error").value("Invalid credentials"));
+  }
+
+  @Test
+  void login_unknownEmail_returns401() throws Exception {
+    given(userService.login(any())).willThrow(new InvalidCredentialsException());
+
+    mockMvc.perform(post("/api/v1/auth/login")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(Map.of("email", "nobody@test.com", "password", "Password1!"))))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.error").value("Invalid credentials"));
+  }
+
+  @Test
+  void login_softDeletedUser_returns401() throws Exception {
+    given(userService.login(any())).willThrow(new InvalidCredentialsException());
+
+    mockMvc.perform(post("/api/v1/auth/login")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(Map.of("email", "deleted@test.com", "password", "Password1!"))))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.error").value("Invalid credentials"));
+  }
+
   private Map<String, Object> buildRequest(String role, String county, String speciality) {
     Map<String, Object> req = new HashMap<>();
     req.put("email", "test@medour.com");
@@ -99,3 +150,4 @@ class AuthControllerTest {
     return req;
   }
 }
+

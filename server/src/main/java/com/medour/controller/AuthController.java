@@ -1,6 +1,7 @@
 package com.medour.controller;
 
 import com.medour.dto.AuthResponse;
+import com.medour.dto.LoginRequest;
 import com.medour.dto.RegisterRequest;
 import com.medour.service.UserService;
 import jakarta.validation.Valid;
@@ -25,4 +26,10 @@ public class AuthController {
   public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest req) {
     return ResponseEntity.status(HttpStatus.CREATED).body(userService.register(req));
   }
+
+  @PostMapping("/login")
+  public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest req) {
+    return ResponseEntity.ok(userService.login(req));
+  }
 }
+

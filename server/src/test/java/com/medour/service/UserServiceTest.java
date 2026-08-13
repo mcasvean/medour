@@ -1,6 +1,9 @@
 package com.medour.service;
 
+import com.medour.dto.LoginRequest;
+import com.medour.exception.InvalidCredentialsException;
 import com.medour.model.Role;
+import com.medour.model.User;
 import com.medour.repository.UserRepository;
 import com.medour.security.JwtUtil;
 import org.junit.jupiter.api.Test;
@@ -10,6 +13,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -35,5 +42,18 @@ class UserServiceTest {
     userService.seedAdmin("admin@medour.com", "Admin1234!");
 
     verify(userRepository, never()).save(any());
+  }
+
+  @Test
+  void login_softDeletedUser_throwsInvalidCredentials() {
+    User deleted = User.builder()
+        .id(1L).email("gone@test.com").passwordHash("hash")
+        .role(Role.PATIENT).mustChangePassword(false)
+        .deletedAt(LocalDateTime.now())
+        .build();
+    when(userRepository.findByEmail("gone@test.com")).thenReturn(Optional.of(deleted));
+
+    assertThrows(InvalidCredentialsException.class,
+        () -> userService.login(new LoginRequest("gone@test.com", "any")));
   }
 }

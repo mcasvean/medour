@@ -1,8 +1,10 @@
 package com.medour.service;
 
 import com.medour.dto.AuthResponse;
+import com.medour.dto.LoginRequest;
 import com.medour.dto.RegisterRequest;
 import com.medour.exception.EmailAlreadyUsedException;
+import com.medour.exception.InvalidCredentialsException;
 import com.medour.model.Role;
 import com.medour.model.User;
 import com.medour.repository.UserRepository;
@@ -69,7 +71,22 @@ public class UserService {
     String token = jwtUtil.generateToken(saved);
 
     return new AuthResponse(token, saved.getId(), saved.getEmail(),
-        saved.getFirstName(), saved.getSurname(), saved.getRole().name());
+        saved.getFirstName(), saved.getSurname(), saved.getRole().name(), saved.getMustChangePassword());
+  }
+
+  @Transactional(readOnly = true)
+  public AuthResponse login(LoginRequest req) {
+    User user = userRepository.findByEmail(req.getEmail())
+        .orElseThrow(InvalidCredentialsException::new);
+    if (user.getDeletedAt() != null) {
+      throw new InvalidCredentialsException();
+    }
+    if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash())) {
+      throw new InvalidCredentialsException();
+    }
+    String token = jwtUtil.generateToken(user);
+    return new AuthResponse(token, user.getId(), user.getEmail(),
+        user.getFirstName(), user.getSurname(), user.getRole().name(), user.getMustChangePassword());
   }
 
   @Transactional
