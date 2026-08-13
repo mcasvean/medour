@@ -41,6 +41,7 @@ public class SecurityConfig {
             .requestMatchers(GET, "/api/v1/sse/slots").permitAll()
             .requestMatchers(POST, "/api/v1/auth/register", "/api/v1/auth/login").permitAll()
             .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+            .requestMatchers(POST, "/api/v1/slots/reserve", "/api/v1/appointments").hasRole("PATIENT")
             .anyRequest().authenticated())
         .exceptionHandling(e -> e
             .authenticationEntryPoint((req, res, ex) -> res.sendError(SC_UNAUTHORIZED))

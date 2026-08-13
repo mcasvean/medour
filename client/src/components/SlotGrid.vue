@@ -9,6 +9,7 @@
         unavailable: s.state === 'UNAVAILABLE',
       }"
       class="slot-cell"
+      @click="s.state === 'AVAILABLE' && emit('select', s.startTime)"
     >
       {{ s.startTime }} – {{ s.endTime }}
       <span class="slot-state">{{ s.state }}</span>
@@ -20,6 +21,7 @@
 import type { SlotDisplay } from '../stores/appointmentStore'
 
 defineProps<{ slots: SlotDisplay[] }>()
+const emit = defineEmits<{ select: [startTime: string] }>()
 </script>
 
 <style scoped>

@@ -50,12 +50,32 @@
     <SlotGrid
       v-if="appointmentStore.selectedDoctorId !== null"
       :slots="appointmentStore.slots"
+      @select="onSlotSelected"
     />
+
+    <div v-if="appointmentStore.errorMessage" class="error-message">
+      {{ appointmentStore.errorMessage }}
+    </div>
+
+    <div v-if="appointmentStore.bookingStep === 'confirming'" class="confirmation-panel">
+      <h2>Confirm your appointment</h2>
+      <p><strong>Doctor:</strong> {{ selectedDoctor?.firstName }} {{ selectedDoctor?.surname }}</p>
+      <p><strong>Date:</strong> {{ appointmentStore.selectedDate }}</p>
+      <p><strong>Time:</strong> {{ appointmentStore.lockedStartTime }}</p>
+      <div class="confirmation-actions">
+        <button @click="appointmentStore.cancelBooking()">Cancel</button>
+        <button @click="appointmentStore.confirmBooking()">Confirm</button>
+      </div>
+    </div>
+
+    <div v-if="appointmentStore.bookingStep === 'done'" class="booking-success">
+      <p>Appointment booked successfully!</p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useDoctorStore } from '../stores/doctorStore'
 import { useAppointmentStore } from '../stores/appointmentStore'
 import SlotGrid from '../components/SlotGrid.vue'
@@ -63,6 +83,9 @@ import SlotGrid from '../components/SlotGrid.vue'
 const doctorStore = useDoctorStore()
 const appointmentStore = useAppointmentStore()
 const today = new Date().toISOString().split('T')[0]
+
+const selectedDoctor = computed(() =>
+  doctorStore.doctors.find(d => d.id === appointmentStore.selectedDoctorId))
 
 function selectDoctor(doctorId: number) {
   const dateToUse = doctorStore.filters.date || today
@@ -72,11 +95,18 @@ function selectDoctor(doctorId: number) {
   appointmentStore.connectSse(doctorId, dateToUse)
 }
 
+function onSlotSelected(startTime: string) {
+  appointmentStore.lockSlot(startTime)
+}
+
 onMounted(() => {
   doctorStore.searchDoctors()
 })
 
 onUnmounted(() => {
   appointmentStore.disconnectSse()
+  if (appointmentStore.bookingStep === 'confirming') {
+    appointmentStore.cancelBooking()
+  }
 })
 </script>

@@ -20,6 +20,10 @@ export const useAppointmentStore = defineStore('appointment', {
     selectedDate: '' as string,
     slots: [] as SlotDisplay[],
     _eventSource: null as EventSource | null,
+    reservationId: null as number | null,
+    bookingStep: 'searching' as 'searching' | 'confirming' | 'done',
+    lockedStartTime: null as string | null,
+    errorMessage: '' as string,
   }),
 
   actions: {
@@ -56,6 +60,50 @@ export const useAppointmentStore = defineStore('appointment', {
         this._eventSource.close()
         this._eventSource = null
       }
+    },
+
+    async lockSlot(startTime: string) {
+      if (this.selectedDoctorId === null) return
+      const slot = this.slots.find(s => s.startTime === startTime)
+      if (!slot) return
+      const originalState = slot.state
+      slot.state = 'LOCKED'
+      this.errorMessage = ''
+      try {
+        const response = await api.post<{ reservationId: number }>('/slots/reserve', {
+          doctorId: this.selectedDoctorId,
+          date: this.selectedDate,
+          startTime,
+        })
+        this.reservationId = response.data.reservationId
+        this.lockedStartTime = startTime
+        this.bookingStep = 'confirming'
+      } catch {
+        slot.state = originalState
+        this.errorMessage = 'Slot already reserved'
+      }
+    },
+
+    async cancelBooking() {
+      if (this.reservationId === null) return
+      const rid = this.reservationId
+      try {
+        await api.delete(`/slots/reserve/${rid}`)
+      } finally {
+        const slot = this.slots.find(s => s.startTime === this.lockedStartTime)
+        if (slot) slot.state = 'AVAILABLE'
+        this.reservationId = null
+        this.lockedStartTime = null
+        this.bookingStep = 'searching'
+      }
+    },
+
+    async confirmBooking() {
+      if (this.reservationId === null) return
+      await api.post('/appointments', { reservationId: this.reservationId })
+      this.bookingStep = 'done'
+      this.reservationId = null
+      this.lockedStartTime = null
     },
   },
 })

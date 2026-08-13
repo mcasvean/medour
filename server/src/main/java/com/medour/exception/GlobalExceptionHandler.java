@@ -30,6 +30,12 @@ public class GlobalExceptionHandler {
         .body(Map.of("error", "Wrong password"));
   }
 
+  @ExceptionHandler(SlotAlreadyReservedException.class)
+  public ResponseEntity<Map<String, String>> handleSlotAlreadyReserved(SlotAlreadyReservedException ex) {
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(Map.of("error", "Slot already reserved"));
+  }
+
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException ex) {
     String message = ex.getBindingResult().getFieldErrors().stream()
