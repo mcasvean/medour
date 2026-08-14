@@ -29,7 +29,7 @@ public class AutoCancelService {
           a.setStatus(AppointmentStatus.AUTO_CANCELED);
           appointmentRepository.save(a);
           sseService.broadcastAppointmentStatus(
-              new AppointmentStatusEventDto(a.getId(), AppointmentStatus.AUTO_CANCELED.name()));
+              new AppointmentStatusEventDto(a.getId(), AppointmentStatus.AUTO_CANCELED.name(), null, null));
         });
   }
 }

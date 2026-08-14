@@ -57,6 +57,6 @@ public class DoctorAppointmentService {
     }
     appointment.setStatus(AppointmentStatus.valueOf(newStatus));
     appointmentRepository.save(appointment);
-    sseService.broadcastAppointmentStatus(new AppointmentStatusEventDto(appointmentId, newStatus));
+    sseService.broadcastAppointmentStatus(new AppointmentStatusEventDto(appointmentId, newStatus, null, null));
   }
 }

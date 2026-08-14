@@ -2,9 +2,9 @@
 title: "Patient Appointment Reschedule"
 type: "feature"
 created: "2026-08-14"
-status: "ready-for-dev"
+status: "done"
 review_loop_iteration: 0
-baseline_commit: ""
+baseline_commit: "c7e39d097dbbc51e0732db9c8e048df1bfb0c90d"
 context: ["spec-6-1-toast-notification-system"]
 ---
 
@@ -78,13 +78,13 @@ context: ["spec-6-1-toast-notification-system"]
 
 **Execution:**
 
-- [ ] `server/src/main/java/com/medour/dto/RescheduleRequest.java` — NEW record with `@NotNull LocalDate scheduledDate` and `@NotNull LocalTime startTime`
-- [ ] `server/src/main/java/com/medour/service/PatientAppointmentService.java` — inject `SlotReservationRepository`; implement `reschedule(...)` with all validation checks, slot swap, and SSE broadcasts
-- [ ] `server/src/main/java/com/medour/controller/PatientAppointmentController.java` — add `@PatchMapping("/{id}/reschedule")` mapped to service; return 200 with updated appointment DTO
-- [ ] `server/src/main/java/com/medour/config/SecurityConfig.java` — confirm `PATCH /api/v1/appointments/patient/**` is covered for PATIENT role
-- [ ] `server/src/test/java/com/medour/service/PatientAppointmentServiceTest.java` — add 5 new tests covering the cases in the edge-case matrix
-- [ ] `client/src/stores/appointmentStore.ts` — add `rescheduleAppointment(id, scheduledDate, startTime)` action with in-place update of `patientAppointments`
-- [ ] `client/src/views/PatientAppointmentsView.vue` — add Reschedule button on OPEN cards; implement reschedule dialog with SlotGrid for the appointment's doctor; wire confirm to store action with toast feedback
+- [x] `server/src/main/java/com/medour/dto/RescheduleRequest.java` — NEW record with `@NotNull LocalDate scheduledDate` and `@NotNull LocalTime startTime`
+- [x] `server/src/main/java/com/medour/service/PatientAppointmentService.java` — inject `SlotReservationRepository`; implement `reschedule(...)` with all validation checks, slot swap, and SSE broadcasts
+- [x] `server/src/main/java/com/medour/controller/PatientAppointmentController.java` — add `@PatchMapping("/{id}/reschedule")` mapped to service; return 200 with updated appointment DTO
+- [x] `server/src/main/java/com/medour/config/SecurityConfig.java` — confirm `PATCH /api/v1/appointments/patient/**` is covered for PATIENT role
+- [x] `server/src/test/java/com/medour/service/PatientAppointmentServiceTest.java` — add 5 new tests covering the cases in the edge-case matrix
+- [x] `client/src/stores/appointmentStore.ts` — add `rescheduleAppointment(id, scheduledDate, startTime)` action with in-place update of `patientAppointments`
+- [x] `client/src/views/PatientAppointmentsView.vue` — add Reschedule button on OPEN cards; implement reschedule dialog with SlotGrid for the appointment's doctor; wire confirm to store action with toast feedback
 
 ## Acceptance Criteria
 
@@ -103,3 +103,33 @@ context: ["spec-6-1-toast-notification-system"]
 - `cd server && ./mvnw test` — expected: all existing tests + 5 new PatientAppointmentService tests pass
 - `cd client && npm run build` — expected: zero TypeScript errors
 - `cd client && npm run test` — expected: all existing tests pass
+
+## Suggested Review Order
+
+**Backend — core reschedule logic**
+
+- Validation chain: ownership (403), OPEN status (409), same-slot guard (400), past-date (400), slot availability (409).
+  [`PatientAppointmentService.java:53`](../../server/src/main/java/com/medour/service/PatientAppointmentService.java#L53)
+
+- Atomic slot swap: delete old reservation, insert new, save appointment, then fire 3 SSE events.
+  [`PatientAppointmentService.java:80`](../../server/src/main/java/com/medour/service/PatientAppointmentService.java#L80)
+
+- New `RescheduleRequest` DTO; PATCH endpoint returning updated DTO.
+  [`PatientAppointmentController.java`](../../server/src/main/java/com/medour/controller/PatientAppointmentController.java)
+
+**Frontend — dialog & store**
+
+- `rescheduleAppointment` action: PATCH call + in-place `patientAppointments` update.
+  [`appointmentStore.ts:236`](../../client/src/stores/appointmentStore.ts#L236)
+
+- Reschedule button on OPEN cards; dialog with date picker, SlotGrid, Confirm button.
+  [`PatientAppointmentsView.vue:74`](../../client/src/views/PatientAppointmentsView.vue#L74)
+
+- Dialog state management: open/close, slot loading, slot selection, submit flow.
+  [`PatientAppointmentsView.vue:207`](../../client/src/views/PatientAppointmentsView.vue#L207)
+
+**Tests**
+
+- 5 service tests + 2 reschedule store tests + 2 SSE date/time propagation tests.
+  [`PatientAppointmentServiceTest.java`](../../server/src/test/java/com/medour/service/PatientAppointmentServiceTest.java)
+  [`appointmentStore.test.ts`](../../client/src/stores/__tests__/appointmentStore.test.ts)

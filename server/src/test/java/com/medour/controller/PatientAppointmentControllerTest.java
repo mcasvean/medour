@@ -37,6 +37,7 @@ class PatientAppointmentControllerTest {
   void getHistory_asPatient_returns200WithList() throws Exception {
     var dto = new PatientAppointmentDto(
         10L,
+        20L,
         LocalDate.of(2026, 9, 1),
         LocalTime.of(10, 0),
         "John",

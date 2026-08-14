@@ -6,6 +6,7 @@ import java.time.LocalTime;
 
 public record PatientAppointmentDto(
         Long id,
+        Long doctorId,
         LocalDate scheduledDate,
         LocalTime startTime,
         String doctorFirstName,

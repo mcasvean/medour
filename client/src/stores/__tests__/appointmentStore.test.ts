@@ -381,4 +381,95 @@ describe('isJoinActive', () => {
       await expect(store.deleteAdminAppointment(1)).resolves.toBeUndefined()
     })
   })
+
+  describe('rescheduleAppointment', () => {
+    it('PATCHes the reschedule endpoint and updates patientAppointments in-place', async () => {
+      vi.mocked(api.patch).mockResolvedValueOnce({ data: {} })
+      const store = useAppointmentStore()
+      store.patientAppointments = [
+        { id: 3, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
+          doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
+          status: 'OPEN', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null,
+          ratingValue: null, ratingId: null },
+      ]
+
+      await store.rescheduleAppointment(3, '2026-09-05', '14:00')
+
+      expect(api.patch).toHaveBeenCalledWith('/appointments/patient/3/reschedule', {
+        scheduledDate: '2026-09-05',
+        startTime: '14:00',
+      })
+      expect(store.patientAppointments[0].scheduledDate).toBe('2026-09-05')
+      expect(store.patientAppointments[0].startTime).toBe('14:00')
+    })
+
+    it('propagates error without updating local state when API rejects', async () => {
+      vi.mocked(api.patch).mockRejectedValueOnce({ response: { status: 409, data: { message: 'Slot not available' } } })
+      const store = useAppointmentStore()
+      store.patientAppointments = [
+        { id: 3, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
+          doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
+          status: 'OPEN', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null,
+          ratingValue: null, ratingId: null },
+      ]
+
+      await expect(store.rescheduleAppointment(3, '2026-09-05', '14:00')).rejects.toBeTruthy()
+      expect(store.patientAppointments[0].scheduledDate).toBe('2026-09-01')
+    })
+  })
+
+  describe('SSE reschedule date/time propagation', () => {
+    it('connectAppointmentSse updates scheduledDate and startTime on patient appointment via SSE', () => {
+      const store = useAppointmentStore()
+      store.patientAppointments = [
+        { id: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
+          doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
+          status: 'OPEN', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null,
+          ratingValue: null, ratingId: null },
+      ]
+
+      const mockEs = makeMockEventSource()
+      const origEventSource = globalThis.EventSource
+      globalThis.EventSource = vi.fn(() => mockEs) as unknown as typeof EventSource
+
+      store.connectAppointmentSse()
+      mockEs._trigger('appointment-status', JSON.stringify({
+        appointmentId: 1,
+        newStatus: 'OPEN',
+        scheduledDate: '2026-09-10',
+        startTime: '14:00:00',
+      }))
+
+      expect(store.patientAppointments[0].scheduledDate).toBe('2026-09-10')
+      expect(store.patientAppointments[0].startTime).toBe('14:00:00')
+
+      globalThis.EventSource = origEventSource
+    })
+
+    it('connectAppointmentSse updates scheduledDate and startTime on doctor appointment via SSE', () => {
+      const store = useAppointmentStore()
+      store.doctorAppointments = [
+        { id: 2, scheduledDate: '2026-09-01', startTime: '10:00:00', patientFirstName: 'Pat',
+          patientSurname: 'Ient', patientRemoved: false, status: 'OPEN',
+          createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null },
+      ]
+
+      const mockEs = makeMockEventSource()
+      const origEventSource = globalThis.EventSource
+      globalThis.EventSource = vi.fn(() => mockEs) as unknown as typeof EventSource
+
+      store.connectAppointmentSse()
+      mockEs._trigger('appointment-status', JSON.stringify({
+        appointmentId: 2,
+        newStatus: 'OPEN',
+        scheduledDate: '2026-09-12',
+        startTime: '09:00:00',
+      }))
+
+      expect(store.doctorAppointments[0].scheduledDate).toBe('2026-09-12')
+      expect(store.doctorAppointments[0].startTime).toBe('09:00:00')
+
+      globalThis.EventSource = origEventSource
+    })
+  })
 })

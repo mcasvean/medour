@@ -21,7 +21,7 @@ class SseServiceTest {
     SseService service = new SseService(mockMapper);
     service.subscribe(); // registers a live (but unconnected) emitter
 
-    AppointmentStatusEventDto dto = new AppointmentStatusEventDto(1L, "CANCELED");
+    AppointmentStatusEventDto dto = new AppointmentStatusEventDto(1L, "CANCELED", null, null);
 
     // send() on an unconnected emitter throws; broadcastAppointmentStatus must
     // catch it

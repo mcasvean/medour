@@ -9,6 +9,7 @@ export interface SlotDisplay {
 
 export interface PatientAppointment {
   id: number
+  doctorId: number
   scheduledDate: string
   startTime: string
   doctorFirstName: string
@@ -111,8 +112,18 @@ export const useAppointmentStore = defineStore('appointment', {
       es.addEventListener('appointment-status', (e: MessageEvent) => {
         try {
           const p = JSON.parse(e.data)
-          const appt = this.patientAppointments.find(a => a.id === p.appointmentId)
-          if (appt) appt.status = p.newStatus
+          const patientAppt = this.patientAppointments.find(a => a.id === p.appointmentId)
+          if (patientAppt) {
+            patientAppt.status = p.newStatus
+            if (p.scheduledDate) patientAppt.scheduledDate = p.scheduledDate
+            if (p.startTime) patientAppt.startTime = p.startTime
+          }
+          const doctorAppt = this.doctorAppointments.find(a => a.id === p.appointmentId)
+          if (doctorAppt) {
+            doctorAppt.status = p.newStatus
+            if (p.scheduledDate) doctorAppt.scheduledDate = p.scheduledDate
+            if (p.startTime) doctorAppt.startTime = p.startTime
+          }
         } catch {
           // malformed JSON — silently drop
         }
@@ -219,6 +230,15 @@ export const useAppointmentStore = defineStore('appointment', {
         if (appt) appt.status = newStatus
       } catch {
         this.errorMessage = 'Failed to update appointment status.'
+      }
+    },
+
+    async rescheduleAppointment(id: number, scheduledDate: string, startTime: string) {
+      await api.patch(`/appointments/patient/${id}/reschedule`, { scheduledDate, startTime })
+      const appt = this.patientAppointments.find(a => a.id === id)
+      if (appt) {
+        appt.scheduledDate = scheduledDate
+        appt.startTime = startTime
       }
     },
   },

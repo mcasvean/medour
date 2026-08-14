@@ -87,7 +87,7 @@ development_status:
   # 7.1 depends on 6.1 (success toasts); 7.2 depends on 6.1 (error/success toasts)
   epic-7: in-progress
   7-1-user-profile-picture: review # depends-on: 6.1
-  7-2-patient-appointment-reschedule: ready-for-dev # depends-on: 6.1
+  7-2-patient-appointment-reschedule: review # depends-on: 6.1
   epic-7-retrospective: optional
 
   # ─── Epic 8: Speciality Management ──────────────────────────────────────────
