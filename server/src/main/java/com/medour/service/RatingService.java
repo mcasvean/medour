@@ -23,8 +23,8 @@ public class RatingService {
   private final UserRepository userRepository;
 
   public RatingService(AppointmentRepository appointmentRepository,
-                       RatingRepository ratingRepository,
-                       UserRepository userRepository) {
+      RatingRepository ratingRepository,
+      UserRepository userRepository) {
     this.appointmentRepository = appointmentRepository;
     this.ratingRepository = ratingRepository;
     this.userRepository = userRepository;

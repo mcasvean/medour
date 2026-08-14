@@ -64,9 +64,9 @@ class RatingControllerTest {
         .willReturn(buildRating(99L, 7));
 
     mockMvc.perform(post("/api/v1/ratings")
-            .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(new SubmitRatingRequest(5L, 7))))
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(new SubmitRatingRequest(5L, 7))))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").value(99))
         .andExpect(jsonPath("$.value").value(7));
@@ -76,9 +76,9 @@ class RatingControllerTest {
   @WithMockUser(username = "1", roles = "PATIENT")
   void submitRating_valueAboveMax_returns400() throws Exception {
     mockMvc.perform(post("/api/v1/ratings")
-            .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(new SubmitRatingRequest(5L, 11))))
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(new SubmitRatingRequest(5L, 11))))
         .andExpect(status().isBadRequest());
   }
 
@@ -86,9 +86,9 @@ class RatingControllerTest {
   @WithMockUser(username = "1", roles = "PATIENT")
   void submitRating_valueOutOfRange_returns400() throws Exception {
     mockMvc.perform(post("/api/v1/ratings")
-            .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(new SubmitRatingRequest(5L, 0))))
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(new SubmitRatingRequest(5L, 0))))
         .andExpect(status().isBadRequest());
   }
 
@@ -99,9 +99,9 @@ class RatingControllerTest {
         .willThrow(new RatingAlreadyExistsException());
 
     mockMvc.perform(post("/api/v1/ratings")
-            .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(new SubmitRatingRequest(5L, 7))))
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(new SubmitRatingRequest(5L, 7))))
         .andExpect(status().isConflict());
   }
 
@@ -112,18 +112,18 @@ class RatingControllerTest {
         .willThrow(new ResponseStatusException(FORBIDDEN, "Not your appointment"));
 
     mockMvc.perform(post("/api/v1/ratings")
-            .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(new SubmitRatingRequest(5L, 7))))
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(new SubmitRatingRequest(5L, 7))))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void submitRating_unauthenticated_returns401() throws Exception {
     mockMvc.perform(post("/api/v1/ratings")
-            .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(new SubmitRatingRequest(5L, 7))))
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(new SubmitRatingRequest(5L, 7))))
         .andExpect(status().isUnauthorized());
   }
 }

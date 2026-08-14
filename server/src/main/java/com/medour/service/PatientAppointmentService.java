@@ -17,7 +17,7 @@ public class PatientAppointmentService {
   private final RatingRepository ratingRepository;
 
   public PatientAppointmentService(AppointmentRepository appointmentRepository,
-                                   RatingRepository ratingRepository) {
+      RatingRepository ratingRepository) {
     this.appointmentRepository = appointmentRepository;
     this.ratingRepository = ratingRepository;
   }
