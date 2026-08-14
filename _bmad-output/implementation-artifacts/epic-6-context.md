@@ -16,6 +16,7 @@ Epic 6 unifies four frontend user experience improvements that make the applicat
 ## Requirements & Constraints
 
 **Toast notifications:**
+
 - Max 5 toasts visible simultaneously; oldest is auto-removed when the limit is exceeded.
 - Types: `error` (red, alert icon), `success` (green, check icon), `warning` (amber, warning icon).
 - Auto-dismiss after 5 000 ms; manual close via ✕ button dismisses immediately.
@@ -24,18 +25,21 @@ Epic 6 unifies four frontend user experience improvements that make the applicat
 - Single `ToastNotification.vue` component mounted once in `App.vue`; all notifications dispatched through `toastStore`.
 
 **Required field indicators:**
+
 - Red asterisk (`#EF5350` or Vuetify `color: error`) appended to label text of required fields.
 - Applied to: PatientRegisterForm (email, password, first name, surname); DoctorRegisterForm (above + speciality); AccountView (first name, surname); AdminUserForm (email, first name, surname, role; password required in add mode only); ChangePasswordView (current, new, confirm password).
 - Optional fields (age, gender, city, address, county) show no asterisk on any form.
 - Replace existing inline VAlert banners in AccountView and ChangePasswordView with toast calls.
 
 **Header & navigation:**
+
 - App name "Medour" is clickable to `/` when authenticated; plain text and non-clickable when unauthenticated.
 - Logout button removed from header `#append` slot entirely.
 - New "Sign Out" list item added to burger menu as the last item, styled red (`color="error"`), separated from other items by a `VDivider`.
 - Gap between role chip and username text increased from `ga-2` to `ga-4` for better visual breathing room.
 
 **Light/Dark mode:**
+
 - Use Vuetify's `useTheme()` composable to switch between `'light'` and `'dark'` themes at runtime.
 - Toggle button: sun icon (`mdi-weather-sunny`) when light is active, moon icon (`mdi-weather-night`) when dark is active.
 - Theme preference persisted to `localStorage` under key `'medour_theme'`.
@@ -46,6 +50,7 @@ Epic 6 unifies four frontend user experience improvements that make the applicat
 ## Technical Decisions
 
 **Pinia store for toasts (toastStore):**
+
 - New `toastStore` added alongside existing domain-scoped stores (authStore, appointmentStore, userStore, doctorStore).
 - State: `toasts: Toast[]` array with max length 5.
 - Interface: `Toast { id: number; message: string; type: 'error' | 'success' | 'warning' }`.
@@ -55,16 +60,19 @@ Epic 6 unifies four frontend user experience improvements that make the applicat
   - `dismiss(id: number)`: remove toast by id.
 
 **Component architecture:**
+
 - `ToastNotification.vue` (new): fixed bottom-right component, `v-for` over `toastStore.toasts`, CSS transitions for enter/leave.
 - Mount once in `App.vue` (after `</VMain>`), never import per-view.
 
 **Theme integration:**
+
 - In `App.vue` `<script setup>`: import `useTheme` from `'vuetify'`, compute `isDark` from `theme.global.name.value`.
 - In `onMounted`, read `localStorage.getItem('medour_theme')` and apply if present.
 - Toggle function: flip `theme.global.name.value` and persist to localStorage.
 - Header `#append` prepends the toggle button before the role chip div.
 
 **Styling conventions:**
+
 - Required field asterisk: Vuetify label slot (`<template #label>Label <span class="text-error">*</span></template>`).
 - Toast colours: error `#EF5350`, success `#4CAF50`, warning `#FB8C00`.
 - Logout button: Vuetify `color="error"` for red tint.
