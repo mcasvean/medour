@@ -16,21 +16,30 @@
           @click="authStore.isAuthenticated && router.push('/')"
         >Medour</span>
       </VAppBarTitle>
-      <template v-if="authStore.isAuthenticated" #append>
+      <template #append>
         <div class="d-flex align-center ga-4 mr-1">
-          <VChip
-            size="small"
-            label
-            variant="flat"
+          <VBtn
+            :icon="isDark ? 'mdi-weather-night' : 'mdi-weather-sunny'"
             color="white"
-            class="font-weight-bold role-chip"
-            :style="{ color: roleChipColor }"
-          >
-            {{ authStore.user?.role }}
-          </VChip>
-          <span class="text-white text-body-2 d-none d-sm-inline font-weight-medium">
-            {{ authStore.user?.firstName }} {{ authStore.user?.surname }}
-          </span>
+            variant="text"
+            density="comfortable"
+            @click="toggleTheme"
+          />
+          <template v-if="authStore.isAuthenticated">
+            <VChip
+              size="small"
+              label
+              variant="flat"
+              color="white"
+              class="font-weight-bold role-chip"
+              :style="{ color: roleChipColor }"
+            >
+              {{ authStore.user?.role }}
+            </VChip>
+            <span class="text-white text-body-2 d-none d-sm-inline font-weight-medium">
+              {{ authStore.user?.firstName }} {{ authStore.user?.surname }}
+            </span>
+          </template>
         </div>
       </template>
     </VAppBar>
@@ -114,7 +123,7 @@
       </VList>
     </VNavigationDrawer>
 
-    <VMain style="background: #F5F7FA; min-height: 100vh;">
+    <VMain>
       <RouterView />
     </VMain>
     <ToastNotification />
@@ -122,17 +131,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useTheme } from 'vuetify'
 import { useAuthStore } from './stores/authStore'
 import ToastNotification from './components/ToastNotification.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
+const theme = useTheme()
 
 const drawer = ref(false)
 const isAdmin = computed(() => authStore.user?.role === 'ADMIN')
+const isDark = computed(() => theme.global.name.value === 'dark')
 
 // High-contrast chip: white background, role-specific text colour on the primary bar
 const roleChipColor = computed(() => {
@@ -144,6 +156,23 @@ const roleChipColor = computed(() => {
 })
 
 watch(() => route.path, () => { drawer.value = false })
+
+onMounted(() => {
+  try {
+    const stored = localStorage.getItem('medour_theme')
+    if (stored === 'dark' || stored === 'light') {
+      theme.global.name.value = stored
+    }
+  } catch { /* ignore — storage unavailable (e.g. strict incognito) */ }
+})
+
+function toggleTheme() {
+  const next = isDark.value ? 'light' : 'dark'
+  theme.global.name.value = next
+  try {
+    localStorage.setItem('medour_theme', next)
+  } catch { /* ignore — storage unavailable */ }
+}
 
 function logout() {
   authStore.clearAuth()

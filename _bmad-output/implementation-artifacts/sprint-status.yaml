@@ -80,7 +80,7 @@ development_status:
   6-1-toast-notification-system: review
   6-2-required-field-indicators: review # depends-on: 6.1
   6-3-header-navigation-improvements: review
-  6-4-light-dark-mode: ready-for-dev
+  6-4-light-dark-mode: review
   epic-6-retrospective: optional
 
   # ─── Epic 7: Profile & Appointment Enhancements ─────────────────────────────

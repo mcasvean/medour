@@ -2,9 +2,9 @@
 title: "Light/Dark Mode Toggle"
 type: "feature"
 created: "2026-08-14"
-status: "ready-for-dev"
+status: "done"
 review_loop_iteration: 0
-baseline_commit: ""
+baseline_commit: "3242379690c7fbd1f506e9a16151130f768a6810"
 context: []
 ---
 
@@ -58,9 +58,9 @@ context: []
 
 **Execution:**
 
-- [ ] `client/src/App.vue` — in `<script setup>`: `import { useTheme } from 'vuetify'`; `const theme = useTheme()`; `const isDark = computed(() => theme.global.name.value === 'dark')`; add `onMounted` (import from vue): read `const stored = localStorage.getItem('medour_theme')`; if stored is `'dark'` or `'light'`, call `theme.global.name.value = stored`; add `function toggleTheme() { const next = isDark.value ? 'light' : 'dark'; theme.global.name.value = next; localStorage.setItem('medour_theme', next) }`
-- [ ] `client/src/App.vue` — in `#append` template, add `<VBtn :icon="isDark ? 'mdi-weather-night' : 'mdi-weather-sunny'" color="white" variant="text" density="comfortable" @click="toggleTheme" />` as first element inside the `#append` div (before the role chip div)
-- [ ] `client/src/App.vue` — remove `style="background: #F5F7FA; min-height: 100vh;"` from `<VMain>` (leave `min-height: 100vh` via CSS class if needed, but remove the hardcoded background colour)
+- [x] `client/src/App.vue` — in `<script setup>`: `import { useTheme } from 'vuetify'`; `const theme = useTheme()`; `const isDark = computed(() => theme.global.name.value === 'dark')`; add `onMounted` (import from vue): read `const stored = localStorage.getItem('medour_theme')`; if stored is `'dark'` or `'light'`, call `theme.global.name.value = stored`; add `function toggleTheme() { const next = isDark.value ? 'light' : 'dark'; theme.global.name.value = next; localStorage.setItem('medour_theme', next) }`
+- [x] `client/src/App.vue` — in `#append` template, add `<VBtn :icon="isDark ? 'mdi-weather-night' : 'mdi-weather-sunny'" color="white" variant="text" density="comfortable" @click="toggleTheme" />` as first element inside the `#append` div (before the role chip div)
+- [x] `client/src/App.vue` — remove `style="background: #F5F7FA; min-height: 100vh;"` from `<VMain>` (leave `min-height: 100vh` via CSS class if needed, but remove the hardcoded background colour)
 
 ## Acceptance Criteria
 
@@ -78,3 +78,17 @@ context: []
 
 - `cd client && npm run build` — expected: zero TypeScript errors
 - `cd client && npm run test` — expected: all existing tests pass
+
+## Suggested Review Order
+
+- Toggle VBtn in #append (always visible); role chip + username wrapped in auth guard.
+  [`App.vue:20`](../../client/src/App.vue#L20)
+
+- `isDark` computed and `toggleTheme()` — localStorage wrapped in try/catch for storage errors.
+  [`App.vue:157`](../../client/src/App.vue#L157)
+
+- `onMounted` theme restore — validates `'dark'|'light'` before applying; silent on storage error.
+  [`App.vue:148`](../../client/src/App.vue#L148)
+
+- `VMain` style removed; Vuetify dark surface colour now applies in dark mode.
+  [`App.vue:126`](../../client/src/App.vue#L126)

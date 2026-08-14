@@ -39,6 +39,14 @@ Items collected during implementation reviews that are real but out of scope for
   summary: Burger menu Sign Out item and clickable app title lack aria-label / keyboard-only navigation hints.
   evidence: Blind hunter finding; accessibility gap not in spec; should be addressed in a dedicated accessibility pass.
 
+- source_spec: `spec-6-4-light-dark-mode.md`
+  summary: Theme toggle button lacks an aria-label; screen readers announce only the icon name rather than the action.
+  evidence: Blind hunter finding; accessibility gap not in spec.
+
+- source_spec: `spec-6-4-light-dark-mode.md`
+  summary: App ignores OS-level prefers-color-scheme — dark-mode users must manually toggle instead of getting the right theme on first load.
+  evidence: Edge case hunter finding; feature request not in spec; localStorage preference takes priority once set.
+
 - source_spec: `spec-5-1-rating-submission-on-completed-appointments.md`
   summary: PatientAppointmentService.getHistory executes N+1 queries — one ratingRepository.findByAppointmentId call per appointment row instead of a single LEFT JOIN.
   evidence: Blind hunter finding; causes a linear increase in DB round-trips for patients with many appointments.
