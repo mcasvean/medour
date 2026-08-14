@@ -2,9 +2,9 @@
 title: "Required Field Visual Indicators"
 type: "feature"
 created: "2026-08-14"
-status: "ready-for-dev"
+status: "done"
 review_loop_iteration: 0
-baseline_commit: ""
+baseline_commit: "359c51ff5f8ba5a589b52d38c29e38451762e8da"
 context: ["spec-6-1-toast-notification-system"]
 ---
 
@@ -66,11 +66,11 @@ context: ["spec-6-1-toast-notification-system"]
 
 **Execution:**
 
-- [ ] `client/src/views/PatientRegisterForm.vue` — on VTextField for `email`, `password`, `firstName`, `surname`: use Vuetify's label slot (`<template #label>Label <span class="text-error">*</span></template>`) to append a red asterisk
-- [ ] `client/src/views/DoctorRegisterForm.vue` — same label-slot treatment for `email`, `password`, `firstName`, `surname`, `speciality`
-- [ ] `client/src/views/AccountView.vue` — label-slot asterisk on `firstName` and `surname` VTextFields; `import { useToastStore }` from `'../stores/toastStore'`; replace `successMessage` assignment with `toastStore.show('Profile updated.', 'success')`; replace `errorMessage` assignment with `toastStore.showError(error)`; delete both `ref()` declarations
-- [ ] `client/src/components/AdminUserForm.vue` — label-slot asterisk on `email`, `firstName`, `surname`, `role` VTextField/VSelect; password field label asterisk conditionally rendered with `v-if="props.mode === 'add'"`
-- [ ] `client/src/views/ChangePasswordView.vue` — label-slot asterisk on `currentPassword`, `newPassword`, `confirmPassword`; replace inline alert refs with `toastStore` calls
+- [x] `client/src/views/PatientRegisterForm.vue` — on VTextField for `email`, `password`, `firstName`, `surname`: use Vuetify's label slot (`<template #label>Label <span class="text-error">*</span></template>`) to append a red asterisk
+- [x] `client/src/views/DoctorRegisterForm.vue` — same label-slot treatment for `email`, `password`, `firstName`, `surname`, `speciality`
+- [x] `client/src/views/AccountView.vue` — label-slot asterisk on `firstName` and `surname` VTextFields; `import { useToastStore }` from `'../stores/toastStore'`; replace `successMessage` assignment with `toastStore.show('Profile updated.', 'success')`; replace `errorMessage` assignment with `toastStore.showError(error)`; delete both `ref()` declarations
+- [x] `client/src/components/AdminUserForm.vue` — label-slot asterisk on `email`, `firstName`, `surname`, `role` VTextField/VSelect; password field label asterisk conditionally rendered with `v-if="props.mode === 'add'"`
+- [x] `client/src/views/ChangePasswordView.vue` — label-slot asterisk on `currentPassword`, `newPassword`, `confirmPassword`; replace inline alert refs with `toastStore` calls
 
 ## Acceptance Criteria
 
@@ -88,3 +88,24 @@ context: ["spec-6-1-toast-notification-system"]
 
 - `cd client && npm run build` — expected: zero TypeScript errors
 - `cd client && npm run test` — expected: all existing tests pass
+
+## Suggested Review Order
+
+**Toast migration (highest-impact change)**
+
+- Inline VAlert refs removed; toastStore wired for load-error, save-success, and save-error.
+  [`AccountView.vue:88`](../../client/src/views/AccountView.vue#L88)
+
+- Password mismatch, success, and 403 error paths each route to typed toast calls.
+  [`ChangePasswordView.vue:73`](../../client/src/views/ChangePasswordView.vue#L73)
+
+**Required-field asterisks**
+
+- Label-slot pattern on all four required patient-registration fields.
+  [`PatientRegisterForm.vue:55`](../../client/src/views/PatientRegisterForm.vue#L55)
+
+- Same pattern plus speciality; verify age/gender deliberately left unmarked (optional per spec).
+  [`DoctorRegisterForm.vue:57`](../../client/src/views/DoctorRegisterForm.vue#L57)
+
+- Email and password asterisks inside create-mode block; firstName/surname/role always visible.
+  [`AdminUserForm.vue:16`](../../client/src/components/AdminUserForm.vue#L16)

@@ -24,7 +24,9 @@
             required
             class="mb-3"
             @click:append-inner="showCurrent = !showCurrent"
-          />
+          >
+            <template #label>Current Password <span class="text-error ml-1">*</span></template>
+          </VTextField>
           <VTextField
             v-model="newPassword"
             label="New Password"
@@ -36,7 +38,9 @@
             required
             class="mb-3"
             @click:append-inner="showNew = !showNew"
-          />
+          >
+            <template #label>New Password <span class="text-error ml-1">*</span></template>
+          </VTextField>
           <VTextField
             v-model="confirmPassword"
             label="Confirm New Password"
@@ -48,11 +52,9 @@
             required
             class="mb-4"
             @click:append-inner="showConfirm = !showConfirm"
-          />
-
-          <VAlert v-if="errorMessage" type="error" variant="tonal" class="mb-4" rounded="lg">
-            {{ errorMessage }}
-          </VAlert>
+          >
+            <template #label>Confirm New Password <span class="text-error ml-1">*</span></template>
+          </VTextField>
 
           <VBtn type="submit" color="primary" size="large" block :loading="saving" rounded="lg">
             Change Password
@@ -68,24 +70,23 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../api'
 import { useAuthStore } from '../stores/authStore'
+import { useToastStore } from '../stores/toastStore'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const toastStore = useToastStore()
 
 const currentPassword = ref('')
 const newPassword = ref('')
 const confirmPassword = ref('')
-const errorMessage = ref('')
 const saving = ref(false)
 const showCurrent = ref(false)
 const showNew = ref(false)
 const showConfirm = ref(false)
 
 async function handleSubmit() {
-  errorMessage.value = ''
-
   if (newPassword.value !== confirmPassword.value) {
-    errorMessage.value = 'New passwords do not match'
+    toastStore.show('New passwords do not match', 'error')
     return
   }
 
@@ -96,10 +97,11 @@ async function handleSubmit() {
       newPassword: newPassword.value,
     })
     authStore.updateUser({ mustChangePassword: false })
+    toastStore.show('Password changed successfully.', 'success')
     router.push('/')
   } catch (err: unknown) {
     const status = (err as { response?: { status?: number } })?.response?.status
-    errorMessage.value = status === 403 ? 'Current password is incorrect' : 'An error occurred. Please try again.'
+    toastStore.show(status === 403 ? 'Current password is incorrect' : 'An error occurred. Please try again.', 'error')
   } finally {
     saving.value = false
   }

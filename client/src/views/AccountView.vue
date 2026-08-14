@@ -39,10 +39,14 @@
               />
             </VCol>
             <VCol cols="12" sm="6">
-              <VTextField v-model="profile.firstName" label="First Name" variant="outlined" required />
+              <VTextField v-model="profile.firstName" label="First Name" variant="outlined" required>
+                <template #label>First Name <span class="text-error ml-1">*</span></template>
+              </VTextField>
             </VCol>
             <VCol cols="12" sm="6">
-              <VTextField v-model="profile.surname" label="Surname" variant="outlined" required />
+              <VTextField v-model="profile.surname" label="Surname" variant="outlined" required>
+                <template #label>Surname <span class="text-error ml-1">*</span></template>
+              </VTextField>
             </VCol>
             <VCol cols="12" sm="4">
               <VTextField v-model.number="profile.age" label="Age" type="number" variant="outlined" />
@@ -71,13 +75,6 @@
             </template>
           </VRow>
 
-          <VAlert v-if="successMessage" type="success" variant="tonal" class="mb-4" rounded="lg">
-            {{ successMessage }}
-          </VAlert>
-          <VAlert v-if="errorMessage" type="error" variant="tonal" class="mb-4" rounded="lg">
-            {{ errorMessage }}
-          </VAlert>
-
           <VBtn type="submit" color="primary" :loading="saving" rounded="lg">
             <VIcon start icon="mdi-content-save-outline" />Save Changes
           </VBtn>
@@ -91,6 +88,7 @@
 import { ref, onMounted } from 'vue'
 import api from '../api/index'
 import { useAuthStore } from '../stores/authStore'
+import { useToastStore } from '../stores/toastStore'
 
 interface ProfileData {
   id: number
@@ -107,19 +105,18 @@ interface ProfileData {
 }
 
 const authStore = useAuthStore()
+const toastStore = useToastStore()
 
 const profile = ref<ProfileData | null>(null)
 const loading = ref(true)
 const saving = ref(false)
-const successMessage = ref('')
-const errorMessage = ref('')
 
 onMounted(async () => {
   try {
     const res = await api.get<ProfileData>('/users/me')
     profile.value = res.data
   } catch {
-    errorMessage.value = 'Failed to load profile.'
+    toastStore.show('Failed to load profile.', 'error')
   } finally {
     loading.value = false
   }
@@ -128,8 +125,6 @@ onMounted(async () => {
 async function handleSubmit() {
   if (!profile.value) return
   saving.value = true
-  successMessage.value = ''
-  errorMessage.value = ''
   try {
     const res = await api.put<ProfileData>('/users/me', {
       firstName: profile.value.firstName,
@@ -143,10 +138,9 @@ async function handleSubmit() {
     })
     profile.value = res.data
     authStore.updateUser({ firstName: res.data.firstName, surname: res.data.surname })
-    successMessage.value = 'Profile updated successfully.'
+    toastStore.show('Profile updated.', 'success')
   } catch (err: unknown) {
-    const axiosErr = err as { response?: { data?: { error?: string } } }
-    errorMessage.value = axiosErr.response?.data?.error ?? 'Failed to update profile.'
+    toastStore.showError(err)
   } finally {
     saving.value = false
   }

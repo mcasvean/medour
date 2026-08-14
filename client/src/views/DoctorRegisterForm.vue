@@ -57,13 +57,19 @@ function handleSubmit() {
       <VForm @submit.prevent="handleSubmit">
         <VRow>
           <VCol cols="12" sm="6">
-            <VTextField v-model="firstName" label="First Name" prepend-inner-icon="mdi-account-outline" variant="outlined" required />
+            <VTextField v-model="firstName" label="First Name" prepend-inner-icon="mdi-account-outline" variant="outlined" required>
+              <template #label>First Name <span class="text-error ml-1">*</span></template>
+            </VTextField>
           </VCol>
           <VCol cols="12" sm="6">
-            <VTextField v-model="surname" label="Surname" variant="outlined" required />
+            <VTextField v-model="surname" label="Surname" variant="outlined" required>
+              <template #label>Surname <span class="text-error ml-1">*</span></template>
+            </VTextField>
           </VCol>
           <VCol cols="12">
-            <VTextField v-model="email" label="Email" type="email" prepend-inner-icon="mdi-email-outline" variant="outlined" autocomplete="email" required />
+            <VTextField v-model="email" label="Email" type="email" prepend-inner-icon="mdi-email-outline" variant="outlined" autocomplete="email" required>
+              <template #label>Email <span class="text-error ml-1">*</span></template>
+            </VTextField>
           </VCol>
           <VCol cols="12">
             <VTextField
@@ -76,7 +82,9 @@ function handleSubmit() {
               autocomplete="new-password"
               required
               @click:append-inner="showPassword = !showPassword"
-            />
+            >
+              <template #label>Password <span class="text-error ml-1">*</span></template>
+            </VTextField>
           </VCol>
           <VCol cols="12" sm="6">
             <VTextField v-model.number="age" label="Age" type="number" variant="outlined" required />
@@ -85,7 +93,9 @@ function handleSubmit() {
             <VSelect v-model="gender" label="Gender" :items="['Male', 'Female', 'Other']" variant="outlined" required />
           </VCol>
           <VCol cols="12">
-            <VTextField v-model="speciality" label="Speciality" prepend-inner-icon="mdi-medical-bag" variant="outlined" required />
+            <VTextField v-model="speciality" label="Speciality" prepend-inner-icon="mdi-medical-bag" variant="outlined" required>
+              <template #label>Speciality <span class="text-error ml-1">*</span></template>
+            </VTextField>
           </VCol>
           <VCol cols="12" sm="4">
             <VTextField v-model="county" label="County" variant="outlined" required />

@@ -27,6 +27,14 @@ Items collected during implementation reviews that are real but out of scope for
   summary: Toast container and cards are missing accessibility attributes — role="alert", aria-live="polite", aria-atomic="true" — so screen readers do not announce new notifications.
   evidence: Blind hunter finding; accessibility gap not covered by spec; should be addressed in a dedicated accessibility pass.
 
+- source_spec: `spec-6-2-required-field-indicators.md`
+  summary: DoctorRegisterForm age and gender fields carry a `required` HTML attribute but are spec'd as optional — asterisks correctly omitted, but the pre-existing `required` attribute creates a false browser-native constraint.
+  evidence: Edge case hunter finding; pre-existing before this story; removal should be a targeted cleanup.
+
+- source_spec: `spec-6-2-required-field-indicators.md`
+  summary: Required form fields lack aria-required="true" — screen readers cannot identify mandatory fields from the HTML alone.
+  evidence: Blind hunter finding; accessibility gap not in spec; should be addressed in a dedicated accessibility pass.
+
 - source_spec: `spec-5-1-rating-submission-on-completed-appointments.md`
   summary: PatientAppointmentService.getHistory executes N+1 queries — one ratingRepository.findByAppointmentId call per appointment row instead of a single LEFT JOIN.
   evidence: Blind hunter finding; causes a linear increase in DB round-trips for patients with many appointments.

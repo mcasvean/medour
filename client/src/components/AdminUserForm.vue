@@ -16,7 +16,9 @@
                 variant="outlined"
                 required
                 prepend-inner-icon="mdi-email-outline"
-              />
+              >
+                <template #label>Email <span class="text-error ml-1">*</span></template>
+              </VTextField>
             </VCol>
             <VCol cols="12">
               <VTextField
@@ -28,14 +30,20 @@
                 required
                 prepend-inner-icon="mdi-lock-outline"
                 @click:append-inner="showPassword = !showPassword"
-              />
+              >
+                <template #label>Password <span class="text-error ml-1">*</span></template>
+              </VTextField>
             </VCol>
           </template>
           <VCol cols="12" sm="6">
-            <VTextField v-model="form.firstName" label="First Name" variant="outlined" required />
+            <VTextField v-model="form.firstName" label="First Name" variant="outlined" required>
+              <template #label>First Name <span class="text-error ml-1">*</span></template>
+            </VTextField>
           </VCol>
           <VCol cols="12" sm="6">
-            <VTextField v-model="form.surname" label="Surname" variant="outlined" required />
+            <VTextField v-model="form.surname" label="Surname" variant="outlined" required>
+              <template #label>Surname <span class="text-error ml-1">*</span></template>
+            </VTextField>
           </VCol>
           <VCol cols="12" sm="6">
             <VSelect
@@ -44,7 +52,9 @@
               :items="['PATIENT', 'DOCTOR', 'ADMIN']"
               variant="outlined"
               required
-            />
+            >
+              <template #label>Role <span class="text-error ml-1">*</span></template>
+            </VSelect>
           </VCol>
           <VCol cols="12" sm="6">
             <VTextField v-model.number="form.age" label="Age" type="number" min="1" max="150" variant="outlined" />
