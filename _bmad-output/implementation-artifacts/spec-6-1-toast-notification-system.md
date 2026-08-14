@@ -2,9 +2,9 @@
 title: "Toast Notification System"
 type: "feature"
 created: "2026-08-14"
-status: "ready-for-dev"
+status: "done"
 review_loop_iteration: 0
-baseline_commit: ""
+baseline_commit: "bf554a81fbc88845125c05fbb150130fd549eab4"
 context: []
 ---
 
@@ -61,9 +61,9 @@ context: []
 
 **Execution:**
 
-- [ ] `client/src/stores/toastStore.ts` — define `Toast` interface `{ id: number; message: string; type: 'error' | 'success' | 'warning' }`; `useToastStore` with `toasts: Toast[]`; `show(message, type)`: generate `id = Date.now()`, push to array (pop oldest if length > 5), call `setTimeout(() => dismiss(id), 5000)`; `showError(error: unknown)`: extract `(error as AxiosError)?.response?.data?.message ?? (error as AxiosError)?.response?.data?.error ?? 'An unexpected error occurred'`, call `show(msg, 'error')`; `dismiss(id)`: filter toasts by id
-- [ ] `client/src/components/ToastNotification.vue` — fixed position `bottom: 24px; right: 24px`; flex column gap; `v-for="toast in toastStore.toasts" :key="toast.id"`; card per toast with: left border colour by type (error=`#EF5350`, success=`#4CAF50`, warning=`#FB8C00`); leading icon (`mdi-alert-circle` error, `mdi-check-circle` success, `mdi-alert` warning); message text; `VBtn icon="mdi-close" size="x-small"` calling `toastStore.dismiss(toast.id)`; `<TransitionGroup name="toast">` wrapping the list for slide-up animation
-- [ ] `client/src/App.vue` — import `ToastNotification`; add `<ToastNotification />` as last child inside `<VApp>`, after `</VMain>`
+- [x] `client/src/stores/toastStore.ts` — define `Toast` interface `{ id: number; message: string; type: 'error' | 'success' | 'warning' }`; `useToastStore` with `toasts: Toast[]`; `show(message, type)`: generate `id = Date.now()`, push to array (pop oldest if length > 5), call `setTimeout(() => dismiss(id), 5000)`; `showError(error: unknown)`: extract `(error as AxiosError)?.response?.data?.message ?? (error as AxiosError)?.response?.data?.error ?? 'An unexpected error occurred'`, call `show(msg, 'error')`; `dismiss(id)`: filter toasts by id
+- [x] `client/src/components/ToastNotification.vue` — fixed position `bottom: 24px; right: 24px`; flex column gap; `v-for="toast in toastStore.toasts" :key="toast.id"`; card per toast with: left border colour by type (error=`#EF5350`, success=`#4CAF50`, warning=`#FB8C00`); leading icon (`mdi-alert-circle` error, `mdi-check-circle` success, `mdi-alert` warning); message text; `VBtn icon="mdi-close" size="x-small"` calling `toastStore.dismiss(toast.id)`; `<TransitionGroup name="toast">` wrapping the list for slide-up animation
+- [x] `client/src/App.vue` — import `ToastNotification`; add `<ToastNotification />` as last child inside `<VApp>`, after `</VMain>`
 
 ## Acceptance Criteria
 
@@ -81,3 +81,31 @@ context: []
 
 - `cd client && npm run build` — expected: zero TypeScript errors
 - `cd client && npm run test` — expected: all existing tests pass
+
+## Suggested Review Order
+
+**Store logic — entry point**
+
+- Monotonic counter + max-cap + auto-dismiss timer wired together atomically.
+  [`toastStore.ts:13`](../../client/src/stores/toastStore.ts#L13)
+
+- `showError` AxiosError extraction with two-field fallback and generic default.
+  [`toastStore.ts:27`](../../client/src/stores/toastStore.ts#L27)
+
+**Component rendering**
+
+- `TransitionGroup`, per-type icon/colour lookup, close-button dismiss binding.
+  [`ToastNotification.vue:1`](../../client/src/components/ToastNotification.vue#L1)
+
+- Fixed bottom-right positioning, `pointer-events: none` container + `all` cards, and enter/leave animations.
+  [`ToastNotification.vue:45`](../../client/src/components/ToastNotification.vue#L45)
+
+**App integration**
+
+- Single mount point after `</VMain>` — global, not per-view.
+  [`App.vue:108`](../../client/src/App.vue#L108)
+
+**Tests**
+
+- Cap-at-5, auto-dismiss, `showError` fallback chains, and dismiss coverage.
+  [`toastStore.test.ts:1`](../../client/src/stores/__tests__/toastStore.test.ts#L1)

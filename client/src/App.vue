@@ -105,6 +105,7 @@
     <VMain style="background: #F5F7FA; min-height: 100vh;">
       <RouterView />
     </VMain>
+    <ToastNotification />
   </VApp>
 </template>
 
@@ -112,6 +113,7 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from './stores/authStore'
+import ToastNotification from './components/ToastNotification.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()

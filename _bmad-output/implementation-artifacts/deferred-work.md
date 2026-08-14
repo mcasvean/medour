@@ -19,6 +19,14 @@ Items collected during implementation reviews that are real but out of scope for
   summary: HealthControllerTest uses @AutoConfigureMockMvc(addFilters=false) so it never validates the assembled SecurityFilterChain.
   evidence: Verification gap finding; a change from anyRequest().permitAll() to anyRequest().authenticated() would not be caught by this test.
 
+- source_spec: `spec-6-1-toast-notification-system.md`
+  summary: ToastNotification.vue has no component-level render tests — DOM output, icon selection per type, close-button wiring, and CSS transition classes are untested.
+  evidence: Verification gap finding; store tests verify state mutations but not rendering; @vue/test-utils component mount tests would be needed.
+
+- source_spec: `spec-6-1-toast-notification-system.md`
+  summary: Toast container and cards are missing accessibility attributes — role="alert", aria-live="polite", aria-atomic="true" — so screen readers do not announce new notifications.
+  evidence: Blind hunter finding; accessibility gap not covered by spec; should be addressed in a dedicated accessibility pass.
+
 - source_spec: `spec-5-1-rating-submission-on-completed-appointments.md`
   summary: PatientAppointmentService.getHistory executes N+1 queries — one ratingRepository.findByAppointmentId call per appointment row instead of a single LEFT JOIN.
   evidence: Blind hunter finding; causes a linear increase in DB round-trips for patients with many appointments.
