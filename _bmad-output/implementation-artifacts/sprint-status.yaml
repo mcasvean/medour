@@ -76,18 +76,18 @@ development_status:
   # ─── Epic 6: UX Polish & Global Feedback ───────────────────────────────────
   # Dependencies: 6.1 must be done before 6.2 (toast calls replace inline alerts)
   # 6.3 and 6.4 are independent; all four can start once 6.1 is merged
-  epic-6: in-progress
-  6-1-toast-notification-system: review
-  6-2-required-field-indicators: review # depends-on: 6.1
-  6-3-header-navigation-improvements: review
-  6-4-light-dark-mode: review
+  epic-6: done
+  6-1-toast-notification-system: done
+  6-2-required-field-indicators: done # depends-on: 6.1
+  6-3-header-navigation-improvements: done
+  6-4-light-dark-mode: done
   epic-6-retrospective: optional
 
   # ─── Epic 7: Profile & Appointment Enhancements ─────────────────────────────
   # 7.1 depends on 6.1 (success toasts); 7.2 depends on 6.1 (error/success toasts)
-  epic-7: in-progress
-  7-1-user-profile-picture: review # depends-on: 6.1
-  7-2-patient-appointment-reschedule: review # depends-on: 6.1
+  epic-7: done
+  7-1-user-profile-picture: done # depends-on: 6.1
+  7-2-patient-appointment-reschedule: done # depends-on: 6.1
   epic-7-retrospective: optional
 
   # ─── Epic 8: Speciality Management ──────────────────────────────────────────
