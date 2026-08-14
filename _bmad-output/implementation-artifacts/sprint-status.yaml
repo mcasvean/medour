@@ -36,28 +36,28 @@ tracking_system: file-system
 story_location: D:\Projects\learning\GIT\bmad-v2\_bmad-output\implementation-artifacts
 development_status:
   epic-1: done
-  1-1-project-scaffold-development-environment: review
-  1-2-user-registration-patient-doctor: review
-  1-3-user-login-jwt-session: review
-  1-4-role-display-route-guards: review
-  1-5-my-preferences-account-info: review
-  1-6-password-management: review
+  1-1-project-scaffold-development-environment: done
+  1-2-user-registration-patient-doctor: done
+  1-3-user-login-jwt-session: done
+  1-4-role-display-route-guards: done
+  1-5-my-preferences-account-info: done
+  1-6-password-management: done
   epic-1-retrospective: optional
 
   epic-2: done
-  2-1-doctor-search-filter: review
-  2-2-slot-availability-display: review
-  2-3-multi-step-appointment-booking-flow: review
-  2-4-appointment-confirmation-whereby-room-creation: review
+  2-1-doctor-search-filter: done
+  2-2-slot-availability-display: done
+  2-3-multi-step-appointment-booking-flow: done
+  2-4-appointment-confirmation-whereby-room-creation: done
   epic-2-retrospective: optional
 
   epic-3: done
-  3-1-patient-appointment-history-view: review
-  3-2-real-time-appointment-status-updates: review
-  3-3-video-consultation-join-button: review
-  3-4-auto-cancellation-background-job: review
-  3-5-doctor-my-appointments-view: review
-  3-6-doctor-appointment-actions: review
+  3-1-patient-appointment-history-view: done
+  3-2-real-time-appointment-status-updates: done
+  3-3-video-consultation-join-button: done
+  3-4-auto-cancellation-background-job: done
+  3-5-doctor-my-appointments-view: done
+  3-6-doctor-appointment-actions: done
   epic-3-retrospective: optional
 
   epic-4: done
@@ -67,8 +67,8 @@ development_status:
   4-4-admin-appointment-management: done
   epic-4-retrospective: optional
 
-  epic-5: in-progress
-  5-1-rating-submission-on-completed-appointments: review
-  5-2-rating-editing: review
-  5-3-colour-coded-doctor-rating-display: review
+  epic-5: done
+  5-1-rating-submission-on-completed-appointments: done
+  5-2-rating-editing: done
+  5-3-colour-coded-doctor-rating-display: done
   epic-5-retrospective: optional
