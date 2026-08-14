@@ -1,6 +1,7 @@
 package com.medour.service;
 
 import com.medour.exception.WherebyException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -26,6 +27,7 @@ public class WherebyService {
   @Value("${whereby.api-key:}")
   private String apiKey;
 
+  @Autowired
   public WherebyService(RestTemplateBuilder builder) {
     this.restTemplate = builder.build();
   }
