@@ -6,9 +6,11 @@ import com.medour.dto.UserProfileResponse;
 import com.medour.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
@@ -37,6 +39,18 @@ public class UserController {
       @Valid @RequestBody ChangePasswordRequest req) {
     userService.changePassword(parseUserId(auth), req);
     return ResponseEntity.noContent().build();
+  }
+
+  @PatchMapping(value = "/me/profile-picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<UserProfileResponse> uploadProfilePicture(Authentication auth,
+      @RequestParam("file") MultipartFile file) {
+    return ResponseEntity.ok(userService.updateProfilePicture(parseUserId(auth), file));
+  }
+
+  @DeleteMapping("/me/profile-picture")
+  public ResponseEntity<Void> removeProfilePicture(Authentication auth) {
+    userService.removeProfilePicture(parseUserId(auth));
+    return ResponseEntity.ok().build();
   }
 
   private long parseUserId(Authentication auth) {

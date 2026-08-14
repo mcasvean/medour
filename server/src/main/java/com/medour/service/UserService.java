@@ -18,7 +18,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.io.IOException;
+import java.util.Base64;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -76,7 +81,8 @@ public class UserService {
     String token = jwtUtil.generateToken(saved);
 
     return new AuthResponse(token, saved.getId(), saved.getEmail(),
-        saved.getFirstName(), saved.getSurname(), saved.getRole().name(), saved.getMustChangePassword());
+        saved.getFirstName(), saved.getSurname(), saved.getRole().name(), saved.getMustChangePassword(),
+        saved.getProfilePicture());
   }
 
   @Transactional(readOnly = true)
@@ -91,7 +97,8 @@ public class UserService {
     }
     String token = jwtUtil.generateToken(user);
     return new AuthResponse(token, user.getId(), user.getEmail(),
-        user.getFirstName(), user.getSurname(), user.getRole().name(), user.getMustChangePassword());
+        user.getFirstName(), user.getSurname(), user.getRole().name(), user.getMustChangePassword(),
+        user.getProfilePicture());
   }
 
   @Transactional(readOnly = true)
@@ -135,7 +142,39 @@ public class UserService {
         user.getCity(),
         user.getAddress(),
         user.getCounty(),
-        user.getSpeciality());
+        user.getSpeciality(),
+        user.getProfilePicture());
+  }
+
+  @Transactional
+  public UserProfileResponse updateProfilePicture(Long userId, MultipartFile file) {
+    if (file == null || file.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File is empty.");
+    }
+    if (file.getSize() > 512 * 1024) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File too large. Maximum size is 512 KB.");
+    }
+    String contentType = file.getContentType() == null ? "" : file.getContentType().toLowerCase();
+    if (!List.of("image/jpeg", "image/png").contains(contentType)) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only JPEG and PNG images are accepted.");
+    }
+    User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    try {
+      String encoded = Base64.getEncoder().encodeToString(file.getBytes());
+      user.setProfilePicture("data:" + file.getContentType() + ";base64," + encoded);
+    } catch (IOException e) {
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to read file");
+    }
+    return toProfileResponse(userRepository.save(user));
+  }
+
+  @Transactional
+  public void removeProfilePicture(Long userId) {
+    User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    user.setProfilePicture(null);
+    userRepository.save(user);
   }
 
   @Transactional

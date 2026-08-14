@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
@@ -120,5 +121,87 @@ class UserServiceTest {
 
     verify(userRepository).save(any(User.class));
     assertThat(user.getMustChangePassword()).isTrue();
+  }
+
+  @Test
+  void updateProfilePicture_validJpeg_storesDataUri() {
+    User user = User.builder()
+        .id(5L).email("u3@test.com").passwordHash("hash")
+        .role(Role.PATIENT).mustChangePassword(false)
+        .build();
+    when(userRepository.findByIdAndDeletedAtIsNull(5L)).thenReturn(Optional.of(user));
+    when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+    byte[] bytes = new byte[1024]; // 1 KB — within limit
+    MockMultipartFile file = new MockMultipartFile("file", "photo.jpg", "image/jpeg", bytes);
+
+    var result = userService.updateProfilePicture(5L, file);
+
+    assertThat(result.profilePicture()).startsWith("data:image/jpeg;base64,");
+  }
+
+  @Test
+  void updateProfilePicture_oversizeFile_throws400() {
+    byte[] bytes = new byte[600 * 1024]; // 600 KB — over limit
+    MockMultipartFile file = new MockMultipartFile("file", "big.jpg", "image/jpeg", bytes);
+
+    var ex = assertThrows(org.springframework.web.server.ResponseStatusException.class,
+        () -> userService.updateProfilePicture(99L, file));
+    assertThat(ex.getStatusCode().value()).isEqualTo(400);
+    assertThat(ex.getReason()).isEqualTo("File too large. Maximum size is 512 KB.");
+  }
+
+  @Test
+  void updateProfilePicture_pdfMime_throws400() {
+    byte[] bytes = new byte[1024];
+    MockMultipartFile file = new MockMultipartFile("file", "doc.pdf", "application/pdf", bytes);
+
+    var ex = assertThrows(org.springframework.web.server.ResponseStatusException.class,
+        () -> userService.updateProfilePicture(99L, file));
+    assertThat(ex.getStatusCode().value()).isEqualTo(400);
+    assertThat(ex.getReason()).isEqualTo("Only JPEG and PNG images are accepted.");
+  }
+
+  @Test
+  void removeProfilePicture_setsNullAndSaves() {
+    User user = User.builder()
+        .id(6L).email("u4@test.com").passwordHash("hash")
+        .role(Role.PATIENT).mustChangePassword(false)
+        .profilePicture("data:image/jpeg;base64,abc")
+        .build();
+    when(userRepository.findByIdAndDeletedAtIsNull(6L)).thenReturn(Optional.of(user));
+    when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+    userService.removeProfilePicture(6L);
+
+    assertThat(user.getProfilePicture()).isNull();
+    verify(userRepository).save(user);
+  }
+
+  @Test
+  void updateProfilePicture_emptyFile_throws400() {
+    MockMultipartFile file = new MockMultipartFile("file", "empty.jpg", "image/jpeg", new byte[0]);
+
+    var ex = assertThrows(org.springframework.web.server.ResponseStatusException.class,
+        () -> userService.updateProfilePicture(99L, file));
+    assertThat(ex.getStatusCode().value()).isEqualTo(400);
+    assertThat(ex.getReason()).isEqualTo("File is empty.");
+  }
+
+  @Test
+  void updateProfilePicture_upperCaseMimeJpeg_accepts() {
+    User user = User.builder()
+        .id(7L).email("u5@test.com").passwordHash("hash")
+        .role(Role.PATIENT).mustChangePassword(false)
+        .build();
+    when(userRepository.findByIdAndDeletedAtIsNull(7L)).thenReturn(Optional.of(user));
+    when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+    byte[] bytes = new byte[512];
+    MockMultipartFile file = new MockMultipartFile("file", "photo.jpg", "IMAGE/JPEG", bytes);
+
+    var result = userService.updateProfilePicture(7L, file);
+
+    assertThat(result.profilePicture()).startsWith("data:IMAGE/JPEG;base64,");
   }
 }

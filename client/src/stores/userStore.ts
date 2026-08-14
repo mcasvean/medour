@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import api from '../api/index'
+import { useAuthStore } from './authStore'
 
 export interface AdminUser {
   id: number
@@ -38,6 +39,20 @@ export const useUserStore = defineStore('user', {
       await api.delete(`/admin/users/${id}`)
       // refresh is best-effort; a refresh failure doesn't mean the delete failed
       try { await this.fetchAdminUsers() } catch { /* ignored */ }
+    },
+    async uploadProfilePicture(file: File) {
+      const authStore = useAuthStore()
+      const form = new FormData()
+      form.append('file', file)
+      const response = await api.patch<{ profilePicture: string | null }>('/users/me/profile-picture', form, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      authStore.updateUser({ profilePicture: response.data.profilePicture })
+    },
+    async removeProfilePicture() {
+      const authStore = useAuthStore()
+      await api.delete('/users/me/profile-picture')
+      authStore.updateUser({ profilePicture: null })
     }
   }
 })

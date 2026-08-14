@@ -10,6 +10,40 @@
       </div>
     </div>
 
+    <VCard rounded="xl" elevation="1" class="mb-4">
+      <VCardText class="pa-6">
+        <h2 class="text-subtitle-1 font-weight-bold mb-4">Profile Photo</h2>
+        <div class="d-flex align-center ga-4">
+          <VAvatar size="96" rounded="circle" color="primary">
+            <VImg v-if="authStore.user?.profilePicture" :src="authStore.user.profilePicture" cover />
+            <VIcon v-else icon="mdi-account-circle" size="64" />
+          </VAvatar>
+          <div class="d-flex flex-column ga-2">
+            <VBtn color="primary" rounded="lg" :loading="uploading" @click="fileInputRef?.click()">
+              <VIcon start icon="mdi-upload" />Upload photo
+            </VBtn>
+            <VBtn
+              v-if="authStore.user?.profilePicture"
+              variant="outlined"
+              color="error"
+              rounded="lg"
+              :loading="removing"
+              @click="handleRemovePhoto"
+            >
+              <VIcon start icon="mdi-delete-outline" />Remove photo
+            </VBtn>
+          </div>
+        </div>
+        <input
+          ref="fileInputRef"
+          type="file"
+          accept="image/jpeg,image/png"
+          style="display:none"
+          @change="handleFileSelected"
+        />
+      </VCardText>
+    </VCard>
+
     <VCard rounded="xl" elevation="1">
       <VCardText class="pa-6">
         <div v-if="loading" class="d-flex justify-center py-8">
@@ -89,6 +123,7 @@ import { ref, onMounted } from 'vue'
 import api from '../api/index'
 import { useAuthStore } from '../stores/authStore'
 import { useToastStore } from '../stores/toastStore'
+import { useUserStore } from '../stores/userStore'
 
 interface ProfileData {
   id: number
@@ -106,10 +141,14 @@ interface ProfileData {
 
 const authStore = useAuthStore()
 const toastStore = useToastStore()
+const userStore = useUserStore()
 
 const profile = ref<ProfileData | null>(null)
 const loading = ref(true)
 const saving = ref(false)
+const uploading = ref(false)
+const removing = ref(false)
+const fileInputRef = ref<HTMLInputElement | null>(null)
 
 onMounted(async () => {
   try {
@@ -121,6 +160,34 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+async function handleFileSelected(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  input.value = ''
+  uploading.value = true
+  try {
+    await userStore.uploadProfilePicture(file)
+    toastStore.show('Profile photo updated.', 'success')
+  } catch (err: unknown) {
+    toastStore.showError(err)
+  } finally {
+    uploading.value = false
+  }
+}
+
+async function handleRemovePhoto() {
+  removing.value = true
+  try {
+    await userStore.removeProfilePicture()
+    toastStore.show('Profile photo removed.', 'success')
+  } catch (err: unknown) {
+    toastStore.showError(err)
+  } finally {
+    removing.value = false
+  }
+}
 
 async function handleSubmit() {
   if (!profile.value) return

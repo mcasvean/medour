@@ -43,7 +43,7 @@ class AuthControllerTest {
 
   @Test
   void register_validPatient_returns200WithToken() throws Exception {
-    var response = new AuthResponse("tok-123", 1L, "p@test.com", "Pat", "Ient", "PATIENT", false);
+    var response = new AuthResponse("tok-123", 1L, "p@test.com", "Pat", "Ient", "PATIENT", false, null);
     given(userService.register(any())).willReturn(response);
 
     mockMvc.perform(post("/api/v1/auth/register")
@@ -55,7 +55,7 @@ class AuthControllerTest {
 
   @Test
   void register_validDoctor_returns200() throws Exception {
-    var response = new AuthResponse("tok-456", 2L, "d@test.com", "Doc", "Tor", "DOCTOR", false);
+    var response = new AuthResponse("tok-456", 2L, "d@test.com", "Doc", "Tor", "DOCTOR", false, null);
     given(userService.register(any())).willReturn(response);
 
     mockMvc.perform(post("/api/v1/auth/register")
@@ -88,7 +88,7 @@ class AuthControllerTest {
 
   @Test
   void login_validCredentials_returns200WithToken() throws Exception {
-    var response = new AuthResponse("tok-789", 1L, "p@test.com", "Pat", "Ient", "PATIENT", false);
+    var response = new AuthResponse("tok-789", 1L, "p@test.com", "Pat", "Ient", "PATIENT", false, null);
     given(userService.login(any())).willReturn(response);
 
     mockMvc.perform(post("/api/v1/auth/login")

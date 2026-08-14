@@ -93,6 +93,7 @@ async function handleLogin() {
       surname: data.surname,
       role: data.role,
       mustChangePassword: data.mustChangePassword,
+      profilePicture: data.profilePicture ?? null,
     }
     authStore.setAuth(data.token, user)
     router.push('/')

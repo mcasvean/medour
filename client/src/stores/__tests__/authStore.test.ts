@@ -9,7 +9,8 @@ const baseUser: User = {
   firstName: 'Pat',
   surname: 'Ient',
   role: 'PATIENT',
-  mustChangePassword: false
+  mustChangePassword: false,
+  profilePicture: null
 }
 
 describe('authStore.updateUser', () => {

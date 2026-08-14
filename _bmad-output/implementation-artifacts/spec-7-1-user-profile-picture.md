@@ -2,9 +2,9 @@
 title: "User Profile Picture"
 type: "feature"
 created: "2026-08-14"
-status: "ready-for-dev"
+status: "done"
 review_loop_iteration: 0
-baseline_commit: ""
+baseline_commit: "307fd47ca7fdb78be9a2a4c12e5d2fdd3f045474"
 context: []
 ---
 
@@ -84,17 +84,17 @@ context: []
 
 **Execution:**
 
-- [ ] `server/src/main/java/com/medour/model/User.java` — add `@Column(name = "profile_picture", columnDefinition = "TEXT") private String profilePicture;`
-- [ ] `server/src/main/java/com/medour/dto/UserProfileResponse.java` — add `String profilePicture`
-- [ ] `server/src/main/java/com/medour/dto/AuthResponse.java` — add `String profilePicture`; populate in `AuthService` mapping
-- [ ] `server/src/main/java/com/medour/service/UserService.java` — add `updateProfilePicture(Long userId, MultipartFile file)`: `if (file.getSize() > 512 * 1024) throw 400`; `if (!List.of("image/jpeg","image/png").contains(file.getContentType())) throw 400`; encode `Base64.getEncoder().encodeToString(file.getBytes())`; store as `"data:" + file.getContentType() + ";base64," + encoded`; save user; add `removeProfilePicture(Long userId)`: find user, set `profilePicture = null`, save
-- [ ] `server/src/main/java/com/medour/controller/UserController.java` — `@PatchMapping("/me/profile-picture")` + `@DeleteMapping("/me/profile-picture")` wired to service methods; both return 200
-- [ ] `server/src/main/java/com/medour/config/SecurityConfig.java` — ensure authenticated access for `PATCH` and `DELETE` on `/api/v1/users/me/profile-picture`
-- [ ] `server/src/test/java/com/medour/service/UserServiceTest.java` — 3 new tests: valid JPEG upload stores data-URI; 600 KB file → 400; PDF MIME → 400; removeProfilePicture → null
-- [ ] `client/src/stores/authStore.ts` — add `profilePicture: string | null` to `User` interface; include `profilePicture` in `updateUser` partial type
-- [ ] `client/src/stores/userStore.ts` — add `uploadProfilePicture(file: File)` and `removeProfilePicture()` actions
-- [ ] `client/src/App.vue` — add `VAvatar` between role chip and username in `#append`, `v-if="authStore.user?.profilePicture"`
-- [ ] `client/src/views/AccountView.vue` — add picture upload/remove section with circular avatar, hidden file input, upload and remove buttons, and toast feedback
+- [x] `server/src/main/java/com/medour/model/User.java` — add `@Column(name = "profile_picture", columnDefinition = "TEXT") private String profilePicture;`
+- [x] `server/src/main/java/com/medour/dto/UserProfileResponse.java` — add `String profilePicture`
+- [x] `server/src/main/java/com/medour/dto/AuthResponse.java` — add `String profilePicture`; populate in `AuthService` mapping
+- [x] `server/src/main/java/com/medour/service/UserService.java` — add `updateProfilePicture(Long userId, MultipartFile file)`: `if (file.getSize() > 512 * 1024) throw 400`; `if (!List.of("image/jpeg","image/png").contains(file.getContentType())) throw 400`; encode `Base64.getEncoder().encodeToString(file.getBytes())`; store as `"data:" + file.getContentType() + ";base64," + encoded`; save user; add `removeProfilePicture(Long userId)`: find user, set `profilePicture = null`, save
+- [x] `server/src/main/java/com/medour/controller/UserController.java` — `@PatchMapping("/me/profile-picture")` + `@DeleteMapping("/me/profile-picture")` wired to service methods; both return 200
+- [x] `server/src/main/java/com/medour/config/SecurityConfig.java` — ensure authenticated access for `PATCH` and `DELETE` on `/api/v1/users/me/profile-picture`
+- [x] `server/src/test/java/com/medour/service/UserServiceTest.java` — 3 new tests: valid JPEG upload stores data-URI; 600 KB file → 400; PDF MIME → 400; removeProfilePicture → null
+- [x] `client/src/stores/authStore.ts` — add `profilePicture: string | null` to `User` interface; include `profilePicture` in `updateUser` partial type
+- [x] `client/src/stores/userStore.ts` — add `uploadProfilePicture(file: File)` and `removeProfilePicture()` actions
+- [x] `client/src/App.vue` — add `VAvatar` between role chip and username in `#append`, `v-if="authStore.user?.profilePicture"`
+- [x] `client/src/views/AccountView.vue` — add picture upload/remove section with circular avatar, hidden file input, upload and remove buttons, and toast feedback
 
 ## Acceptance Criteria
 
@@ -114,3 +114,35 @@ context: []
 - `cd server && ./mvnw test` — expected: all existing tests + 4 new UserService tests pass
 - `cd client && npm run build` — expected: zero TypeScript errors
 - `cd client && npm run test` — expected: all existing tests pass
+
+## Suggested Review Order
+
+**Backend — validation & storage**
+
+- Empty-file guard, size limit, case-insensitive MIME check, Base64 encoding, IOException wrap.
+  [`UserService.java:updateProfilePicture`](../../server/src/main/java/com/medour/service/UserService.java)
+
+- PATCH and DELETE endpoints; multipart form-data handling; `parseUserId` ownership via JWT.
+  [`UserController.java:44`](../../server/src/main/java/com/medour/controller/UserController.java#L44)
+
+- `profile_picture TEXT` column; `AuthResponse` and `UserProfileResponse` updated to carry it.
+  [`User.java`](../../server/src/main/java/com/medour/model/User.java)
+
+**Frontend — state & UI**
+
+- `profilePicture` in `User` interface; `updateUser` picks extended.
+  [`authStore.ts:10`](../../client/src/stores/authStore.ts#L10)
+
+- `uploadProfilePicture` and `removeProfilePicture` actions; in-place `authStore.updateUser` call.
+  [`userStore.ts:43`](../../client/src/stores/userStore.ts#L43)
+
+- Header avatar (32px, `v-if="profilePicture"`) between role chip and username.
+  [`App.vue:38`](../../client/src/App.vue#L38)
+
+- AccountView upload/remove section: circular 96px avatar, hidden file input, loading states, toast feedback.
+  [`AccountView.vue:14`](../../client/src/views/AccountView.vue#L14)
+
+**Tests**
+
+- 6 UserService tests: valid upload, oversize, empty file, uppercase MIME, PDF MIME, remove→null.
+  [`UserServiceTest.java`](../../server/src/test/java/com/medour/service/UserServiceTest.java)

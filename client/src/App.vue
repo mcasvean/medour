@@ -36,6 +36,9 @@
             >
               {{ authStore.user?.role }}
             </VChip>
+            <VAvatar v-if="authStore.user?.profilePicture" size="32" rounded="circle">
+              <VImg :src="authStore.user.profilePicture" cover />
+            </VAvatar>
             <span class="text-white text-body-2 d-none d-sm-inline font-weight-medium">
               {{ authStore.user?.firstName }} {{ authStore.user?.surname }}
             </span>

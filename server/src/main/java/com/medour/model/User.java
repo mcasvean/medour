@@ -58,4 +58,7 @@ public class User {
 
   @Column(name = "average_rating", precision = 3, scale = 1)
   private BigDecimal averageRating;
+
+  @Column(name = "profile_picture", columnDefinition = "TEXT")
+  private String profilePicture;
 }
