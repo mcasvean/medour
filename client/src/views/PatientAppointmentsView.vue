@@ -46,10 +46,10 @@
             type="number"
             min="1"
             max="10"
-            :disabled="appt.ratingId !== null || submittingRating[appt.id]"
+            :disabled="submittingRating[appt.id]"
           />
           <button
-            :disabled="appt.ratingId !== null || submittingRating[appt.id]"
+            :disabled="submittingRating[appt.id]"
             @click="saveRating(appt.id)"
           >Save</button>
           <span v-if="ratingErrors[appt.id]" class="rating-error">{{ ratingErrors[appt.id] }}</span>

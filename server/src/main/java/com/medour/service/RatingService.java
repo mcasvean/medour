@@ -69,4 +69,25 @@ public class RatingService {
 
     return rating;
   }
+
+  @Transactional
+  public Rating updateRating(Long ratingId, int value, Long callerPatientId) {
+    Rating rating = ratingRepository.findById(ratingId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rating not found"));
+
+    if (!rating.getPatient().getId().equals(callerPatientId)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your rating");
+    }
+
+    rating.setValue(value);
+    ratingRepository.save(rating);
+
+    Long doctorId = rating.getDoctor().getId();
+    double avg = ratingRepository.findAverageValueByDoctorId(doctorId).orElse(0.0);
+    var doctor = rating.getDoctor();
+    doctor.setAverageRating(BigDecimal.valueOf(avg));
+    userRepository.save(doctor);
+
+    return rating;
+  }
 }

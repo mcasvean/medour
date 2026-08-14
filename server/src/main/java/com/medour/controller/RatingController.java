@@ -2,6 +2,7 @@ package com.medour.controller;
 
 import com.medour.dto.RatingResponse;
 import com.medour.dto.SubmitRatingRequest;
+import com.medour.dto.UpdateRatingRequest;
 import com.medour.model.Rating;
 import com.medour.service.RatingService;
 import jakarta.validation.Valid;
@@ -31,6 +32,17 @@ public class RatingController {
     Rating rating = ratingService.submitRating(request.appointmentId(), request.value(), patientId);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(new RatingResponse(rating.getId(), rating.getValue()));
+  }
+
+  @PatchMapping("/{id}")
+  @PreAuthorize("hasRole('PATIENT')")
+  public ResponseEntity<RatingResponse> updateRating(
+      @PathVariable Long id,
+      @Valid @RequestBody UpdateRatingRequest request,
+      Authentication auth) {
+    long patientId = parseUserId(auth);
+    Rating rating = ratingService.updateRating(id, request.value(), patientId);
+    return ResponseEntity.ok(new RatingResponse(rating.getId(), rating.getValue()));
   }
 
   private long parseUserId(Authentication auth) {

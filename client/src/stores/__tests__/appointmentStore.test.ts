@@ -8,6 +8,7 @@ vi.mock('../../api/index', () => ({
     get: vi.fn(),
     post: vi.fn(),
     delete: vi.fn(),
+    patch: vi.fn(),
   }
 }))
 
@@ -326,6 +327,23 @@ describe('isJoinActive', () => {
 
       await expect(store.submitRating(5, 7)).rejects.toThrow('409')
       expect(store.patientAppointments[0].ratingId).toBeNull()
+    })
+
+    it('PATCHes rating when ratingId is non-null and updates state', async () => {
+      vi.mocked(api.patch).mockResolvedValueOnce({ data: { id: 42, value: 9 } })
+      const store = useAppointmentStore()
+      store.patientAppointments = [
+        { id: 5, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
+          doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
+          status: 'COMPLETED', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null,
+          ratingValue: 7, ratingId: 42 },
+      ]
+
+      await store.submitRating(5, 9)
+
+      expect(api.patch).toHaveBeenCalledWith('/ratings/42', { value: 9 })
+      expect(store.patientAppointments[0].ratingValue).toBe(9)
+      expect(store.patientAppointments[0].ratingId).toBe(42)
     })
   })
 

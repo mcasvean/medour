@@ -2,7 +2,7 @@
 title: "Rating Editing"
 type: "feature"
 created: "2026-08-14"
-status: "ready-for-dev"
+status: "done"
 review_loop_iteration: 0
 baseline_commit: "205353212a08fd01647cc8ffc6613f653a670b06"
 context: []

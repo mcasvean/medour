@@ -183,8 +183,10 @@ export const useAppointmentStore = defineStore('appointment', {
     },
 
     async submitRating(appointmentId: number, value: number) {
-      const response = await api.post<{ id: number; value: number }>('/ratings', { appointmentId, value })
       const appt = this.patientAppointments.find(a => a.id === appointmentId)
+      const response = appt?.ratingId != null
+        ? await api.patch<{ id: number; value: number }>(`/ratings/${appt.ratingId}`, { value })
+        : await api.post<{ id: number; value: number }>('/ratings', { appointmentId, value })
       if (appt) {
         appt.ratingValue = response.data.value
         appt.ratingId = response.data.id

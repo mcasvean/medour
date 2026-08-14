@@ -49,6 +49,7 @@ public class SecurityConfig {
             .requestMatchers(PATCH, "/api/v1/appointments/doctor/**").hasRole("DOCTOR")
             .requestMatchers(POST, "/api/v1/slots/reserve", "/api/v1/appointments", "/api/v1/ratings")
             .hasRole("PATIENT")
+            .requestMatchers(PATCH, "/api/v1/ratings/**").hasRole("PATIENT")
             .anyRequest().authenticated())
         .exceptionHandling(e -> e
             .authenticationEntryPoint((req, res, ex) -> res.sendError(SC_UNAUTHORIZED))

@@ -2,6 +2,7 @@ package com.medour.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medour.dto.SubmitRatingRequest;
+import com.medour.dto.UpdateRatingRequest;
 import com.medour.exception.RatingAlreadyExistsException;
 import com.medour.model.Appointment;
 import com.medour.model.AppointmentStatus;
@@ -26,6 +27,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.HttpStatus.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -124,6 +126,63 @@ class RatingControllerTest {
         .with(csrf())
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(new SubmitRatingRequest(5L, 7))))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @WithMockUser(username = "1", roles = "PATIENT")
+  void updateRating_valid_returns200() throws Exception {
+    given(ratingService.updateRating(anyLong(), anyInt(), anyLong()))
+        .willReturn(buildRating(99L, 9));
+
+    mockMvc.perform(patch("/api/v1/ratings/99")
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(new UpdateRatingRequest(9))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(99))
+        .andExpect(jsonPath("$.value").value(9));
+  }
+
+  @Test
+  @WithMockUser(username = "1", roles = "PATIENT")
+  void updateRating_valueBelowMin_returns400() throws Exception {
+    mockMvc.perform(patch("/api/v1/ratings/99")
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(new UpdateRatingRequest(0))))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @WithMockUser(username = "1", roles = "PATIENT")
+  void updateRating_valueOutOfRange_returns400() throws Exception {
+    mockMvc.perform(patch("/api/v1/ratings/99")
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(new UpdateRatingRequest(11))))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @WithMockUser(username = "1", roles = "PATIENT")
+  void updateRating_wrongPatient_returns403() throws Exception {
+    given(ratingService.updateRating(anyLong(), anyInt(), anyLong()))
+        .willThrow(new ResponseStatusException(FORBIDDEN, "Not your rating"));
+
+    mockMvc.perform(patch("/api/v1/ratings/99")
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(new UpdateRatingRequest(9))))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void updateRating_unauthenticated_returns401() throws Exception {
+    mockMvc.perform(patch("/api/v1/ratings/99")
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(new UpdateRatingRequest(9))))
         .andExpect(status().isUnauthorized());
   }
 }

@@ -31,6 +31,10 @@ Items collected during implementation reviews that are real but out of scope for
   summary: No Vue component test for PatientAppointmentsView rating widget; render conditions, prefill, and disabled-after-submit have no automated coverage.
   evidence: Verification gap finding; component-level test layer is absent for this feature.
 
+- source_spec: `spec-5-2-rating-editing.md`
+  summary: PATCH /api/v1/ratings/{id} role guard (DOCTOR/ADMIN → 403) has no controller-layer test; @WebMvcTest role enforcement is unreliable in this project.
+  evidence: Verification gap finding; same limitation documented for POST in story 5-1; security config and @PreAuthorize are both in place for production.
+
 - source_spec: `spec-1-1-project-scaffold-development-environment.md`
   summary: spring.jpa.hibernate.ddl-auto is set to 'update', which mutates schema on every boot; Flyway or Liquibase should own migrations.
   evidence: Blind hunter finding; ddl-auto:update will silently drop renamed columns and cause schema drift across environments.

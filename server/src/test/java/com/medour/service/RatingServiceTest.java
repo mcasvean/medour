@@ -133,4 +133,44 @@ class RatingServiceTest {
         .isInstanceOf(ResponseStatusException.class)
         .hasMessageContaining("404");
   }
+
+  @Test
+  void updateRating_validEdit_returnsRatingAndUpdatesAverage() {
+    User p = patient(1L);
+    User d = doctor(10L);
+    Appointment appt = completedAppointment(5L, p, d);
+    Rating existing = Rating.builder().id(99L).appointment(appt).patient(p).doctor(d).value(7).build();
+
+    when(ratingRepository.findById(99L)).thenReturn(Optional.of(existing));
+    when(ratingRepository.findAverageValueByDoctorId(10L)).thenReturn(Optional.of(9.0));
+
+    Rating result = ratingService.updateRating(99L, 9, 1L);
+
+    assertThat(result.getValue()).isEqualTo(9);
+    verify(ratingRepository).save(existing);
+    verify(userRepository).save(argThat(u -> BigDecimal.valueOf(9.0).compareTo(u.getAverageRating()) == 0));
+  }
+
+  @Test
+  void updateRating_wrongPatient_throws403() {
+    User p = patient(1L);
+    User d = doctor(10L);
+    Appointment appt = completedAppointment(5L, p, d);
+    Rating existing = Rating.builder().id(99L).appointment(appt).patient(p).doctor(d).value(7).build();
+
+    when(ratingRepository.findById(99L)).thenReturn(Optional.of(existing));
+
+    assertThatThrownBy(() -> ratingService.updateRating(99L, 9, 2L))
+        .isInstanceOf(ResponseStatusException.class)
+        .hasMessageContaining("403");
+  }
+
+  @Test
+  void updateRating_notFound_throws404() {
+    when(ratingRepository.findById(9999L)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> ratingService.updateRating(9999L, 9, 1L))
+        .isInstanceOf(ResponseStatusException.class)
+        .hasMessageContaining("404");
+  }
 }
