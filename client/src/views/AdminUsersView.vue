@@ -1,59 +1,120 @@
 <template>
-  <div class="admin-users">
-    <div class="admin-header">
-      <h1>Users</h1>
-      <button class="btn-add" @click="openCreate">Add User</button>
+  <VContainer class="py-6">
+    <div class="d-flex justify-space-between align-center mb-6">
+      <h1 class="text-h5 font-weight-bold">Users</h1>
+      <VBtn color="primary" prepend-icon="mdi-account-plus" rounded="lg" @click="openCreate">Add User</VBtn>
     </div>
-    <div v-if="loading" class="loading">Loading...</div>
-    <div v-else-if="errorMessage" class="error">{{ errorMessage }}</div>
-    <template v-else>
-      <div v-if="deleteError" class="error">{{ deleteError }}</div>
-      <ul class="user-list">
-      <li
+
+    <VAlert v-if="deleteError" type="error" variant="tonal" class="mb-4" rounded="xl">{{ deleteError }}</VAlert>
+    <VAlert v-if="errorMessage" type="error" variant="tonal" class="mb-4" rounded="xl">{{ errorMessage }}</VAlert>
+
+    <div v-if="loading" class="d-flex justify-center py-12">
+      <VProgressCircular indeterminate color="primary" size="56" />
+    </div>
+
+    <VRow v-else>
+      <VCol
         v-for="user in userStore.adminUsers"
         :key="user.id"
-        class="user-row"
-        :class="{ deleted: user.isDeleted }"
-        @click="toggleExpand(user.id)"
+        cols="12"
+        md="6"
+        lg="4"
       >
-        <div class="user-summary">
-          <span class="user-name">{{ user.firstName }} {{ user.surname }}</span>
-          <span class="user-role">{{ user.role }}</span>
-          <span v-if="user.isDeleted" class="deleted-badge">Deleted</span>
-          <button class="btn-edit" @click.stop="openEdit(user)">Edit</button>
-          <button class="btn-delete" @click.stop="deleteUser(user)">Delete</button>
-        </div>
-        <div v-if="expandedUserId === user.id" class="user-detail" @click.stop>
-          <dl>
-            <dt>ID</dt><dd>{{ user.id }}</dd>
-            <dt>Email</dt><dd>{{ user.email }}</dd>
-            <dt>First name</dt><dd>{{ user.firstName }}</dd>
-            <dt>Surname</dt><dd>{{ user.surname }}</dd>
-            <dt>Role</dt><dd>{{ user.role }}</dd>
-            <dt>Speciality</dt><dd>{{ user.speciality ?? '—' }}</dd>
-            <dt>County</dt><dd>{{ user.county ?? '—' }}</dd>
-            <dt>City</dt><dd>{{ user.city ?? '—' }}</dd>
-            <dt>Age</dt><dd>{{ user.age ?? '—' }}</dd>
-            <dt>Gender</dt><dd>{{ user.gender ?? '—' }}</dd>
-            <dt>Address</dt><dd>{{ user.address ?? '—' }}</dd>
-            <dt>Must change password</dt><dd>{{ user.mustChangePassword }}</dd>
-            <dt>Status</dt><dd>{{ user.isDeleted ? 'Deleted' : 'Active' }}</dd>
-          </dl>
-        </div>
-      </li>
-    </ul>
-    </template>
+        <VCard rounded="xl" elevation="1" :class="{ 'opacity-50': user.isDeleted }">
+          <VCardText class="pa-4">
+            <div class="d-flex justify-space-between align-start mb-3">
+              <div class="d-flex align-center ga-3">
+                <VAvatar :color="roleColor(user.role)" size="44">
+                  <VIcon :icon="roleIcon(user.role)" size="24" />
+                </VAvatar>
+                <div>
+                  <div class="text-subtitle-2 font-weight-bold">{{ user.firstName }} {{ user.surname }}</div>
+                  <div class="text-caption text-medium-emphasis">{{ user.email }}</div>
+                </div>
+              </div>
+              <div class="d-flex flex-column align-end ga-1">
+                <VChip :color="roleColor(user.role)" size="x-small" label>{{ user.role }}</VChip>
+                <VChip v-if="user.isDeleted" color="error" size="x-small" label>Deleted</VChip>
+              </div>
+            </div>
 
-    <AdminUserForm
-      v-if="showForm"
-      :key="editingUser?.id ?? 'new'"
-      :mode="formMode"
-      :user="editingUser ?? undefined"
-      :save-error="formSaveError"
-      @save="handleSave"
-      @cancel="showForm = false; formSaveError = ''"
-    />
-  </div>
+            <VExpansionPanels flat variant="accordion">
+              <VExpansionPanel elevation="0" rounded="lg" bg-color="grey-lighten-5">
+                <VExpansionPanelTitle class="text-caption text-medium-emphasis py-2 px-3">
+                  View details
+                </VExpansionPanelTitle>
+                <VExpansionPanelText class="px-0">
+                  <VList density="compact" lines="two" bg-color="transparent">
+                    <VListItem v-if="user.speciality" title="Speciality" :subtitle="user.speciality" density="compact" />
+                    <VListItem v-if="user.county" title="County" :subtitle="user.county" density="compact" />
+                    <VListItem v-if="user.city" title="City" :subtitle="user.city" density="compact" />
+                    <VListItem title="Age" :subtitle="user.age ? String(user.age) : '—'" density="compact" />
+                    <VListItem title="Gender" :subtitle="user.gender ?? '—'" density="compact" />
+                    <VListItem title="Address" :subtitle="user.address ?? '—'" density="compact" />
+                  </VList>
+                </VExpansionPanelText>
+              </VExpansionPanel>
+            </VExpansionPanels>
+
+            <div class="d-flex ga-2 mt-3">
+              <VBtn
+                size="small"
+                variant="tonal"
+                color="primary"
+                prepend-icon="mdi-pencil-outline"
+                rounded="lg"
+                @click="openEdit(user)"
+              >
+                Edit
+              </VBtn>
+              <VBtn
+                size="small"
+                variant="tonal"
+                color="error"
+                prepend-icon="mdi-delete-outline"
+                rounded="lg"
+                @click="confirmDelete(user)"
+              >
+                Delete
+              </VBtn>
+            </div>
+          </VCardText>
+        </VCard>
+      </VCol>
+    </VRow>
+
+    <!-- Add/Edit user dialog -->
+    <VDialog v-model="showForm" max-width="560" persistent scrollable>
+      <AdminUserForm
+        v-if="showForm"
+        :key="editingUser?.id ?? 'new'"
+        :mode="formMode"
+        :user="editingUser ?? undefined"
+        :save-error="formSaveError"
+        @save="handleSave"
+        @cancel="showForm = false; formSaveError = ''"
+      />
+    </VDialog>
+
+    <!-- Delete confirmation dialog -->
+    <VDialog v-model="showDeleteDialog" max-width="420">
+      <VCard rounded="xl">
+        <VCardTitle class="pa-6 pb-2 text-h6">
+          <VIcon icon="mdi-alert-circle-outline" color="error" class="mr-2" />Delete User
+        </VCardTitle>
+        <VCardText class="pa-6 pt-2">
+          Are you sure you want to delete
+          <strong>{{ userToDelete?.firstName }} {{ userToDelete?.surname }}</strong>?
+          This user will be soft-deleted and cannot log in.
+        </VCardText>
+        <VCardActions class="pa-4 pt-0">
+          <VSpacer />
+          <VBtn variant="text" @click="showDeleteDialog = false">Cancel</VBtn>
+          <VBtn color="error" variant="elevated" rounded="lg" @click="executeDelete">Delete</VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+  </VContainer>
 </template>
 
 <script setup lang="ts">
@@ -62,7 +123,6 @@ import { useUserStore, type AdminUser } from '../stores/userStore'
 import AdminUserForm from '../components/AdminUserForm.vue'
 
 const userStore = useUserStore()
-const expandedUserId = ref<number | null>(null)
 const loading = ref(false)
 const errorMessage = ref('')
 
@@ -71,6 +131,8 @@ const formMode = ref<'create' | 'edit'>('create')
 const editingUser = ref<AdminUser | null>(null)
 const formSaveError = ref('')
 const deleteError = ref('')
+const showDeleteDialog = ref(false)
+const userToDelete = ref<AdminUser | null>(null)
 
 onMounted(async () => {
   loading.value = true
@@ -83,8 +145,20 @@ onMounted(async () => {
   }
 })
 
-function toggleExpand(id: number) {
-  expandedUserId.value = expandedUserId.value === id ? null : id
+function roleColor(role: string): string {
+  switch (role) {
+    case 'ADMIN': return 'error'
+    case 'DOCTOR': return 'success'
+    default: return 'info'
+  }
+}
+
+function roleIcon(role: string): string {
+  switch (role) {
+    case 'ADMIN': return 'mdi-shield-account-outline'
+    case 'DOCTOR': return 'mdi-doctor'
+    default: return 'mdi-account-heart-outline'
+  }
 }
 
 function openCreate() {
@@ -99,6 +173,24 @@ function openEdit(user: AdminUser) {
   showForm.value = true
 }
 
+function confirmDelete(user: AdminUser) {
+  userToDelete.value = user
+  showDeleteDialog.value = true
+}
+
+async function executeDelete() {
+  if (!userToDelete.value) return
+  deleteError.value = ''
+  showDeleteDialog.value = false
+  try {
+    await userStore.deleteAdminUser(userToDelete.value.id)
+  } catch {
+    deleteError.value = 'Failed to delete user.'
+  } finally {
+    userToDelete.value = null
+  }
+}
+
 async function handleSave(payload: Partial<AdminUser> & { password?: string }) {
   formSaveError.value = ''
   try {
@@ -108,126 +200,8 @@ async function handleSave(payload: Partial<AdminUser> & { password?: string }) {
       await userStore.updateAdminUser(editingUser.value.id, payload)
     }
     showForm.value = false
-    formSaveError.value = ''
   } catch {
     formSaveError.value = 'Failed to save user.'
   }
 }
-
-async function deleteUser(user: AdminUser) {
-  deleteError.value = ''
-  if (!window.confirm(`Delete ${user.firstName} ${user.surname}?`)) return
-  try {
-    await userStore.deleteAdminUser(user.id)
-  } catch {
-    deleteError.value = 'Failed to delete user.'
-  }
-}
 </script>
-
-<style scoped>
-.admin-users {
-  padding: 1.5rem;
-}
-
-.admin-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.admin-header h1 {
-  margin: 0;
-}
-
-.btn-add {
-  background: #2b6cb0;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 0.4rem 1rem;
-  cursor: pointer;
-  font-size: 0.875rem;
-}
-
-.user-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.user-row {
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  margin-bottom: 0.5rem;
-  padding: 0.75rem 1rem;
-  cursor: pointer;
-}
-
-.user-row.deleted {
-  opacity: 0.55;
-  background-color: #f5f5f5;
-}
-
-.user-summary {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.user-name {
-  font-weight: 600;
-}
-
-.user-role {
-  color: #666;
-  font-size: 0.875rem;
-}
-
-.deleted-badge {
-  background: #e53e3e;
-  color: #fff;
-  font-size: 0.75rem;
-  padding: 0.1rem 0.5rem;
-  border-radius: 999px;
-}
-
-.btn-edit {
-  margin-left: auto;
-  padding: 0.2rem 0.6rem;
-  font-size: 0.8rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  cursor: pointer;
-  background: #fff;
-}
-
-.btn-delete {
-  padding: 0.2rem 0.6rem;
-  font-size: 0.8rem;
-  border: 1px solid #e53e3e;
-  border-radius: 4px;
-  cursor: pointer;
-  background: #fff;
-  color: #e53e3e;
-}
-
-.user-detail {
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid #eee;
-}
-
-.user-detail dl {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 0.25rem 1rem;
-  margin: 0;
-}
-
-.user-detail dt {
-  font-weight: 600;
-  color: #444;
-}
-</style>

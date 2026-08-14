@@ -1,66 +1,96 @@
 <template>
-  <div class="form-overlay" @click.self="$emit('cancel')">
-    <div class="form-card">
-      <h2>{{ mode === 'create' ? 'Add User' : 'Edit User' }}</h2>
-      <form @submit.prevent="handleSubmit">
-        <template v-if="mode === 'create'">
-          <label>
-            Email
-            <input v-model="form.email" type="email" required />
-          </label>
-          <label>
-            Password
-            <input v-model="form.password" type="password" required />
-          </label>
-        </template>
-        <label>
-          First name
-          <input v-model="form.firstName" type="text" required />
-        </label>
-        <label>
-          Surname
-          <input v-model="form.surname" type="text" required />
-        </label>
-        <label>
-          Role
-          <select v-model="form.role" required>
-            <option value="PATIENT">PATIENT</option>
-            <option value="DOCTOR">DOCTOR</option>
-            <option value="ADMIN">ADMIN</option>
-          </select>
-        </label>
-        <label>
-          Age
-          <input v-model.number="form.age" type="number" min="1" max="150" />
-        </label>
-        <label>
-          Gender
-          <input v-model="form.gender" type="text" />
-        </label>
-        <label>
-          City
-          <input v-model="form.city" type="text" />
-        </label>
-        <label>
-          Address
-          <input v-model="form.address" type="text" />
-        </label>
-        <label>
-          County
-          <input v-model="form.county" type="text" />
-        </label>
-        <label>
-          Speciality
-          <input v-model="form.speciality" type="text" />
-        </label>
-        <div v-if="errorMessage || saveError" class="form-error">{{ saveError || errorMessage }}</div>
-        <div class="form-actions">
-          <button type="submit" :disabled="submitting">Save</button>
-          <button type="button" @click="$emit('cancel')">Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
+  <VCard rounded="xl">
+    <VCardTitle class="pa-5 pb-2 text-h6">
+      {{ mode === 'create' ? 'Add User' : 'Edit User' }}
+    </VCardTitle>
+    <VDivider />
+    <VCardText class="pa-5">
+      <VForm ref="formRef" @submit.prevent="handleSubmit">
+        <VRow>
+          <template v-if="mode === 'create'">
+            <VCol cols="12">
+              <VTextField
+                v-model="form.email"
+                label="Email"
+                type="email"
+                variant="outlined"
+                required
+                prepend-inner-icon="mdi-email-outline"
+              />
+            </VCol>
+            <VCol cols="12">
+              <VTextField
+                v-model="form.password"
+                label="Password"
+                :type="showPassword ? 'text' : 'password'"
+                :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+                variant="outlined"
+                required
+                prepend-inner-icon="mdi-lock-outline"
+                @click:append-inner="showPassword = !showPassword"
+              />
+            </VCol>
+          </template>
+          <VCol cols="12" sm="6">
+            <VTextField v-model="form.firstName" label="First Name" variant="outlined" required />
+          </VCol>
+          <VCol cols="12" sm="6">
+            <VTextField v-model="form.surname" label="Surname" variant="outlined" required />
+          </VCol>
+          <VCol cols="12" sm="6">
+            <VSelect
+              v-model="form.role"
+              label="Role"
+              :items="['PATIENT', 'DOCTOR', 'ADMIN']"
+              variant="outlined"
+              required
+            />
+          </VCol>
+          <VCol cols="12" sm="6">
+            <VTextField v-model.number="form.age" label="Age" type="number" min="1" max="150" variant="outlined" />
+          </VCol>
+          <VCol cols="12" sm="6">
+            <VSelect
+              v-model="form.gender"
+              label="Gender"
+              :items="['Male', 'Female', 'Other']"
+              variant="outlined"
+            />
+          </VCol>
+          <VCol cols="12" sm="6">
+            <VTextField v-model="form.city" label="City" variant="outlined" />
+          </VCol>
+          <VCol cols="12">
+            <VTextField
+              v-model="form.address"
+              label="Address"
+              variant="outlined"
+              prepend-inner-icon="mdi-map-marker-outline"
+            />
+          </VCol>
+          <template v-if="form.role === 'DOCTOR'">
+            <VCol cols="12" sm="6">
+              <VTextField v-model="form.county" label="County" variant="outlined" />
+            </VCol>
+            <VCol cols="12" sm="6">
+              <VTextField v-model="form.speciality" label="Speciality" variant="outlined" />
+            </VCol>
+          </template>
+        </VRow>
+
+        <VAlert v-if="errorMessage || saveError" type="error" variant="tonal" class="mt-2" rounded="lg">
+          {{ saveError || errorMessage }}
+        </VAlert>
+      </VForm>
+    </VCardText>
+    <VCardActions class="pa-5 pt-0">
+      <VSpacer />
+      <VBtn variant="text" @click="$emit('cancel')">Cancel</VBtn>
+      <VBtn color="primary" variant="elevated" rounded="lg" :loading="submitting" @click="handleSubmit">
+        Save
+      </VBtn>
+    </VCardActions>
+  </VCard>
 </template>
 
 <script setup lang="ts">
@@ -89,11 +119,12 @@ const form = reactive({
   city: props.user?.city ?? '',
   address: props.user?.address ?? '',
   county: props.user?.county ?? '',
-  speciality: props.user?.speciality ?? ''
+  speciality: props.user?.speciality ?? '',
 })
 
 const submitting = ref(false)
 const errorMessage = ref('')
+const showPassword = ref(false)
 
 function handleSubmit() {
   errorMessage.value = ''
@@ -106,7 +137,7 @@ function handleSubmit() {
     city: form.city || undefined,
     address: form.address || undefined,
     county: form.county || undefined,
-    speciality: form.speciality || undefined
+    speciality: form.speciality || undefined,
   }
   if (props.mode === 'create') {
     payload.email = form.email
@@ -115,77 +146,3 @@ function handleSubmit() {
   emit('save', payload)
 }
 </script>
-
-<style scoped>
-.form-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-}
-
-.form-card {
-  background: #fff;
-  border-radius: 6px;
-  padding: 1.5rem;
-  width: 100%;
-  max-width: 480px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.form-card h2 {
-  margin: 0 0 1rem;
-}
-
-form label {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #444;
-  gap: 0.25rem;
-}
-
-form input,
-form select {
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 0.4rem 0.6rem;
-  font-size: 0.875rem;
-}
-
-.form-error {
-  color: #c53030;
-  font-size: 0.85rem;
-  margin-bottom: 0.5rem;
-}
-
-.form-actions {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: flex-end;
-}
-
-.form-actions button {
-  padding: 0.4rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  border: 1px solid #ccc;
-}
-
-.form-actions button[type='submit'] {
-  background: #2b6cb0;
-  color: #fff;
-  border-color: #2b6cb0;
-}
-
-.form-actions button[type='submit']:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-</style>

@@ -1,20 +1,34 @@
 <template>
-  <ul class="slot-grid">
-    <li
+  <VRow dense>
+    <VCol
       v-for="s in slots"
       :key="s.startTime"
-      :class="{
-        available: s.state === 'AVAILABLE',
-        locked: s.state === 'LOCKED',
-        unavailable: s.state === 'UNAVAILABLE',
-      }"
-      class="slot-cell"
-      @click="s.state === 'AVAILABLE' && emit('select', s.startTime)"
+      cols="6"
+      sm="4"
+      md="3"
     >
-      {{ s.startTime }} – {{ s.endTime }}
-      <span class="slot-state">{{ s.state }}</span>
-    </li>
-  </ul>
+      <VBtn
+        block
+        rounded="lg"
+        :color="slotColor(s.state)"
+        :variant="s.state === 'AVAILABLE' ? 'tonal' : 'outlined'"
+        :disabled="s.state !== 'AVAILABLE'"
+        class="slot-btn py-3"
+        height="auto"
+        @click="s.state === 'AVAILABLE' && emit('select', s.startTime)"
+      >
+        <div class="d-flex flex-column">
+          <span class="text-body-2 font-weight-bold">{{ s.startTime }}</span>
+          <span class="text-caption" style="opacity:0.75">{{ s.state }}</span>
+        </div>
+      </VBtn>
+    </VCol>
+    <VCol v-if="slots.length === 0" cols="12">
+      <VAlert type="info" variant="tonal" rounded="xl">
+        No slots available for this date.
+      </VAlert>
+    </VCol>
+  </VRow>
 </template>
 
 <script setup lang="ts">
@@ -22,46 +36,13 @@ import type { SlotDisplay } from '../stores/appointmentStore'
 
 defineProps<{ slots: SlotDisplay[] }>()
 const emit = defineEmits<{ select: [startTime: string] }>()
+
+function slotColor(state: string): string {
+  switch (state) {
+    case 'AVAILABLE': return 'success'
+    case 'LOCKED': return 'warning'
+    case 'UNAVAILABLE': return 'error'
+    default: return 'default'
+  }
+}
 </script>
-
-<style scoped>
-.slot-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.5rem;
-  list-style: none;
-  padding: 0;
-  margin: 1rem 0;
-}
-
-.slot-cell {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0.5rem;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-.available {
-  background: #d4edda;
-  color: #155724;
-}
-
-.locked {
-  background: #fff3cd;
-  color: #856404;
-}
-
-.unavailable {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.slot-state {
-  font-size: 0.7rem;
-  font-weight: 400;
-  opacity: 0.75;
-}
-</style>

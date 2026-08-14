@@ -1,57 +1,90 @@
 <template>
-  <div class="account-view">
-    <h1>My Account</h1>
-    <div v-if="loading">Loading…</div>
-    <form v-else-if="profile" @submit.prevent="handleSubmit">
+  <VContainer class="py-8" max-width="720">
+    <div class="d-flex align-center mb-6">
+      <VAvatar color="primary" size="56" class="mr-4">
+        <VIcon icon="mdi-account" size="32" />
+      </VAvatar>
       <div>
-        <label for="email">Email</label>
-        <input id="email" type="email" :value="profile.email" disabled />
+        <h1 class="text-h5 font-weight-bold">My Account</h1>
+        <p class="text-body-2 text-medium-emphasis">Update your profile information</p>
       </div>
-      <div>
-        <label for="role">Role</label>
-        <input id="role" type="text" :value="profile.role" disabled />
-      </div>
-      <div>
-        <label for="firstName">First Name</label>
-        <input id="firstName" v-model="profile.firstName" type="text" required />
-      </div>
-      <div>
-        <label for="surname">Surname</label>
-        <input id="surname" v-model="profile.surname" type="text" required />
-      </div>
-      <div>
-        <label for="age">Age</label>
-        <input id="age" v-model.number="profile.age" type="number" />
-      </div>
-      <div>
-        <label for="gender">Gender</label>
-        <input id="gender" v-model="profile.gender" type="text" />
-      </div>
-      <div>
-        <label for="city">City</label>
-        <input id="city" v-model="profile.city" type="text" />
-      </div>
-      <div>
-        <label for="address">Address</label>
-        <input id="address" v-model="profile.address" type="text" />
-      </div>
-      <template v-if="profile.role === 'DOCTOR'">
-        <div>
-          <label for="county">County</label>
-          <input id="county" v-model="profile.county" type="text" />
+    </div>
+
+    <VCard rounded="xl" elevation="1">
+      <VCardText class="pa-6">
+        <div v-if="loading" class="d-flex justify-center py-8">
+          <VProgressCircular indeterminate color="primary" size="56" />
         </div>
-        <div>
-          <label for="speciality">Speciality</label>
-          <input id="speciality" v-model="profile.speciality" type="text" />
-        </div>
-      </template>
-      <p v-if="successMessage" role="status">{{ successMessage }}</p>
-      <p v-if="errorMessage" role="alert">{{ errorMessage }}</p>
-      <button type="submit" :disabled="saving">
-        {{ saving ? 'Saving…' : 'Save Changes' }}
-      </button>
-    </form>
-  </div>
+
+        <VForm v-else-if="profile" @submit.prevent="handleSubmit">
+          <VRow>
+            <VCol cols="12" sm="6">
+              <VTextField
+                label="Email"
+                :model-value="profile.email"
+                prepend-inner-icon="mdi-email-outline"
+                variant="outlined"
+                readonly
+                disabled
+              />
+            </VCol>
+            <VCol cols="12" sm="6">
+              <VTextField
+                label="Role"
+                :model-value="profile.role"
+                prepend-inner-icon="mdi-shield-account-outline"
+                variant="outlined"
+                readonly
+                disabled
+              />
+            </VCol>
+            <VCol cols="12" sm="6">
+              <VTextField v-model="profile.firstName" label="First Name" variant="outlined" required />
+            </VCol>
+            <VCol cols="12" sm="6">
+              <VTextField v-model="profile.surname" label="Surname" variant="outlined" required />
+            </VCol>
+            <VCol cols="12" sm="4">
+              <VTextField v-model.number="profile.age" label="Age" type="number" variant="outlined" />
+            </VCol>
+            <VCol cols="12" sm="4">
+              <VSelect
+                v-model="profile.gender"
+                label="Gender"
+                :items="['Male', 'Female', 'Other']"
+                variant="outlined"
+              />
+            </VCol>
+            <VCol cols="12" sm="4">
+              <VTextField v-model="profile.city" label="City" variant="outlined" />
+            </VCol>
+            <VCol cols="12">
+              <VTextField v-model="profile.address" label="Address" prepend-inner-icon="mdi-map-marker-outline" variant="outlined" />
+            </VCol>
+            <template v-if="profile.role === 'DOCTOR'">
+              <VCol cols="12" sm="6">
+                <VTextField v-model="profile.county" label="County" variant="outlined" />
+              </VCol>
+              <VCol cols="12" sm="6">
+                <VTextField v-model="profile.speciality" label="Speciality" prepend-inner-icon="mdi-medical-bag" variant="outlined" />
+              </VCol>
+            </template>
+          </VRow>
+
+          <VAlert v-if="successMessage" type="success" variant="tonal" class="mb-4" rounded="lg">
+            {{ successMessage }}
+          </VAlert>
+          <VAlert v-if="errorMessage" type="error" variant="tonal" class="mb-4" rounded="lg">
+            {{ errorMessage }}
+          </VAlert>
+
+          <VBtn type="submit" color="primary" :loading="saving" rounded="lg">
+            <VIcon start icon="mdi-content-save-outline" />Save Changes
+          </VBtn>
+        </VForm>
+      </VCardText>
+    </VCard>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

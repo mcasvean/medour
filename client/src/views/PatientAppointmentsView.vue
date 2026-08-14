@@ -1,65 +1,106 @@
 <template>
-  <div class="patient-appointments">
-    <h1>My Appointments</h1>
+  <VContainer class="py-6" max-width="900">
+    <h1 class="text-h5 font-weight-bold mb-6">My Appointments</h1>
 
-    <div v-if="loading" class="loading">Loading...</div>
-
-    <div v-else-if="appointmentStore.patientAppointments.length === 0" class="empty-state">
-      You have no appointments yet.
+    <div v-if="loading" class="d-flex justify-center py-12">
+      <VProgressCircular indeterminate color="primary" size="56" />
     </div>
 
-    <ul v-else class="appointment-list">
-      <li
+    <VAlert
+      v-else-if="appointmentStore.patientAppointments.length === 0"
+      type="info"
+      variant="tonal"
+      rounded="xl"
+      icon="mdi-calendar-blank-outline"
+    >
+      You have no appointments yet.
+      <VBtn to="/booking" color="info" variant="text" size="small" class="ml-1">Book one now</VBtn>
+    </VAlert>
+
+    <VRow v-else>
+      <VCol
         v-for="appt in appointmentStore.patientAppointments"
         :key="appt.id"
-        class="appointment-card"
+        cols="12"
       >
-        <div class="card-header">
-          <span class="doctor-name">
-            {{ appt.doctorFirstName }} {{ appt.doctorSurname }}
-            <span v-if="appt.doctorRemoved" class="badge badge-removed">Removed</span>
-          </span>
-          <span
-            class="badge"
-            :class="{
-              'badge-open': appt.status === 'OPEN',
-              'badge-completed': appt.status === 'COMPLETED',
-              'badge-canceled': appt.status === 'CANCELED',
-              'badge-auto-canceled': appt.status === 'AUTO_CANCELED',
-            }"
-          >{{ appt.status }}</span>
-        </div>
-        <div class="card-body">
-          <span>{{ appt.doctorSpeciality }}</span>
-          <span>{{ appt.scheduledDate }} at {{ appt.startTime }}</span>
-        </div>
-        <button
-          v-if="appt.status === 'OPEN' && appt.wherebyRoomUrl"
-          :disabled="!isJoinActive(appt.scheduledDate, appt.startTime, appt.status)"
-          @click="join(appt.wherebyRoomUrl!)"
-        >Join</button>
-        <div v-if="appt.status === 'COMPLETED'" class="rating-widget">
-          <label :for="'rating-' + appt.id">Rate (1–10):</label>
-          <input
-            :id="'rating-' + appt.id"
-            v-model.number="ratingInputs[appt.id]"
-            type="number"
-            min="1"
-            max="10"
-            :disabled="submittingRating[appt.id]"
-          />
-          <button
-            :disabled="submittingRating[appt.id]"
-            @click="saveRating(appt.id)"
-          >Save</button>
-          <span v-if="ratingErrors[appt.id]" class="rating-error">{{ ratingErrors[appt.id] }}</span>
-        </div>
-        <div class="card-footer">
-          <small class="created-at">Booked: {{ appt.createdAt }}</small>
-        </div>
-      </li>
-    </ul>
-  </div>
+        <VCard rounded="xl" elevation="1">
+          <VCardText class="pa-5">
+            <div class="d-flex justify-space-between align-start mb-3">
+              <div class="d-flex align-center ga-3">
+                <VAvatar color="primary" size="44">
+                  <VIcon icon="mdi-doctor" size="24" />
+                </VAvatar>
+                <div>
+                  <div class="text-subtitle-1 font-weight-bold">
+                    {{ appt.doctorFirstName }} {{ appt.doctorSurname }}
+                    <VChip v-if="appt.doctorRemoved" size="x-small" color="error" class="ml-1">Removed</VChip>
+                  </div>
+                  <div class="text-body-2 text-medium-emphasis">
+                    <VIcon icon="mdi-medical-bag" size="13" class="mr-1" />{{ appt.doctorSpeciality }}
+                  </div>
+                </div>
+              </div>
+              <VChip :color="statusColor(appt.status)" size="small" label class="font-weight-medium">
+                {{ appt.status }}
+              </VChip>
+            </div>
+
+            <VDivider class="mb-3" />
+
+            <div class="d-flex ga-5 text-body-2 text-medium-emphasis mb-3">
+              <span><VIcon icon="mdi-calendar" size="15" class="mr-1" />{{ appt.scheduledDate }}</span>
+              <span><VIcon icon="mdi-clock-outline" size="15" class="mr-1" />{{ appt.startTime }}</span>
+            </div>
+
+            <div class="d-flex justify-space-between align-center flex-wrap ga-2">
+              <VBtn
+                v-if="appt.status === 'OPEN' && appt.wherebyRoomUrl"
+                color="success"
+                variant="tonal"
+                size="small"
+                rounded="lg"
+                prepend-icon="mdi-video-outline"
+                :disabled="!isJoinActive(appt.scheduledDate, appt.startTime, appt.status)"
+                @click="join(appt.wherebyRoomUrl!)"
+              >
+                Join Video Call
+              </VBtn>
+
+              <div v-if="appt.status === 'COMPLETED'" class="d-flex align-center ga-2">
+                <VTextField
+                  v-model.number="ratingInputs[appt.id]"
+                  label="Rating (1–10)"
+                  type="number"
+                  min="1"
+                  max="10"
+                  density="compact"
+                  variant="outlined"
+                  style="max-width: 130px"
+                  hide-details
+                  :disabled="submittingRating[appt.id]"
+                />
+                <VBtn
+                  size="small"
+                  color="warning"
+                  variant="tonal"
+                  rounded="lg"
+                  :loading="submittingRating[appt.id]"
+                  @click="saveRating(appt.id)"
+                >
+                  Save Rating
+                </VBtn>
+                <span v-if="ratingErrors[appt.id]" class="text-error text-caption">
+                  {{ ratingErrors[appt.id] }}
+                </span>
+              </div>
+
+              <small class="text-caption text-medium-emphasis ml-auto">Booked: {{ appt.createdAt }}</small>
+            </div>
+          </VCardText>
+        </VCard>
+      </VCol>
+    </VRow>
+  </VContainer>
 </template>
 
 <script setup lang="ts">
@@ -74,6 +115,16 @@ const ratingErrors = ref<Record<number, string>>({})
 
 function join(url: string) {
   window.open(url, '_blank', 'noopener,noreferrer')
+}
+
+function statusColor(status: string): string {
+  switch (status) {
+    case 'OPEN': return 'primary'
+    case 'COMPLETED': return 'success'
+    case 'CANCELED': return 'warning'
+    case 'AUTO_CANCELED': return 'error'
+    default: return 'default'
+  }
 }
 
 async function saveRating(appointmentId: number) {
@@ -91,7 +142,6 @@ async function saveRating(appointmentId: number) {
   }
 }
 
-// Pre-fill inputs from existing rating values; do not overwrite values the user has already typed
 watch(
   () => appointmentStore.patientAppointments,
   appointments => {
@@ -117,118 +167,3 @@ onMounted(async () => {
 onUnmounted(() => appointmentStore.disconnectAppointmentSse())
 </script>
 
-<style scoped>
-.patient-appointments {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 1rem;
-}
-
-.appointment-list {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.appointment-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 1rem;
-  position: relative;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.doctor-name {
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.card-body {
-  display: flex;
-  gap: 1.5rem;
-  color: #555;
-}
-
-.card-footer {
-  margin-top: 0.5rem;
-  text-align: right;
-}
-
-.created-at {
-  color: #888;
-  font-size: 0.75rem;
-}
-
-.badge {
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.badge-open {
-  background-color: #dbeafe;
-  color: #1d4ed8;
-}
-
-.badge-completed {
-  background-color: #dcfce7;
-  color: #15803d;
-}
-
-.badge-canceled {
-  background-color: #fed7aa;
-  color: #c2410c;
-}
-
-.badge-auto-canceled {
-  background-color: #f3f4f6;
-  color: #6b7280;
-}
-
-.badge-removed {
-  background-color: #fee2e2;
-  color: #b91c1c;
-}
-
-.rating-widget {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.rating-widget input {
-  width: 4rem;
-  padding: 2px 4px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.rating-widget button {
-  padding: 2px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.rating-error {
-  color: #b91c1c;
-  font-size: 0.85rem;
-}
-
-.empty-state {
-  text-align: center;
-  color: #888;
-  margin-top: 3rem;
-}
-</style>
