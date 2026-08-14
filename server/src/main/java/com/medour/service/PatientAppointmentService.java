@@ -68,7 +68,8 @@ public class PatientAppointmentService {
     }
 
     if (newDate.equals(appointment.getScheduledDate()) && newStartTime.equals(appointment.getStartTime())) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New slot is the same as the current appointment slot.");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "New slot is the same as the current appointment slot.");
     }
 
     Long doctorId = appointment.getDoctor().getId();
@@ -113,4 +114,3 @@ public class PatientAppointmentService {
         rating.map(Rating::getId).orElse(null));
   }
 }
-

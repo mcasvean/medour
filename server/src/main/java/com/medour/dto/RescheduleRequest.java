@@ -9,5 +9,5 @@ import java.time.LocalTime;
 
 public record RescheduleRequest(
     @NotNull @JsonFormat(pattern = "yyyy-MM-dd") LocalDate scheduledDate,
-    @NotNull @JsonDeserialize(using = LocalTimeDeserializer.class) LocalTime startTime
-) {}
+    @NotNull @JsonDeserialize(using = LocalTimeDeserializer.class) LocalTime startTime) {
+}

@@ -14,6 +14,7 @@ Users gain visual identity through profile pictures that appear as circular avat
 ## Requirements & Constraints
 
 **Profile Picture (7.1):**
+
 - File size limit: 512 KB maximum; requests exceeding this return 400 with "File too large. Maximum size is 512 KB."
 - MIME types: JPEG and PNG only; other formats return 400 with "Only JPEG and PNG images are accepted."
 - Stored as Base64 data-URI in the `profile_picture TEXT NULL` column on users table (e.g. `data:image/jpeg;base64,...`).
@@ -23,6 +24,7 @@ Users gain visual identity through profile pictures that appear as circular avat
 - Admin cannot change another user's profile picture via this endpoint — only self-management is allowed.
 
 **Appointment Reschedule (7.2):**
+
 - Only OPEN appointments can be rescheduled; any other status returns 409 with "Only OPEN appointments can be rescheduled."
 - Only the owning patient can reschedule; wrong patient returns 403.
 - New slot must be available: if a `slot_reservations` row already exists for `(doctor_id, new_date, new_start_time)` OR an OPEN appointment already exists for that combination, return 409 with "Selected slot is not available."
@@ -43,6 +45,7 @@ Users gain visual identity through profile pictures that appear as circular avat
 **Auth:** Both stories use JWT-derived authenticated user context. Ownership validated server-side on every mutation.
 
 **Pinia Store Updates:**
+
 - `authStore.user.profilePicture` updated in-place after upload/remove so header avatar refreshes immediately.
 - `appointmentStore.patientAppointments` entry patched in-place with new date/time after reschedule.
 
