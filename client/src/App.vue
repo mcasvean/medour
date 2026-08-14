@@ -10,10 +10,14 @@
         <VIcon v-else icon="mdi-stethoscope" color="white" class="ml-3" />
       </template>
       <VAppBarTitle>
-        <span class="text-white font-weight-bold text-h6">Medour</span>
+        <span
+          class="text-white font-weight-bold text-h6"
+          :style="authStore.isAuthenticated ? 'cursor:pointer' : ''"
+          @click="authStore.isAuthenticated && router.push('/')"
+        >Medour</span>
       </VAppBarTitle>
       <template v-if="authStore.isAuthenticated" #append>
-        <div class="d-flex align-center ga-2 mr-1">
+        <div class="d-flex align-center ga-4 mr-1">
           <VChip
             size="small"
             label
@@ -28,7 +32,6 @@
             {{ authStore.user?.firstName }} {{ authStore.user?.surname }}
           </span>
         </div>
-        <VBtn icon="mdi-logout" color="white" variant="text" density="comfortable" @click="logout" />
       </template>
     </VAppBar>
 
@@ -99,6 +102,15 @@
             rounded="lg"
           />
         </template>
+        <VDivider class="my-2" />
+        <VListItem
+          prepend-icon="mdi-logout"
+          title="Sign Out"
+          rounded="lg"
+          color="error"
+          class="font-weight-medium"
+          @click="logoutFromMenu"
+        />
       </VList>
     </VNavigationDrawer>
 
@@ -136,6 +148,14 @@ watch(() => route.path, () => { drawer.value = false })
 function logout() {
   authStore.clearAuth()
   router.push('/login')
+}
+
+function logoutFromMenu() {
+  try {
+    logout()
+  } finally {
+    drawer.value = false
+  }
 }
 </script>
 

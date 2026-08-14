@@ -35,6 +35,10 @@ Items collected during implementation reviews that are real but out of scope for
   summary: Required form fields lack aria-required="true" — screen readers cannot identify mandatory fields from the HTML alone.
   evidence: Blind hunter finding; accessibility gap not in spec; should be addressed in a dedicated accessibility pass.
 
+- source_spec: `spec-6-3-header-navigation-improvements.md`
+  summary: Burger menu Sign Out item and clickable app title lack aria-label / keyboard-only navigation hints.
+  evidence: Blind hunter finding; accessibility gap not in spec; should be addressed in a dedicated accessibility pass.
+
 - source_spec: `spec-5-1-rating-submission-on-completed-appointments.md`
   summary: PatientAppointmentService.getHistory executes N+1 queries — one ratingRepository.findByAppointmentId call per appointment row instead of a single LEFT JOIN.
   evidence: Blind hunter finding; causes a linear increase in DB round-trips for patients with many appointments.

@@ -2,9 +2,9 @@
 title: "Header & Navigation Improvements"
 type: "feature"
 created: "2026-08-14"
-status: "ready-for-dev"
+status: "done"
 review_loop_iteration: 0
-baseline_commit: ""
+baseline_commit: "6906de03686e2801e8b47d2b15dd4ceb8b9e3496"
 context: []
 ---
 
@@ -67,10 +67,10 @@ context: []
 
 **Execution:**
 
-- [ ] `client/src/App.vue` — in `VAppBarTitle`, replace `<span class="text-white font-weight-bold text-h6">Medour</span>` with `<span class="text-white font-weight-bold text-h6" :style="authStore.isAuthenticated ? 'cursor:pointer' : ''" @click="authStore.isAuthenticated && router.push('/')">Medour</span>`
-- [ ] `client/src/App.vue` — in `#append`, change the `div` class from `ga-2` to `ga-4`; remove the `<VBtn icon="mdi-logout" ...>` element
-- [ ] `client/src/App.vue` — in `VList` inside `VNavigationDrawer`, after the last existing `VListItem` and before the closing `</VList>`, add: `<VDivider class="my-2" />` then `<VListItem prepend-icon="mdi-logout" title="Sign Out" rounded="lg" color="error" class="font-weight-medium" @click="logoutFromMenu" />`
-- [ ] `client/src/App.vue` — in `<script setup>`, add `function logoutFromMenu() { logout(); drawer.value = false }`
+- [x] `client/src/App.vue` — in `VAppBarTitle`, replace `<span class="text-white font-weight-bold text-h6">Medour</span>` with `<span class="text-white font-weight-bold text-h6" :style="authStore.isAuthenticated ? 'cursor:pointer' : ''" @click="authStore.isAuthenticated && router.push('/')">Medour</span>`
+- [x] `client/src/App.vue` — in `#append`, change the `div` class from `ga-2` to `ga-4`; remove the `<VBtn icon="mdi-logout" ...>` element
+- [x] `client/src/App.vue` — in `VList` inside `VNavigationDrawer`, after the last existing `VListItem` and before the closing `</VList>`, add: `<VDivider class="my-2" />` then `<VListItem prepend-icon="mdi-logout" title="Sign Out" rounded="lg" color="error" class="font-weight-medium" @click="logoutFromMenu" />`
+- [x] `client/src/App.vue` — in `<script setup>`, add `function logoutFromMenu() { logout(); drawer.value = false }`
 
 ## Acceptance Criteria
 
@@ -87,3 +87,17 @@ context: []
 
 - `cd client && npm run build` — expected: zero TypeScript errors
 - `cd client && npm run test` — expected: all existing tests pass
+
+## Suggested Review Order
+
+- Clickable title: conditional cursor + `router.push('/')` only when authenticated.
+  [`App.vue:12`](../../client/src/App.vue#L12)
+
+- Header append: `ga-4` spacing, logout VBtn removed entirely.
+  [`App.vue:19`](../../client/src/App.vue#L19)
+
+- Sign Out list item at bottom of burger; red `color="error"` and divider separator.
+  [`App.vue:103`](../../client/src/App.vue#L103)
+
+- `logoutFromMenu` with `try/finally` ensuring drawer closes even if `logout()` throws.
+  [`App.vue:153`](../../client/src/App.vue#L153)
