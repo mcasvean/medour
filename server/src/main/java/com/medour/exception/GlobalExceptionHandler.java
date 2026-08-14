@@ -36,6 +36,12 @@ public class GlobalExceptionHandler {
         .body(Map.of("error", "Slot already reserved"));
   }
 
+  @ExceptionHandler(RatingAlreadyExistsException.class)
+  public ResponseEntity<Map<String, String>> handleRatingAlreadyExists(RatingAlreadyExistsException ex) {
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(Map.of("error", "Rating already exists for this appointment"));
+  }
+
   @ExceptionHandler(WherebyException.class)
   public ResponseEntity<Map<String, String>> handleWhereby(WherebyException ex) {
     return ResponseEntity.status(HttpStatus.BAD_GATEWAY)

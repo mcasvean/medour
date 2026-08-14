@@ -45,7 +45,9 @@ class PatientAppointmentControllerTest {
         false,
         "OPEN",
         LocalDateTime.of(2026, 8, 1, 12, 0),
-        "https://whereby.com/test-room");
+        "https://whereby.com/test-room",
+        null,
+        null);
     given(patientAppointmentService.getHistory(1L)).willReturn(List.of(dto));
 
     mockMvc.perform(get("/api/v1/appointments/my"))

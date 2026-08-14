@@ -38,6 +38,22 @@
           :disabled="!isJoinActive(appt.scheduledDate, appt.startTime, appt.status)"
           @click="join(appt.wherebyRoomUrl!)"
         >Join</button>
+        <div v-if="appt.status === 'COMPLETED'" class="rating-widget">
+          <label :for="'rating-' + appt.id">Rate (1–10):</label>
+          <input
+            :id="'rating-' + appt.id"
+            v-model.number="ratingInputs[appt.id]"
+            type="number"
+            min="1"
+            max="10"
+            :disabled="appt.ratingId !== null || submittingRating[appt.id]"
+          />
+          <button
+            :disabled="appt.ratingId !== null || submittingRating[appt.id]"
+            @click="saveRating(appt.id)"
+          >Save</button>
+          <span v-if="ratingErrors[appt.id]" class="rating-error">{{ ratingErrors[appt.id] }}</span>
+        </div>
         <div class="card-footer">
           <small class="created-at">Booked: {{ appt.createdAt }}</small>
         </div>
@@ -47,15 +63,46 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useAppointmentStore, isJoinActive } from '../stores/appointmentStore'
 
 const appointmentStore = useAppointmentStore()
 const loading = ref(false)
+const ratingInputs = ref<Record<number, number | null>>({})
+const submittingRating = ref<Record<number, boolean>>({})
+const ratingErrors = ref<Record<number, string>>({})
 
 function join(url: string) {
   window.open(url, '_blank', 'noopener,noreferrer')
 }
+
+async function saveRating(appointmentId: number) {
+  const value = ratingInputs.value[appointmentId]
+  if (value == null || Number.isNaN(value) || value < 1 || value > 10) return
+  if (submittingRating.value[appointmentId]) return
+  submittingRating.value[appointmentId] = true
+  ratingErrors.value[appointmentId] = ''
+  try {
+    await appointmentStore.submitRating(appointmentId, value)
+  } catch {
+    ratingErrors.value[appointmentId] = 'Could not save rating. Please try again.'
+  } finally {
+    submittingRating.value[appointmentId] = false
+  }
+}
+
+// Pre-fill inputs from existing rating values; do not overwrite values the user has already typed
+watch(
+  () => appointmentStore.patientAppointments,
+  appointments => {
+    for (const appt of appointments) {
+      if (appt.status === 'COMPLETED' && !(appt.id in ratingInputs.value)) {
+        ratingInputs.value[appt.id] = appt.ratingValue
+      }
+    }
+  },
+  { immediate: true },
+)
 
 onMounted(async () => {
   loading.value = true
@@ -152,6 +199,31 @@ onUnmounted(() => appointmentStore.disconnectAppointmentSse())
 .badge-removed {
   background-color: #fee2e2;
   color: #b91c1c;
+}
+
+.rating-widget {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.rating-widget input {
+  width: 4rem;
+  padding: 2px 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.rating-widget button {
+  padding: 2px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.rating-error {
+  color: #b91c1c;
+  font-size: 0.85rem;
 }
 
 .empty-state {

@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 08-12-2026 13:37
-last_updated: 08-13-2026 13:37
+last_updated: 08-14-2026
 project: medour
 project_key: NOKEY
 tracking_system: file-system
@@ -60,15 +60,15 @@ development_status:
   3-6-doctor-appointment-actions: review
   epic-3-retrospective: optional
 
-  epic-4: in-progress
-  4-1-admin-user-list-detail-view: review
-  4-2-admin-add-edit-user: review
-  4-3-admin-delete-user-soft-delete: review
-  4-4-admin-appointment-management: review
+  epic-4: done
+  4-1-admin-user-list-detail-view: done
+  4-2-admin-add-edit-user: done
+  4-3-admin-delete-user-soft-delete: done
+  4-4-admin-appointment-management: done
   epic-4-retrospective: optional
 
-  epic-5: backlog
-  5-1-rating-submission-on-completed-appointments: backlog
+  epic-5: in-progress
+  5-1-rating-submission-on-completed-appointments: review
   5-2-rating-editing: backlog
   5-3-colour-coded-doctor-rating-display: backlog
   epic-5-retrospective: optional

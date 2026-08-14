@@ -19,6 +19,18 @@ Items collected during implementation reviews that are real but out of scope for
   summary: HealthControllerTest uses @AutoConfigureMockMvc(addFilters=false) so it never validates the assembled SecurityFilterChain.
   evidence: Verification gap finding; a change from anyRequest().permitAll() to anyRequest().authenticated() would not be caught by this test.
 
+- source_spec: `spec-5-1-rating-submission-on-completed-appointments.md`
+  summary: PatientAppointmentService.getHistory executes N+1 queries — one ratingRepository.findByAppointmentId call per appointment row instead of a single LEFT JOIN.
+  evidence: Blind hunter finding; causes a linear increase in DB round-trips for patients with many appointments.
+
+- source_spec: `spec-5-1-rating-submission-on-completed-appointments.md`
+  summary: Rating entity stores patient and doctor as separate ManyToOne columns, redundantly with the Appointment relation; creates potential for data divergence.
+  evidence: Blind hunter finding; both patient and doctor are already reachable via appointment.patient / appointment.doctor.
+
+- source_spec: `spec-5-1-rating-submission-on-completed-appointments.md`
+  summary: No Vue component test for PatientAppointmentsView rating widget; render conditions, prefill, and disabled-after-submit have no automated coverage.
+  evidence: Verification gap finding; component-level test layer is absent for this feature.
+
 - source_spec: `spec-1-1-project-scaffold-development-environment.md`
   summary: spring.jpa.hibernate.ddl-auto is set to 'update', which mutates schema on every boot; Flyway or Liquibase should own migrations.
   evidence: Blind hunter finding; ddl-auto:update will silently drop renamed columns and cause schema drift across environments.

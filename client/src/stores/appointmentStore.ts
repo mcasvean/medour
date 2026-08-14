@@ -18,6 +18,8 @@ export interface PatientAppointment {
   status: string
   createdAt: string
   wherebyRoomUrl: string | null
+  ratingValue: number | null
+  ratingId: number | null
 }
 
 export interface DoctorAppointment {
@@ -178,6 +180,15 @@ export const useAppointmentStore = defineStore('appointment', {
     async fetchPatientAppointments() {
       const response = await api.get<PatientAppointment[]>('/appointments/my')
       this.patientAppointments = response.data
+    },
+
+    async submitRating(appointmentId: number, value: number) {
+      const response = await api.post<{ id: number; value: number }>('/ratings', { appointmentId, value })
+      const appt = this.patientAppointments.find(a => a.id === appointmentId)
+      if (appt) {
+        appt.ratingValue = response.data.value
+        appt.ratingId = response.data.id
+      }
     },
 
     async fetchDoctorAppointments() {

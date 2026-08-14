@@ -198,7 +198,8 @@ describe('appointmentStore', () => {
     store.patientAppointments = [
       { id: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
         doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
-        status: 'OPEN', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null },
+        status: 'OPEN', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null,
+        ratingValue: null, ratingId: null },
     ]
 
     const mockEs = makeMockEventSource()
@@ -218,7 +219,8 @@ describe('appointmentStore', () => {
     store.patientAppointments = [
       { id: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
         doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
-        status: 'OPEN', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null },
+        status: 'OPEN', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null,
+        ratingValue: null, ratingId: null },
     ]
 
     const mockEs = makeMockEventSource()
@@ -238,7 +240,8 @@ describe('appointmentStore', () => {
     store.patientAppointments = [
       { id: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
         doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
-        status: 'OPEN', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null },
+        status: 'OPEN', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null,
+        ratingValue: null, ratingId: null },
     ]
 
     const mockEs = makeMockEventSource()
@@ -291,6 +294,39 @@ describe('isJoinActive', () => {
     expect(isJoinActive('2026-09-01', '10:00:00', 'COMPLETED')).toBe(false)
     expect(isJoinActive('2026-09-01', '10:00:00', 'CANCELED')).toBe(false)
     expect(isJoinActive('2026-09-01', '10:00:00', 'AUTO_CANCELED')).toBe(false)
+  })
+
+  describe('submitRating', () => {
+    it('POSTs rating and updates ratingValue and ratingId on matching appointment', async () => {
+      vi.mocked(api.post).mockResolvedValueOnce({ data: { id: 42, value: 7 } })
+      const store = useAppointmentStore()
+      store.patientAppointments = [
+        { id: 5, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
+          doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
+          status: 'COMPLETED', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null,
+          ratingValue: null, ratingId: null },
+      ]
+
+      await store.submitRating(5, 7)
+
+      expect(api.post).toHaveBeenCalledWith('/ratings', { appointmentId: 5, value: 7 })
+      expect(store.patientAppointments[0].ratingId).toBe(42)
+      expect(store.patientAppointments[0].ratingValue).toBe(7)
+    })
+
+    it('rejects when the API call fails', async () => {
+      vi.mocked(api.post).mockRejectedValueOnce(new Error('409'))
+      const store = useAppointmentStore()
+      store.patientAppointments = [
+        { id: 5, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
+          doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
+          status: 'COMPLETED', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null,
+          ratingValue: null, ratingId: null },
+      ]
+
+      await expect(store.submitRating(5, 7)).rejects.toThrow('409')
+      expect(store.patientAppointments[0].ratingId).toBeNull()
+    })
   })
 
   describe('fetchAdminAppointments', () => {

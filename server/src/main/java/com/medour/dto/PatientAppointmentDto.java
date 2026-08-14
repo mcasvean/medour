@@ -14,5 +14,7 @@ public record PatientAppointmentDto(
     boolean doctorRemoved,
     String status,
     LocalDateTime createdAt,
-    String wherebyRoomUrl) {
+    String wherebyRoomUrl,
+    Integer ratingValue,
+    Long ratingId) {
 }
