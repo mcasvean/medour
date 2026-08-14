@@ -759,3 +759,230 @@ So that I can quickly assess their quality at a glance.
 
 **Given** a doctor has no ratings yet,
 **Then** no rating badge is shown.
+
+---
+
+## Epic 6: UX Polish & Global Feedback
+
+The application gains a consistent, app-wide notification system, clear required-field indicators across all forms, a refreshed header and navigation structure, and a light/dark mode toggle so users can personalise their experience.
+
+### Story 6.1: Toast Notification System
+
+As a user,
+I want clear, timely feedback messages when actions succeed, fail, or need my attention,
+So that I always understand what happened and what to do next without hunting for inline alerts.
+
+**Acceptance Criteria:**
+
+**Given** a success action is performed (e.g. profile saved),
+**When** the store triggers a success notification,
+**Then** a green toast appears bottom-right with a check icon and the message, and auto-dismisses after 5 seconds.
+
+**Given** a server returns an error response,
+**When** `toastStore.showError(error)` is called,
+**Then** a red toast displays the server's error message (or a generic fallback) with a close button.
+
+**Given** a warning notification is triggered,
+**Then** an amber toast is shown with a warning icon.
+
+**Given** 6 toasts are triggered rapidly,
+**Then** only the 5 most recent are visible; the oldest is removed automatically.
+
+**Given** the user clicks the ✕ button on a toast,
+**Then** the toast disappears immediately.
+
+---
+
+### Story 6.2: Required Field Visual Indicators
+
+As a user filling out a form,
+I want required fields to be clearly marked with a visible red asterisk,
+So that I know upfront which fields must be filled before submitting.
+
+**Acceptance Criteria:**
+
+**Given** any registration, account info, admin user, or password form is open,
+**When** a field is required,
+**Then** its label shows a red `*` after the label text.
+
+**Given** an optional field (age, gender, city, address, county),
+**Then** no asterisk is shown.
+
+**Given** an admin is in "edit user" mode,
+**Then** the password field has no asterisk (it is optional when editing); in "add user" mode it does.
+
+---
+
+### Story 6.3: Header & Navigation Improvements
+
+As a user,
+I want intuitive header behaviour and a cleaner layout,
+So that navigation feels natural and the sign-out action is easy to find.
+
+**Acceptance Criteria:**
+
+**Given** an authenticated user clicks the "Medour" app name in the header,
+**Then** they are navigated to the home page (`/`).
+
+**Given** an unauthenticated user views the header,
+**Then** the app name is not clickable.
+
+**Given** the header is rendered,
+**Then** there is more spacing between the role chip and the username text than before.
+
+**Given** the header is rendered,
+**Then** there is no sign-out button in the header `#append` area.
+
+**Given** the burger menu is opened,
+**Then** "Sign Out" is the last item, styled in red, separated by a divider.
+
+**Given** the user clicks "Sign Out" from the burger menu,
+**Then** they are logged out, the drawer closes, and they are redirected to `/login`.
+
+---
+
+### Story 6.4: Light/Dark Mode Toggle
+
+As a user,
+I want to switch between light and dark themes,
+So that I can use the app comfortably in different lighting conditions, and my preference is remembered across sessions.
+
+**Acceptance Criteria:**
+
+**Given** the app loads with no stored preference,
+**Then** the light theme is applied.
+
+**Given** the user has previously selected dark mode,
+**Then** dark mode is applied on the next load without any flicker.
+
+**Given** the user clicks the sun/moon icon in the header,
+**Then** the theme toggles and the icon reflects the new state.
+
+**Given** dark mode is active,
+**Then** the main content area uses Vuetify's dark surface colour (not the hardcoded light background).
+
+**Given** the toggle is visible to both authenticated and unauthenticated users,
+**Then** it works on the login page too.
+
+---
+
+## Epic 7: Profile & Appointment Enhancements
+
+Users gain a visual identity through profile pictures displayed in the header, and patients can reschedule their Open appointments without cancelling and re-booking.
+
+### Story 7.1: User Profile Picture
+
+As a user,
+I want to upload a personal profile picture that appears as a small circular avatar in the application header,
+So that I have a visual identity in the app and can personalise my profile.
+
+**Acceptance Criteria:**
+
+**Given** a user uploads a valid JPEG or PNG ≤ 512 KB,
+**Then** it is stored and immediately visible as a circular avatar in the header (order: role chip → avatar → username).
+
+**Given** a user has no picture set,
+**Then** no avatar element is rendered in the header; the layout is unchanged.
+
+**Given** a user uploads a file larger than 512 KB,
+**Then** an error toast is shown: "File too large. Maximum size is 512 KB."
+
+**Given** a user uploads a non-image file (e.g. PDF),
+**Then** an error toast is shown: "Only JPEG and PNG images are accepted."
+
+**Given** a user clicks "Remove photo" in Account Info,
+**Then** the picture is removed from the DB and the header avatar disappears.
+
+**Given** an admin is logged in,
+**Then** they cannot change another user's profile picture (the endpoint only applies to the authenticated user).
+
+---
+
+### Story 7.2: Patient Appointment Reschedule
+
+As a patient,
+I want to reschedule an Open appointment to a different date and time,
+So that I can adjust my schedule without cancelling and re-booking.
+
+**Acceptance Criteria:**
+
+**Given** a patient clicks "Reschedule" on an Open appointment,
+**Then** a dialog opens showing a slot grid for the same doctor.
+
+**Given** the patient selects a free future slot and confirms,
+**Then** the appointment's date and time are updated, the old slot is freed, the new slot is locked, a success toast is shown, and the doctor's view reflects the new time in real time.
+
+**Given** the patient selects an already-locked or booked slot,
+**Then** a 409 error toast is shown.
+
+**Given** the patient tries to reschedule a non-Open appointment,
+**Then** a 409 error toast is shown.
+
+**Given** the patient selects a past date,
+**Then** a 400 error is shown.
+
+**Given** the appointment is rescheduled,
+**Then** the Whereby room URL is unchanged.
+
+---
+
+## Epic 8: Speciality Management
+
+Speciality moves from a free-text field to a managed list maintained by admins. Doctors select from a standardised dropdown in registration and profile forms. The booking search filter becomes a dropdown too.
+
+### Story 8.1: Speciality Management Admin Page
+
+As an admin,
+I want to manage a canonical list of doctor specialities through a dedicated admin page,
+So that the speciality field is consistent across all doctors and the booking search filter works correctly.
+
+**Acceptance Criteria:**
+
+**Given** an admin navigates to Specialities in the burger menu,
+**Then** `/admin/specialities` opens with a list of all current specialities sorted alphabetically.
+
+**Given** the admin adds a new speciality "Cardiology",
+**Then** it appears in the list immediately.
+
+**Given** the admin adds "cardiology" when "Cardiology" already exists,
+**Then** a 409 error toast is shown.
+
+**Given** the admin edits a speciality name and saves,
+**Then** the updated name is reflected in the list.
+
+**Given** the admin deletes a speciality that no doctor uses,
+**Then** it is removed from the list.
+
+**Given** the admin tries to delete a speciality assigned to one or more doctors,
+**Then** a 409 error toast is shown and the speciality is not removed.
+
+**Given** an unauthenticated user calls `GET /api/v1/specialities`,
+**Then** they receive the full list (no auth required for read).
+
+---
+
+### Story 8.2: Speciality Dropdown in Doctor Forms
+
+As a doctor or admin,
+I want the speciality field in doctor registration and profile forms to be a dropdown of managed specialities,
+So that specialities are consistent, standardised, and always match the admin-maintained list.
+
+**Acceptance Criteria:**
+
+**Given** the doctor registration form opens,
+**Then** the speciality field is a dropdown populated with specialities from the DB sorted alphabetically.
+
+**Given** a doctor registers without selecting a speciality,
+**Then** a 400 error is returned.
+
+**Given** a doctor selects a valid speciality and registers,
+**Then** `speciality_id` is set on their user record.
+
+**Given** a doctor opens Account Info,
+**Then** the speciality field shows their current selection in a dropdown.
+
+**Given** the booking search filter is opened,
+**Then** the speciality filter is a dropdown, not a free-text input.
+
+**Given** an admin edits a doctor user,
+**Then** the speciality field is a dropdown; for patient users no speciality field is shown.

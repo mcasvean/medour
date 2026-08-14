@@ -33,7 +33,7 @@ last_updated: 08-14-2026
 project: medour
 project_key: NOKEY
 tracking_system: file-system
-story_location: D:\Projects\learning\GIT\bmad-v2\_bmad-output\implementation-artifacts
+story_location: D:\Projects\learning\GIT\medour\_bmad-output\implementation-artifacts
 development_status:
   epic-1: done
   1-1-project-scaffold-development-environment: done
@@ -72,3 +72,28 @@ development_status:
   5-2-rating-editing: done
   5-3-colour-coded-doctor-rating-display: done
   epic-5-retrospective: optional
+
+  # ─── Epic 6: UX Polish & Global Feedback ───────────────────────────────────
+  # Dependencies: 6.1 must be done before 6.2 (toast calls replace inline alerts)
+  # 6.3 and 6.4 are independent; all four can start once 6.1 is merged
+  epic-6: backlog
+  6-1-toast-notification-system: ready-for-dev
+  6-2-required-field-indicators: ready-for-dev # depends-on: 6.1
+  6-3-header-navigation-improvements: ready-for-dev
+  6-4-light-dark-mode: ready-for-dev
+  epic-6-retrospective: optional
+
+  # ─── Epic 7: Profile & Appointment Enhancements ─────────────────────────────
+  # 7.1 depends on 6.1 (success toasts); 7.2 depends on 6.1 (error/success toasts)
+  epic-7: backlog
+  7-1-user-profile-picture: ready-for-dev # depends-on: 6.1
+  7-2-patient-appointment-reschedule: ready-for-dev # depends-on: 6.1
+  epic-7-retrospective: optional
+
+  # ─── Epic 8: Speciality Management ──────────────────────────────────────────
+  # 8.1 must be done before 8.2 (specialities table must exist)
+  # 8.1 depends on 6.1 (toast feedback on admin CRUD operations)
+  epic-8: backlog
+  8-1-speciality-management-admin: ready-for-dev # depends-on: 6.1
+  8-2-speciality-dropdown-doctor-forms: ready-for-dev # depends-on: 8.1
+  epic-8-retrospective: optional
