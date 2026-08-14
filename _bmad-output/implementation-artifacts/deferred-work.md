@@ -35,6 +35,10 @@ Items collected during implementation reviews that are real but out of scope for
   summary: PATCH /api/v1/ratings/{id} role guard (DOCTOR/ADMIN → 403) has no controller-layer test; @WebMvcTest role enforcement is unreliable in this project.
   evidence: Verification gap finding; same limitation documented for POST in story 5-1; security config and @PreAuthorize are both in place for production.
 
+- source_spec: `spec-5-3-colour-coded-doctor-rating-display.md`
+  summary: Rating badge not shown on a doctor profile page — no doctor profile view exists yet in the codebase.
+  evidence: Blind hunter finding; epics.md FR53 requires badge on "doctor profile and search results"; BookingSearchView covers search results only.
+
 - source_spec: `spec-1-1-project-scaffold-development-environment.md`
   summary: spring.jpa.hibernate.ddl-auto is set to 'update', which mutates schema on every boot; Flyway or Liquibase should own migrations.
   evidence: Blind hunter finding; ddl-auto:update will silently drop renamed columns and cause schema drift across environments.

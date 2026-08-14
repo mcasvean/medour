@@ -42,7 +42,11 @@
         <strong>{{ doctor.firstName }} {{ doctor.surname }}</strong>
         <span>{{ doctor.speciality }}</span>
         <span>{{ doctor.county }}, {{ doctor.city }}</span>
-        <span>Rating: {{ doctor.averageRating !== null ? doctor.averageRating : 'No rating' }}</span>
+        <span
+          v-if="doctor.averageRating !== null"
+          :class="ratingBadgeClass(doctor.averageRating)"
+          class="rating-badge"
+        >{{ doctor.averageRating.toFixed(1) }}</span>
         <button @click="selectDoctor(doctor.id)">Select</button>
       </li>
     </ul>
@@ -82,6 +86,7 @@ import { computed, onMounted, onUnmounted } from 'vue'
 import { useDoctorStore } from '../stores/doctorStore'
 import { useAppointmentStore } from '../stores/appointmentStore'
 import SlotGrid from '../components/SlotGrid.vue'
+import { ratingBadgeClass } from '../utils/ratingBadge'
 
 const doctorStore = useDoctorStore()
 const appointmentStore = useAppointmentStore()
@@ -113,3 +118,28 @@ onUnmounted(() => {
   }
 })
 </script>
+
+<style scoped>
+.rating-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-weight: 600;
+  color: #fff;
+}
+
+.badge-orange {
+  background-color: #f97316;
+}
+
+.badge-blue {
+  background-color: #93c5fd;
+  color: #1e3a5f;
+}
+
+.badge-green {
+  background-color: #86efac;
+  color: #14532d;
+}
+</style>
