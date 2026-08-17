@@ -4,8 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medour.dto.ChangePasswordRequest;
 import com.medour.dto.UpdateProfileRequest;
 import com.medour.dto.UserProfileResponse;
+import com.medour.dto.UpdatePreferencesRequest;
+import com.medour.dto.UserPreferenceDto;
 import com.medour.exception.WrongPasswordException;
 import com.medour.security.JwtUtil;
+import com.medour.service.UserPreferenceService;
 import com.medour.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +25,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -44,6 +48,9 @@ class UserControllerTest {
 
   @MockBean
   private UserService userService;
+
+  @MockBean
+  private UserPreferenceService userPreferenceService;
 
   @Autowired
   private ObjectMapper objectMapper;
@@ -125,5 +132,29 @@ class UserControllerTest {
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(req)))
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @WithMockUser(username = "1")
+  void getPreferences_returnsCurrentPreferences() throws Exception {
+    given(userPreferenceService.getOrCreate(1L)).willReturn(new UserPreferenceDto(false));
+
+    mockMvc.perform(get("/api/v1/users/me/preferences"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.pinnedSidebar").value(false));
+  }
+
+  @Test
+  @WithMockUser(username = "1")
+  void patchPreferences_setPinnedTrue_returns200() throws Exception {
+    var req = new UpdatePreferencesRequest(true);
+    given(userPreferenceService.update(eq(1L), any())).willReturn(new UserPreferenceDto(true));
+
+    mockMvc.perform(patch("/api/v1/users/me/preferences")
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(req)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.pinnedSidebar").value(true));
   }
 }

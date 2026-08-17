@@ -143,6 +143,22 @@ Items collected during implementation reviews that are real but out of scope for
   summary: Pin toggle VBtn has no aria-pressed attribute — assistive technology cannot communicate whether the sidebar is currently pinned.
   evidence: Blind hunter finding; consistent with existing accessibility deferral pattern in this project.
 
+- source_spec: `spec-configurations-user-preferences.md`
+  summary: Drawer shows as closed on first authenticated render then snaps open if pinnedSidebar is true — async BE fetch introduces a visible layout flash that the old localStorage approach avoided.
+  evidence: Architectural trade-off; would require localStorage cache of the preference as a fast-read layer to fix.
+
+- source_spec: `spec-configurations-user-preferences.md`
+  summary: UserPreference.userId stored as a plain Long column with no @ManyToOne JPA relationship — no FK referential integrity or cascade behaviour.
+  evidence: Design decision; extensibility spec allows lazy FK; deferred for cleanliness pass.
+
+- source_spec: `spec-configurations-user-preferences.md`
+  summary: getOrCreate and update lack a concurrent-insert guard — two simultaneous first-login requests can both find no row and both INSERT, causing a DataIntegrityViolationException on the unique constraint.
+  evidence: Edge case hunter finding; acceptable risk at current scale; can be addressed with upsert query or serializable isolation later.
+
+- source_spec: `spec-configurations-user-preferences.md`
+  summary: App.vue isAuthenticated watcher → fetchPreferences → drawer-open wiring has no automated test; removing the drawer-open line silently regresses the feature.
+  evidence: Verification gap finding; component tests not available in this project; consistent with existing deferred component-test gap pattern.
+
 - source_spec: `spec-1-2-user-registration-patient-doctor.md`
   summary: Token expiry is not checked at store init — an expired token in localStorage makes isAuthenticated true until the first 401.
   evidence: Blind hunter finding; Story 1.3 JWT validation filter and auth guard will handle this.

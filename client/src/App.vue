@@ -4,6 +4,7 @@
       <template #prepend>
         <VAppBarNavIcon
           v-if="authStore.isAuthenticated"
+          v-show="!preferencesStore.pinnedSidebar || isMobile"
           color="white"
           @click="drawer = !drawer"
         />
@@ -47,25 +48,14 @@
       </template>
     </VAppBar>
 
-    <VNavigationDrawer v-if="authStore.isAuthenticated" v-model="drawer" :temporary="!pinned">
+    <VNavigationDrawer v-if="authStore.isAuthenticated" v-model="drawer" :temporary="!preferencesStore.pinnedSidebar">
       <VListItem
         prepend-icon="mdi-stethoscope"
         title="Medour"
         subtitle="Medical Appointments"
         nav
         class="py-4"
-      >
-        <template #append>
-          <VBtn
-            :icon="pinned ? 'mdi-pin-off' : 'mdi-pin'"
-            :title="pinned ? 'Unpin sidebar' : 'Pin sidebar'"
-            variant="text"
-            size="small"
-            color="grey"
-            @click="togglePin"
-          />
-        </template>
-      </VListItem>
+      />
       <VDivider />
       <VList nav density="compact" class="mt-1">
         <VListItem
@@ -101,6 +91,12 @@
           prepend-icon="mdi-account-outline"
           title="Account Info"
           to="/account"
+          rounded="lg"
+        />
+        <VListItem
+          prepend-icon="mdi-cog-outline"
+          title="Configurations"
+          to="/configurations"
           rounded="lg"
         />
         <VListItem
@@ -154,22 +150,23 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useTheme } from 'vuetify'
+import { useDisplay } from 'vuetify'
 import { useAuthStore } from './stores/authStore'
+import { usePreferencesStore } from './stores/preferencesStore'
 import ToastNotification from './components/ToastNotification.vue'
 
 const authStore = useAuthStore()
+const preferencesStore = usePreferencesStore()
 const router = useRouter()
 const route = useRoute()
 const theme = useTheme()
+const { smAndDown } = useDisplay()
 
-// read before first render to avoid open-then-close flash
-const _pinnedStored = (() => { try { return localStorage.getItem('medour_sidebar_pinned') === 'true' } catch { return false } })()
-const drawer = ref(_pinnedStored)
-const pinned = ref(_pinnedStored)
+const drawer = ref(false)
+const isMobile = computed(() => smAndDown.value)
 const isAdmin = computed(() => authStore.user?.role === 'ADMIN')
 const isDark = computed(() => theme.global.name.value === 'dark')
 
-// High-contrast chip: white background, role-specific text colour on the primary bar
 const roleChipColor = computed(() => {
   switch (authStore.user?.role) {
     case 'ADMIN': return '#FF5252'
@@ -178,14 +175,19 @@ const roleChipColor = computed(() => {
   }
 })
 
-watch(() => route.path, () => { if (!pinned.value) drawer.value = false })
+watch(() => route.path, () => { if (!preferencesStore.pinnedSidebar) drawer.value = false })
 
-// closing the drawer while pinned = user wants it unpinned; guard against logout triggering this
-watch(drawer, (isOpen) => {
-  if (!isOpen && pinned.value && authStore.isAuthenticated) {
-    pinned.value = false
-    try { localStorage.setItem('medour_sidebar_pinned', 'false') } catch { /* */ }
+watch(() => authStore.isAuthenticated, async (isAuth) => {
+  if (isAuth) {
+    await preferencesStore.fetchPreferences()
+    if (preferencesStore.pinnedSidebar) drawer.value = true
   }
+}, { immediate: true })
+
+// keep drawer open when pinned, close when unpinned
+watch(() => preferencesStore.pinnedSidebar, (pinned) => {
+  if (pinned) drawer.value = true
+  else drawer.value = false
 })
 
 onMounted(() => {
@@ -203,14 +205,6 @@ function toggleTheme() {
   try {
     localStorage.setItem('medour_theme', next)
   } catch { /* ignore — storage unavailable */ }
-}
-
-function togglePin() {
-  pinned.value = !pinned.value
-  if (pinned.value) drawer.value = true
-  try {
-    localStorage.setItem('medour_sidebar_pinned', String(pinned.value))
-  } catch { /* ignore */ }
 }
 
 function logout() {

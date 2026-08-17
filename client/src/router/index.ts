@@ -67,6 +67,11 @@ export const routes = [
     path: '/appointments/doctor',
     component: () => import('../views/DoctorAppointmentsView.vue'),
     meta: { requiresAuth: true, requiresDoctor: true }
+  },
+  {
+    path: '/configurations',
+    component: () => import('../views/ConfigurationsView.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 
