@@ -1,10 +1,10 @@
 ---
-title: 'Admin Reset User Password — UI'
-type: 'feature'
-created: '2026-08-17'
-status: 'done'
+title: "Admin Reset User Password — UI"
+type: "feature"
+created: "2026-08-17"
+status: "done"
 review_loop_iteration: 0
-baseline_commit: 'a86d9c668da03522f429528bfd2237c8052284ba'
+baseline_commit: "a86d9c668da03522f429528bfd2237c8052284ba"
 context: []
 ---
 
@@ -21,7 +21,7 @@ context: []
 **Always:**
 
 - The reset-password section is shown in **edit mode only** — create mode already has a required password field.
-- The section is visually separated from the rest of the form with a `VDivider` and a warning-coloured header or alert label (e.g. `VAlert type="warning"` or a `VCardTitle color="warning"`) that reads: *"Reset Password — This will immediately replace the user's current password."*
+- The section is visually separated from the rest of the form with a `VDivider` and a warning-coloured header or alert label (e.g. `VAlert type="warning"` or a `VCardTitle color="warning"`) that reads: _"Reset Password — This will immediately replace the user's current password."_
 - The new-password field includes a show/hide toggle (same pattern as the existing create-mode password field in `AdminUserForm.vue`).
 - The field is **optional** — if left blank, no password-reset call is made and no error is shown.
 - The password reset is fired as a **separate** request after the profile update (`PUT /admin/users/{id}`), not merged into the same payload.
@@ -42,12 +42,12 @@ context: []
 
 ## I/O & Edge-Case Matrix
 
-| Scenario | Input / State | Expected Output / Behavior | Error Handling |
-|---|---|---|---|
-| Edit with password filled | Save button clicked, `newPassword` non-empty | Profile `PUT` fires first; on success, password `POST` fires; success toast shown | Password POST error → error toast; profile save still succeeds |
-| Edit with password empty | Save button clicked, `newPassword` blank | Only profile `PUT` fires; no password-reset call | — |
-| Backend rejects weak password | `newPassword` fails backend validation | Error toast with server message; form stays open | — |
-| User opens edit form | Any user | Reset-password section visible and empty; no pre-filled value | — |
+| Scenario                      | Input / State                                | Expected Output / Behavior                                                        | Error Handling                                                 |
+| ----------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Edit with password filled     | Save button clicked, `newPassword` non-empty | Profile `PUT` fires first; on success, password `POST` fires; success toast shown | Password POST error → error toast; profile save still succeeds |
+| Edit with password empty      | Save button clicked, `newPassword` blank     | Only profile `PUT` fires; no password-reset call                                  | —                                                              |
+| Backend rejects weak password | `newPassword` fails backend validation       | Error toast with server message; form stays open                                  | —                                                              |
+| User opens edit form          | Any user                                     | Reset-password section visible and empty; no pre-filled value                     | —                                                              |
 
 </frozen-after-approval>
 
