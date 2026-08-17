@@ -13,4 +13,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
   Optional<User> findByIdAndDeletedAtIsNull(Long id);
 
   boolean existsByRole(Role role);
+
+  boolean existsBySpecialityIgnoreCaseAndDeletedAtIsNull(String speciality);
 }

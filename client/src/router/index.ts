@@ -39,6 +39,11 @@ export const routes = [
     meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
+    path: '/admin/specialities',
+    component: () => import('../views/AdminSpecialitiesView.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
     path: '/account',
     component: () => import('../views/AccountView.vue'),
     meta: { requiresAuth: true }

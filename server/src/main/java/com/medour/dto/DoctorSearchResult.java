@@ -2,6 +2,6 @@ package com.medour.dto;
 
 import java.math.BigDecimal;
 
-public record DoctorSearchResult(Long id, String firstName, String surname, String speciality, String county,
-    String city, BigDecimal averageRating) {
+public record DoctorSearchResult(Long id, String firstName, String surname, String specialityName, String county,
+        String city, BigDecimal averageRating) {
 }

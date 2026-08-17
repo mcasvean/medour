@@ -11,7 +11,9 @@ import com.medour.exception.EmailAlreadyUsedException;
 import com.medour.exception.InvalidCredentialsException;
 import com.medour.exception.WrongPasswordException;
 import com.medour.model.Role;
+import com.medour.model.Speciality;
 import com.medour.model.User;
+import com.medour.repository.SpecialityRepository;
 import com.medour.repository.UserRepository;
 import com.medour.security.JwtUtil;
 import org.springframework.http.HttpStatus;
@@ -31,11 +33,14 @@ public class UserService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtUtil jwtUtil;
+  private final SpecialityRepository specialityRepository;
 
-  public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+  public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil,
+      SpecialityRepository specialityRepository) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
     this.jwtUtil = jwtUtil;
+    this.specialityRepository = specialityRepository;
   }
 
   @Transactional
@@ -55,11 +60,20 @@ public class UserService {
     }
 
     if (role == Role.DOCTOR) {
-      if (req.getCounty() == null || req.getCounty().isBlank()
-          || req.getSpeciality() == null || req.getSpeciality().isBlank()) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "county and speciality are required for DOCTOR");
+      if (req.getCounty() == null || req.getCounty().isBlank()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "county is required for DOCTOR");
       }
+      if (req.getSpecialityId() == null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Speciality is required for doctor registration.");
+      }
+    }
+
+    Speciality specialityRef = null;
+    if (req.getSpecialityId() != null) {
+      specialityRef = specialityRepository.findById(req.getSpecialityId())
+          .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+              "Selected speciality does not exist."));
     }
 
     User user = User.builder()
@@ -72,7 +86,7 @@ public class UserService {
         .city(req.getCity())
         .address(req.getAddress())
         .county(req.getCounty())
-        .speciality(req.getSpeciality())
+        .specialityRef(specialityRef)
         .role(role)
         .mustChangePassword(false)
         .build();
@@ -113,10 +127,9 @@ public class UserService {
     User user = userRepository.findByIdAndDeletedAtIsNull(userId)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     if (user.getRole() == Role.DOCTOR) {
-      if (req.getCounty() == null || req.getCounty().isBlank()
-          || req.getSpeciality() == null || req.getSpeciality().isBlank()) {
+      if (req.getCounty() == null || req.getCounty().isBlank()) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "county and speciality are required for DOCTOR");
+            "county is required for DOCTOR");
       }
     }
     user.setFirstName(req.getFirstName());
@@ -126,11 +139,19 @@ public class UserService {
     user.setCity(req.getCity());
     user.setAddress(req.getAddress());
     user.setCounty(req.getCounty());
-    user.setSpeciality(req.getSpeciality());
+    if (req.getSpecialityId() != null) {
+      Speciality specialityRef = specialityRepository.findById(req.getSpecialityId())
+          .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+              "Selected speciality does not exist."));
+      user.setSpecialityRef(specialityRef);
+    } else {
+      user.setSpecialityRef(null);
+    }
     return toProfileResponse(userRepository.save(user));
   }
 
   private UserProfileResponse toProfileResponse(User user) {
+    Speciality ref = user.getSpecialityRef();
     return new UserProfileResponse(
         user.getId(),
         user.getEmail(),
@@ -142,7 +163,8 @@ public class UserService {
         user.getCity(),
         user.getAddress(),
         user.getCounty(),
-        user.getSpeciality(),
+        ref != null ? ref.getId() : null,
+        ref != null ? ref.getName() : null,
         user.getProfilePicture());
   }
 

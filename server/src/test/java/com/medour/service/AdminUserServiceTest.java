@@ -6,6 +6,7 @@ import com.medour.dto.AdminUserUpdateRequest;
 import com.medour.exception.EmailAlreadyUsedException;
 import com.medour.model.Role;
 import com.medour.model.User;
+import com.medour.repository.SpecialityRepository;
 import com.medour.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +35,9 @@ class AdminUserServiceTest {
 
   @Mock
   private PasswordEncoder passwordEncoder;
+
+  @Mock
+  private SpecialityRepository specialityRepository;
 
   @InjectMocks
   private AdminUserService adminUserService;
@@ -88,14 +92,14 @@ class AdminUserServiceTest {
   }
 
   @Test
-  void createUser_doctorMissingCounty_throwsBadRequest() {
+  void createUser_doctorMissingSpecialityId_throwsBadRequest() {
     var req = new AdminUserCreateRequest("doc@test.com", "Pass1!", "Doc", "Tor",
-        null, null, null, null, null, "Cardiology", "DOCTOR");
+        null, null, null, null, "Kent", null, "DOCTOR");
     when(userRepository.findByEmail("doc@test.com")).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> adminUserService.createUser(req))
         .isInstanceOf(ResponseStatusException.class)
-        .hasMessageContaining("county and speciality are required for DOCTOR");
+        .hasMessageContaining("Speciality is required for doctor registration.");
   }
 
   @Test

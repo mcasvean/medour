@@ -93,7 +93,7 @@ development_status:
   # ─── Epic 8: Speciality Management ──────────────────────────────────────────
   # 8.1 must be done before 8.2 (specialities table must exist)
   # 8.1 depends on 6.1 (toast feedback on admin CRUD operations)
-  epic-8: backlog
-  8-1-speciality-management-admin: ready-for-dev # depends-on: 6.1
-  8-2-speciality-dropdown-doctor-forms: ready-for-dev # depends-on: 8.1
+  epic-8: done
+  8-1-speciality-management-admin: done # depends-on: 6.1
+  8-2-speciality-dropdown-doctor-forms: done # depends-on: 8.1
   epic-8-retrospective: optional

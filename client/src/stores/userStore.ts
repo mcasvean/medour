@@ -8,7 +8,8 @@ export interface AdminUser {
   firstName: string
   surname: string
   role: string
-  speciality: string | null
+  specialityId: number | null
+  specialityName: string | null
   county: string | null
   city: string | null
   age: number | null

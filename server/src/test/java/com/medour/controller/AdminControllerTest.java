@@ -38,118 +38,118 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(AdminController.class)
 class AdminControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @MockBean
-    private JwtUtil jwtUtil;
+        @MockBean
+        private JwtUtil jwtUtil;
 
-    @MockBean
-    private UserService userService;
+        @MockBean
+        private UserService userService;
 
-    @MockBean
-    private AdminUserService adminUserService;
+        @MockBean
+        private AdminUserService adminUserService;
 
-    @MockBean
-    private AdminAppointmentService adminAppointmentService;
+        @MockBean
+        private AdminAppointmentService adminAppointmentService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+        @Autowired
+        private ObjectMapper objectMapper;
 
-    @Test
-    @WithMockUser(username = "1", roles = "ADMIN")
-    void getUsers_asAdmin_returns200WithArray() throws Exception {
-        var dto = new AdminUserDto(1L, "a@b.com", "Alice", "Smith", "PATIENT",
-                null, null, null, null, null, null, false, false);
-        when(adminUserService.getAllUsers()).thenReturn(List.of(dto));
+        @Test
+        @WithMockUser(username = "1", roles = "ADMIN")
+        void getUsers_asAdmin_returns200WithArray() throws Exception {
+                var dto = new AdminUserDto(1L, "a@b.com", "Alice", "Smith", "PATIENT",
+                                null, null, null, null, null, null, null, false, false);
+                when(adminUserService.getAllUsers()).thenReturn(List.of(dto));
 
-        mockMvc.perform(get("/api/v1/admin/users"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].email").value("a@b.com"))
-                .andExpect(jsonPath("$[0].isDeleted").value(false));
-    }
+                mockMvc.perform(get("/api/v1/admin/users"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.length()").value(1))
+                                .andExpect(jsonPath("$[0].email").value("a@b.com"))
+                                .andExpect(jsonPath("$[0].isDeleted").value(false));
+        }
 
-    @Test
-    @WithMockUser(username = "1", roles = "ADMIN")
-    void adminSetPassword_valid_returns204() throws Exception {
-        var req = new AdminSetPasswordRequest("TempPass123!");
-        doNothing().when(userService).adminSetPassword(eq(2L), any());
+        @Test
+        @WithMockUser(username = "1", roles = "ADMIN")
+        void adminSetPassword_valid_returns204() throws Exception {
+                var req = new AdminSetPasswordRequest("TempPass123!");
+                doNothing().when(userService).adminSetPassword(eq(2L), any());
 
-        mockMvc.perform(post("/api/v1/admin/users/2/password")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isNoContent());
-    }
+                mockMvc.perform(post("/api/v1/admin/users/2/password")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(req)))
+                                .andExpect(status().isNoContent());
+        }
 
-    @Test
-    @WithMockUser(username = "1", roles = "ADMIN")
-    void createUser_valid_returns201WithEmail() throws Exception {
-        var req = new AdminUserCreateRequest("new@test.com", "Pass1!", "New", "User",
-                null, null, null, null, null, null, "PATIENT");
-        var dto = new AdminUserDto(10L, "new@test.com", "New", "User", "PATIENT",
-                null, null, null, null, null, null, false, false);
-        when(adminUserService.createUser(any())).thenReturn(dto);
+        @Test
+        @WithMockUser(username = "1", roles = "ADMIN")
+        void createUser_valid_returns201WithEmail() throws Exception {
+                var req = new AdminUserCreateRequest("new@test.com", "Pass1!", "New", "User",
+                                null, null, null, null, null, null, "PATIENT");
+                var dto = new AdminUserDto(10L, "new@test.com", "New", "User", "PATIENT",
+                                null, null, null, null, null, null, null, false, false);
+                when(adminUserService.createUser(any())).thenReturn(dto);
 
-        mockMvc.perform(post("/api/v1/admin/users")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.email").value("new@test.com"));
-    }
+                mockMvc.perform(post("/api/v1/admin/users")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(req)))
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.email").value("new@test.com"));
+        }
 
-    @Test
-    @WithMockUser(username = "1", roles = "ADMIN")
-    void deleteUser_asAdmin_returns204() throws Exception {
-        doNothing().when(adminUserService).deleteUser(1L);
+        @Test
+        @WithMockUser(username = "1", roles = "ADMIN")
+        void deleteUser_asAdmin_returns204() throws Exception {
+                doNothing().when(adminUserService).deleteUser(1L);
 
-        mockMvc.perform(delete("/api/v1/admin/users/1")
-                .with(csrf()))
-                .andExpect(status().isNoContent());
+                mockMvc.perform(delete("/api/v1/admin/users/1")
+                                .with(csrf()))
+                                .andExpect(status().isNoContent());
 
-        verify(adminUserService).deleteUser(1L);
-    }
+                verify(adminUserService).deleteUser(1L);
+        }
 
-    @Test
-    @WithMockUser(username = "1", roles = "ADMIN")
-    void getAppointments_asAdmin_returns200WithArray() throws Exception {
-        var dto = new AdminAppointmentDto(1L, "Alice Jones", "Dr Smith",
-                LocalDate.of(2026, 9, 1), LocalTime.of(10, 0), "OPEN", null);
-        when(adminAppointmentService.getAllAppointments()).thenReturn(List.of(dto));
+        @Test
+        @WithMockUser(username = "1", roles = "ADMIN")
+        void getAppointments_asAdmin_returns200WithArray() throws Exception {
+                var dto = new AdminAppointmentDto(1L, "Alice Jones", "Dr Smith",
+                                LocalDate.of(2026, 9, 1), LocalTime.of(10, 0), "OPEN", null);
+                when(adminAppointmentService.getAllAppointments()).thenReturn(List.of(dto));
 
-        mockMvc.perform(get("/api/v1/admin/appointments"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].patientName").value("Alice Jones"));
-    }
+                mockMvc.perform(get("/api/v1/admin/appointments"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.length()").value(1))
+                                .andExpect(jsonPath("$[0].patientName").value("Alice Jones"));
+        }
 
-    @Test
-    @WithMockUser(username = "1", roles = "ADMIN")
-    void deleteAppointment_asAdmin_returns204() throws Exception {
-        doNothing().when(adminAppointmentService).deleteAppointment(1L);
+        @Test
+        @WithMockUser(username = "1", roles = "ADMIN")
+        void deleteAppointment_asAdmin_returns204() throws Exception {
+                doNothing().when(adminAppointmentService).deleteAppointment(1L);
 
-        mockMvc.perform(delete("/api/v1/admin/appointments/1")
-                .with(csrf()))
-                .andExpect(status().isNoContent());
+                mockMvc.perform(delete("/api/v1/admin/appointments/1")
+                                .with(csrf()))
+                                .andExpect(status().isNoContent());
 
-        verify(adminAppointmentService).deleteAppointment(1L);
-    }
+                verify(adminAppointmentService).deleteAppointment(1L);
+        }
 
-    @Test
-    @WithMockUser(username = "1", roles = "ADMIN")
-    void updateUser_valid_returns200WithRole() throws Exception {
-        var req = new AdminUserUpdateRequest("Alice", "Smith", null, null, null, null, null, null, "ADMIN");
-        var dto = new AdminUserDto(1L, "a@b.com", "Alice", "Smith", "ADMIN",
-                null, null, null, null, null, null, false, false);
-        when(adminUserService.updateUser(eq(1L), any())).thenReturn(dto);
+        @Test
+        @WithMockUser(username = "1", roles = "ADMIN")
+        void updateUser_valid_returns200WithRole() throws Exception {
+                var req = new AdminUserUpdateRequest("Alice", "Smith", null, null, null, null, null, null, "ADMIN");
+                var dto = new AdminUserDto(1L, "a@b.com", "Alice", "Smith", "ADMIN",
+                                null, null, null, null, null, null, null, false, false);
+                when(adminUserService.updateUser(eq(1L), any())).thenReturn(dto);
 
-        mockMvc.perform(put("/api/v1/admin/users/1")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.role").value("ADMIN"));
-    }
+                mockMvc.perform(put("/api/v1/admin/users/1")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(req)))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.role").value("ADMIN"));
+        }
 }

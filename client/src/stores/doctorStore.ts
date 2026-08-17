@@ -5,7 +5,7 @@ export interface DoctorSearchResult {
   id: number
   firstName: string
   surname: string
-  speciality: string
+  specialityName: string | null
   county: string
   city: string
   averageRating: number | null

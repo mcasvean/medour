@@ -6,11 +6,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -19,9 +21,11 @@ import java.util.List;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.PATCH;
 import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
 
 @Configuration
 @EnableWebSecurity
@@ -35,6 +39,12 @@ public class SecurityConfig {
   }
 
   @Bean
+  public WebSecurityCustomizer webSecurityCustomizer() {
+    // completely bypasses Spring Security (no JWT filter, no auth check) for the public specialities list
+    return web -> web.ignoring().requestMatchers(new AntPathRequestMatcher("/api/v1/specialities", "GET"));
+  }
+
+  @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
         .csrf(csrf -> csrf.disable())
@@ -43,6 +53,9 @@ public class SecurityConfig {
             .requestMatchers(GET, "/api/v1/health").permitAll()
             .requestMatchers(GET, "/api/v1/sse/slots").permitAll()
             .requestMatchers(POST, "/api/v1/auth/register", "/api/v1/auth/login").permitAll()
+            .requestMatchers(POST, "/api/v1/specialities").hasRole("ADMIN")
+            .requestMatchers(PUT, "/api/v1/specialities/**").hasRole("ADMIN")
+            .requestMatchers(DELETE, "/api/v1/specialities/**").hasRole("ADMIN")
             .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
             .requestMatchers(GET, "/api/v1/appointments/my").hasRole("PATIENT")
             .requestMatchers(GET, "/api/v1/appointments/doctor/my").hasRole("DOCTOR")

@@ -43,7 +43,7 @@ public class RegisterRequest {
 
   private String county;
 
-  private String speciality;
+  private Long specialityId;
 
   @NotBlank
   private String role;

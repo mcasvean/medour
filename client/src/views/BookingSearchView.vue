@@ -8,9 +8,12 @@
         <VForm @submit.prevent="doctorStore.searchDoctors()">
           <VRow align="center" dense>
             <VCol cols="12" sm="6" md="3">
-              <VTextField
+              <VSelect
                 v-model="doctorStore.filters.speciality"
                 label="Speciality"
+                :items="specialityStore.specialities"
+                item-title="name"
+                item-value="name"
                 prepend-inner-icon="mdi-medical-bag"
                 variant="outlined"
                 density="compact"
@@ -104,7 +107,7 @@
                   {{ doctor.firstName }} {{ doctor.surname }}
                 </div>
                 <div class="text-body-2 text-medium-emphasis">
-                  <VIcon icon="mdi-medical-bag" size="14" class="mr-1" />{{ doctor.speciality }}
+                  <VIcon icon="mdi-medical-bag" size="14" class="mr-1" />{{ doctor.specialityName }}
                 </div>
                 <div class="text-body-2 text-medium-emphasis">
                   <VIcon icon="mdi-map-marker-outline" size="14" class="mr-1" />{{ doctor.county }}, {{ doctor.city }}
@@ -216,10 +219,12 @@
 import { computed, onMounted, onUnmounted } from 'vue'
 import { useDoctorStore } from '../stores/doctorStore'
 import { useAppointmentStore } from '../stores/appointmentStore'
+import { useSpecialityStore } from '../stores/specialityStore'
 import SlotGrid from '../components/SlotGrid.vue'
 
 const doctorStore = useDoctorStore()
 const appointmentStore = useAppointmentStore()
+const specialityStore = useSpecialityStore()
 const today = new Date().toISOString().split('T')[0]
 
 const selectedDoctor = computed(() =>
@@ -245,8 +250,11 @@ function onSlotSelected(startTime: string) {
   appointmentStore.lockSlot(startTime)
 }
 
-onMounted(() => {
+onMounted(async () => {
   doctorStore.searchDoctors()
+  if (specialityStore.specialities.length === 0) {
+    await specialityStore.fetchSpecialities()
+  }
 })
 
 onUnmounted(() => {

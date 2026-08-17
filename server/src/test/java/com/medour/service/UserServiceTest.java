@@ -3,11 +3,14 @@ package com.medour.service;
 import com.medour.dto.AdminSetPasswordRequest;
 import com.medour.dto.ChangePasswordRequest;
 import com.medour.dto.LoginRequest;
+import com.medour.dto.RegisterRequest;
 import com.medour.dto.UpdateProfileRequest;
 import com.medour.exception.InvalidCredentialsException;
 import com.medour.exception.WrongPasswordException;
 import com.medour.model.Role;
+import com.medour.model.Speciality;
 import com.medour.model.User;
+import com.medour.repository.SpecialityRepository;
 import com.medour.repository.UserRepository;
 import com.medour.security.JwtUtil;
 import org.junit.jupiter.api.Test;
@@ -37,6 +40,8 @@ class UserServiceTest {
   private PasswordEncoder passwordEncoder;
   @Mock
   private JwtUtil jwtUtil;
+  @Mock
+  private SpecialityRepository specialityRepository;
 
   @InjectMocks
   private UserService userService;
@@ -203,5 +208,42 @@ class UserServiceTest {
     var result = userService.updateProfilePicture(7L, file);
 
     assertThat(result.profilePicture()).startsWith("data:IMAGE/JPEG;base64,");
+  }
+
+  @Test
+  void register_doctorWithValidSpecialityId_setsSpecialityRef() {
+    when(userRepository.findByEmail("doc@test.com")).thenReturn(Optional.empty());
+    Speciality cardiology = Speciality.builder().id(1L).name("Cardiology").build();
+    when(specialityRepository.findById(1L)).thenReturn(Optional.of(cardiology));
+    when(passwordEncoder.encode("Pass1!")).thenReturn("hashed");
+    when(userRepository.save(any())).thenAnswer(inv -> {
+      User u = inv.getArgument(0);
+      return User.builder().id(10L).email(u.getEmail()).passwordHash(u.getPasswordHash())
+          .firstName(u.getFirstName()).surname(u.getSurname()).age(u.getAge())
+          .gender(u.getGender()).city(u.getCity()).address(u.getAddress())
+          .county(u.getCounty()).role(u.getRole()).specialityRef(u.getSpecialityRef())
+          .mustChangePassword(false).build();
+    });
+    when(jwtUtil.generateToken(any())).thenReturn("token");
+
+    var req = new RegisterRequest("doc@test.com", "Pass1!", "Jane", "Doe", 35, "Female",
+        "London", "1 Main St", "Kent", 1L, "DOCTOR");
+
+    var response = userService.register(req);
+
+    assertThat(response.token()).isEqualTo("token");
+    verify(specialityRepository).findById(1L);
+  }
+
+  @Test
+  void register_doctorWithoutSpecialityId_throws400() {
+    when(userRepository.findByEmail("doc2@test.com")).thenReturn(Optional.empty());
+
+    var req = new RegisterRequest("doc2@test.com", "Pass1!", "John", "Doe", 40, "Male",
+        "London", "2 Main St", "Kent", null, "DOCTOR");
+
+    var ex = assertThrows(org.springframework.web.server.ResponseStatusException.class,
+        () -> userService.register(req));
+    assertThat(ex.getStatusCode().value()).isEqualTo(400);
   }
 }

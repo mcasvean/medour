@@ -45,7 +45,7 @@
                 </VExpansionPanelTitle>
                 <VExpansionPanelText class="px-0">
                   <VList density="compact" lines="two" bg-color="transparent">
-                    <VListItem v-if="user.speciality" title="Speciality" :subtitle="user.speciality" density="compact" />
+                    <VListItem v-if="user.specialityName" title="Speciality" :subtitle="user.specialityName" density="compact" />
                     <VListItem v-if="user.county" title="County" :subtitle="user.county" density="compact" />
                     <VListItem v-if="user.city" title="City" :subtitle="user.city" density="compact" />
                     <VListItem title="Age" :subtitle="user.age ? String(user.age) : '—'" density="compact" />

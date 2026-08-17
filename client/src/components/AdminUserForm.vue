@@ -83,7 +83,15 @@
               <VTextField v-model="form.county" label="County" variant="outlined" />
             </VCol>
             <VCol cols="12" sm="6">
-              <VTextField v-model="form.speciality" label="Speciality" variant="outlined" />
+              <VSelect
+                v-model="form.specialityId"
+                label="Speciality"
+                :items="specialityStore.specialities"
+                item-title="name"
+                item-value="id"
+                variant="outlined"
+                clearable
+              />
             </VCol>
           </template>
         </VRow>
@@ -104,8 +112,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import type { AdminUser } from '../stores/userStore'
+import { useSpecialityStore } from '../stores/specialityStore'
 
 const props = defineProps<{
   user?: AdminUser
@@ -118,6 +127,14 @@ const emit = defineEmits<{
   (e: 'cancel'): void
 }>()
 
+const specialityStore = useSpecialityStore()
+
+onMounted(async () => {
+  if (specialityStore.specialities.length === 0) {
+    await specialityStore.fetchSpecialities()
+  }
+})
+
 const form = reactive({
   email: props.user?.email ?? '',
   password: '',
@@ -129,7 +146,7 @@ const form = reactive({
   city: props.user?.city ?? '',
   address: props.user?.address ?? '',
   county: props.user?.county ?? '',
-  speciality: props.user?.speciality ?? '',
+  specialityId: props.user?.specialityId ?? null as number | null,
 })
 
 const submitting = ref(false)
@@ -147,7 +164,7 @@ function handleSubmit() {
     city: form.city || undefined,
     address: form.address || undefined,
     county: form.county || undefined,
-    speciality: form.speciality || undefined,
+    specialityId: form.specialityId ?? null,
   }
   if (props.mode === 'create') {
     payload.email = form.email

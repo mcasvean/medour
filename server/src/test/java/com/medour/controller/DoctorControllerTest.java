@@ -27,53 +27,53 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 class DoctorControllerTest {
 
-  @Autowired
-  private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-  @MockBean
-  private DoctorService doctorService;
+    @MockBean
+    private DoctorService doctorService;
 
-  @MockBean
-  private SlotService slotService;
+    @MockBean
+    private SlotService slotService;
 
-  @MockBean
-  private JwtUtil jwtUtil;
+    @MockBean
+    private JwtUtil jwtUtil;
 
-  @Test
-  void getAllDoctors_noParams_returns200WithList() throws Exception {
-    given(doctorService.searchDoctors(any(), any(), any(), any()))
-        .willReturn(List.of(
-            new DoctorSearchResult(1L, "John", "Smith", "Cardiology", "Dublin", "Dublin", null),
-            new DoctorSearchResult(2L, "Jane", "Doe", "Neurology", "Cork", "Cork", null)));
+    @Test
+    void getAllDoctors_noParams_returns200WithList() throws Exception {
+        given(doctorService.searchDoctors(any(), any(), any(), any()))
+                .willReturn(List.of(
+                        new DoctorSearchResult(1L, "John", "Smith", "Cardiology", "Dublin", "Dublin", null),
+                        new DoctorSearchResult(2L, "Jane", "Doe", "Neurology", "Cork", "Cork", null)));
 
-    mockMvc.perform(get("/api/v1/doctors/"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(2));
-  }
+        mockMvc.perform(get("/api/v1/doctors/"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2));
+    }
 
-  @Test
-  void getAllDoctors_withSpecialityFilter_returns200WithFilteredList() throws Exception {
-    given(doctorService.searchDoctors(eq("Cardiology"), isNull(), isNull(), isNull()))
-        .willReturn(List.of(
-            new DoctorSearchResult(1L, "John", "Smith", "Cardiology", "Dublin", "Dublin", null)));
+    @Test
+    void getAllDoctors_withSpecialityFilter_returns200WithFilteredList() throws Exception {
+        given(doctorService.searchDoctors(eq("Cardiology"), isNull(), isNull(), isNull()))
+                .willReturn(List.of(
+                        new DoctorSearchResult(1L, "John", "Smith", "Cardiology", "Dublin", "Dublin", null)));
 
-    mockMvc.perform(get("/api/v1/doctors/?speciality=Cardiology"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(1))
-        .andExpect(jsonPath("$[0].speciality").value("Cardiology"));
-  }
+        mockMvc.perform(get("/api/v1/doctors/?speciality=Cardiology"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].specialityName").value("Cardiology"));
+    }
 
-  @Test
-  void getSlots_validIdAndDate_returns200WithSlotList() throws Exception {
-    var slots = List.of(
-        new SlotDto("08:00", "08:30", SlotState.AVAILABLE),
-        new SlotDto("08:30", "09:00", SlotState.LOCKED));
-    given(slotService.getSlotsForDoctor(eq(1L), any())).willReturn(slots);
+    @Test
+    void getSlots_validIdAndDate_returns200WithSlotList() throws Exception {
+        var slots = List.of(
+                new SlotDto("08:00", "08:30", SlotState.AVAILABLE),
+                new SlotDto("08:30", "09:00", SlotState.LOCKED));
+        given(slotService.getSlotsForDoctor(eq(1L), any())).willReturn(slots);
 
-    mockMvc.perform(get("/api/v1/doctors/1/slots?date=2026-09-01"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(2))
-        .andExpect(jsonPath("$[0].state").value("AVAILABLE"))
-        .andExpect(jsonPath("$[1].state").value("LOCKED"));
-  }
+        mockMvc.perform(get("/api/v1/doctors/1/slots?date=2026-09-01"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].state").value("AVAILABLE"))
+                .andExpect(jsonPath("$[1].state").value("LOCKED"));
+    }
 }

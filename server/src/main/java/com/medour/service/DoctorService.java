@@ -34,7 +34,8 @@ public class DoctorService {
   public List<DoctorSearchResult> searchDoctors(String speciality, String county, String city, LocalDate date) {
     return userRepository.findAll().stream()
         .filter(u -> u.getRole() == Role.DOCTOR && u.getDeletedAt() == null)
-        .filter(u -> isBlank(speciality) || containsIgnoreCase(u.getSpeciality(), speciality))
+        .filter(u -> isBlank(speciality) || containsIgnoreCase(
+            u.getSpecialityRef() != null ? u.getSpecialityRef().getName() : null, speciality))
         .filter(u -> isBlank(county) || containsIgnoreCase(u.getCounty(), county))
         .filter(u -> isBlank(city) || containsIgnoreCase(u.getCity(), city))
         .filter(u -> {
@@ -47,7 +48,8 @@ public class DoctorService {
           return (reservations + appointments) < TOTAL_SLOTS_PER_DAY;
         })
         .map(u -> new DoctorSearchResult(u.getId(), u.getFirstName(), u.getSurname(),
-            u.getSpeciality(), u.getCounty(), u.getCity(), u.getAverageRating()))
+            u.getSpecialityRef() != null ? u.getSpecialityRef().getName() : null,
+            u.getCounty(), u.getCity(), u.getAverageRating()))
         .toList();
   }
 

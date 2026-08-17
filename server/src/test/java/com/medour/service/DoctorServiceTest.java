@@ -57,7 +57,7 @@ class DoctorServiceTest {
     List<DoctorSearchResult> results = doctorService.searchDoctors("cardio", null, null, null);
 
     assertThat(results).hasSize(1);
-    assertThat(results.get(0).speciality()).isEqualTo("Cardiology");
+    assertThat(results.get(0).specialityName()).isEqualTo("Cardiology");
   }
 
   @Test
@@ -79,9 +79,11 @@ class DoctorServiceTest {
     assertThat(results.get(0).id()).isEqualTo(2L);
   }
 
-  private User activeDoctor(Long id, String speciality) {
+  private User activeDoctor(Long id, String specialityName) {
+    com.medour.model.Speciality speciality = com.medour.model.Speciality.builder()
+        .id(id).name(specialityName).build();
     return User.builder()
-        .id(id).role(Role.DOCTOR).speciality(speciality)
+        .id(id).role(Role.DOCTOR).specialityRef(speciality)
         .firstName("Doc").surname("Tor")
         .build();
   }

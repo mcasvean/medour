@@ -197,7 +197,7 @@ describe('appointmentStore', () => {
   it('connectAppointmentSse updates matching appointment status on named event', () => {
     const store = useAppointmentStore()
     store.patientAppointments = [
-      { id: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
+      { id: 1, doctorId: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
         doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
         status: 'OPEN', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null,
         ratingValue: null, ratingId: null },
@@ -218,7 +218,7 @@ describe('appointmentStore', () => {
   it('connectAppointmentSse silently ignores unknown appointmentId in event', () => {
     const store = useAppointmentStore()
     store.patientAppointments = [
-      { id: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
+      { id: 1, doctorId: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
         doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
         status: 'OPEN', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null,
         ratingValue: null, ratingId: null },
@@ -239,7 +239,7 @@ describe('appointmentStore', () => {
   it('connectAppointmentSse silently drops malformed JSON', () => {
     const store = useAppointmentStore()
     store.patientAppointments = [
-      { id: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
+      { id: 1, doctorId: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
         doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
         status: 'OPEN', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null,
         ratingValue: null, ratingId: null },
@@ -302,7 +302,7 @@ describe('isJoinActive', () => {
       vi.mocked(api.post).mockResolvedValueOnce({ data: { id: 42, value: 7 } })
       const store = useAppointmentStore()
       store.patientAppointments = [
-        { id: 5, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
+        { id: 5, doctorId: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
           doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
           status: 'COMPLETED', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null,
           ratingValue: null, ratingId: null },
@@ -319,7 +319,7 @@ describe('isJoinActive', () => {
       vi.mocked(api.post).mockRejectedValueOnce(new Error('409'))
       const store = useAppointmentStore()
       store.patientAppointments = [
-        { id: 5, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
+        { id: 5, doctorId: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
           doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
           status: 'COMPLETED', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null,
           ratingValue: null, ratingId: null },
@@ -333,7 +333,7 @@ describe('isJoinActive', () => {
       vi.mocked(api.patch).mockResolvedValueOnce({ data: { id: 42, value: 9 } })
       const store = useAppointmentStore()
       store.patientAppointments = [
-        { id: 5, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
+        { id: 5, doctorId: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
           doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
           status: 'COMPLETED', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null,
           ratingValue: 7, ratingId: 42 },
@@ -387,7 +387,7 @@ describe('isJoinActive', () => {
       vi.mocked(api.patch).mockResolvedValueOnce({ data: {} })
       const store = useAppointmentStore()
       store.patientAppointments = [
-        { id: 3, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
+        { id: 3, doctorId: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
           doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
           status: 'OPEN', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null,
           ratingValue: null, ratingId: null },
@@ -407,7 +407,7 @@ describe('isJoinActive', () => {
       vi.mocked(api.patch).mockRejectedValueOnce({ response: { status: 409, data: { message: 'Slot not available' } } })
       const store = useAppointmentStore()
       store.patientAppointments = [
-        { id: 3, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
+        { id: 3, doctorId: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
           doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
           status: 'OPEN', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null,
           ratingValue: null, ratingId: null },
@@ -422,7 +422,7 @@ describe('isJoinActive', () => {
     it('connectAppointmentSse updates scheduledDate and startTime on patient appointment via SSE', () => {
       const store = useAppointmentStore()
       store.patientAppointments = [
-        { id: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
+        { id: 1, doctorId: 1, scheduledDate: '2026-09-01', startTime: '10:00:00', doctorFirstName: 'Jane',
           doctorSurname: 'Doe', doctorSpeciality: 'Cardiology', doctorRemoved: false,
           status: 'OPEN', createdAt: '2026-08-01T12:00:00', wherebyRoomUrl: null,
           ratingValue: null, ratingId: null },

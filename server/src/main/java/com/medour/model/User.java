@@ -43,7 +43,11 @@ public class User {
 
   private String county;
 
-  private String speciality;
+  private String speciality; // deprecated — superseded by specialityRef; no longer written by application
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "speciality_id")
+  private Speciality specialityRef;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useSpecialityStore } from '../stores/specialityStore'
 
 defineProps<{
   serverError?: string | null
@@ -9,6 +10,8 @@ const emit = defineEmits<{
   submit: [payload: Record<string, unknown>]
   back: []
 }>()
+
+const specialityStore = useSpecialityStore()
 
 const email = ref('')
 const password = ref('')
@@ -20,7 +23,13 @@ const gender = ref('')
 const city = ref('')
 const address = ref('')
 const county = ref('')
-const speciality = ref('')
+const specialityId = ref<number | null>(null)
+
+onMounted(async () => {
+  if (specialityStore.specialities.length === 0) {
+    await specialityStore.fetchSpecialities()
+  }
+})
 
 function handleSubmit() {
   emit('submit', {
@@ -33,7 +42,7 @@ function handleSubmit() {
     city: city.value,
     address: address.value,
     county: county.value,
-    speciality: speciality.value,
+    specialityId: specialityId.value,
     role: 'DOCTOR',
   })
 }
@@ -93,9 +102,18 @@ function handleSubmit() {
             <VSelect v-model="gender" label="Gender" :items="['Male', 'Female', 'Other']" variant="outlined" required />
           </VCol>
           <VCol cols="12">
-            <VTextField v-model="speciality" label="Speciality" prepend-inner-icon="mdi-medical-bag" variant="outlined" required>
+            <VSelect
+              v-model="specialityId"
+              label="Speciality"
+              :items="specialityStore.specialities"
+              item-title="name"
+              item-value="id"
+              prepend-inner-icon="mdi-medical-bag"
+              variant="outlined"
+              required
+            >
               <template #label>Speciality <span class="text-error ml-1">*</span></template>
-            </VTextField>
+            </VSelect>
           </VCol>
           <VCol cols="12" sm="4">
             <VTextField v-model="county" label="County" variant="outlined" required />

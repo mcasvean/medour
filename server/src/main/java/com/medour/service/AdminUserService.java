@@ -5,7 +5,9 @@ import com.medour.dto.AdminUserDto;
 import com.medour.dto.AdminUserUpdateRequest;
 import com.medour.exception.EmailAlreadyUsedException;
 import com.medour.model.Role;
+import com.medour.model.Speciality;
 import com.medour.model.User;
+import com.medour.repository.SpecialityRepository;
 import com.medour.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,10 +23,13 @@ public class AdminUserService {
 
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
+  private final SpecialityRepository specialityRepository;
 
-  public AdminUserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+  public AdminUserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+      SpecialityRepository specialityRepository) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
+    this.specialityRepository = specialityRepository;
   }
 
   @Transactional(readOnly = true)
@@ -40,7 +45,7 @@ public class AdminUserService {
       throw new EmailAlreadyUsedException();
     }
     Role role = parseRole(req.getRole());
-    validateDoctorFields(role, req.getCounty(), req.getSpeciality());
+    Speciality specialityRef = resolveSpeciality(role, req.getSpecialityId());
     User user = User.builder()
         .email(req.getEmail())
         .passwordHash(passwordEncoder.encode(req.getPassword()))
@@ -51,7 +56,7 @@ public class AdminUserService {
         .city(req.getCity())
         .address(req.getAddress())
         .county(req.getCounty())
-        .speciality(req.getSpeciality())
+        .specialityRef(specialityRef)
         .role(role)
         .mustChangePassword(false)
         .build();
@@ -71,7 +76,7 @@ public class AdminUserService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     Role role = parseRole(req.getRole());
-    validateDoctorFields(role, req.getCounty(), req.getSpeciality());
+    Speciality specialityRef = resolveSpeciality(role, req.getSpecialityId());
     user.setFirstName(req.getFirstName());
     user.setSurname(req.getSurname());
     user.setAge(req.getAge());
@@ -79,7 +84,7 @@ public class AdminUserService {
     user.setCity(req.getCity());
     user.setAddress(req.getAddress());
     user.setCounty(req.getCounty());
-    user.setSpeciality(req.getSpeciality());
+    user.setSpecialityRef(specialityRef);
     user.setRole(role);
     return toDto(userRepository.save(user));
   }
@@ -92,6 +97,21 @@ public class AdminUserService {
     }
   }
 
+  private Speciality resolveSpeciality(Role role, Long specialityId) {
+    if (role == Role.DOCTOR) {
+      if (specialityId == null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Speciality is required for doctor registration.");
+      }
+      return specialityRepository.findById(specialityId)
+          .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+              "Selected speciality does not exist."));
+    }
+    return specialityId != null
+        ? specialityRepository.findById(specialityId).orElse(null)
+        : null;
+  }
+
   private void validateDoctorFields(Role role, String county, String speciality) {
     if (role == Role.DOCTOR) {
       if (county == null || county.isBlank() || speciality == null || speciality.isBlank()) {
@@ -102,13 +122,15 @@ public class AdminUserService {
   }
 
   private AdminUserDto toDto(User u) {
+    Speciality ref = u.getSpecialityRef();
     return new AdminUserDto(
         u.getId(),
         u.getEmail(),
         u.getFirstName(),
         u.getSurname(),
         u.getRole().name(),
-        u.getSpeciality(),
+        ref != null ? ref.getId() : null,
+        ref != null ? ref.getName() : null,
         u.getCounty(),
         u.getCity(),
         u.getAge(),

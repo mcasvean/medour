@@ -26,5 +26,5 @@ public class UpdateProfileRequest {
 
   private String county;
 
-  private String speciality;
+  private Long specialityId;
 }

@@ -52,7 +52,7 @@ class UserControllerTest {
   @WithMockUser(username = "1")
   void getMe_validUser_returns200WithEmail() throws Exception {
     var profile = new UserProfileResponse(1L, "p@test.com", "Pat", "Ient", "PATIENT",
-        30, "M", "Cork", "Main St", null, null, null);
+        30, "M", "Cork", "Main St", null, null, null, null);
     given(userService.getProfile(1L)).willReturn(profile);
 
     mockMvc.perform(get("/api/v1/users/me"))
@@ -65,7 +65,7 @@ class UserControllerTest {
   void updateMe_validRequest_returns200WithUpdatedFirstName() throws Exception {
     var req = new UpdateProfileRequest("NewPat", "Ient", 30, "M", "Cork", "Main St", null, null);
     var profile = new UserProfileResponse(1L, "p@test.com", "NewPat", "Ient", "PATIENT",
-        30, "M", "Cork", "Main St", null, null, null);
+        30, "M", "Cork", "Main St", null, null, null, null);
     given(userService.updateProfile(eq(1L), any())).willReturn(profile);
 
     mockMvc.perform(put("/api/v1/users/me")

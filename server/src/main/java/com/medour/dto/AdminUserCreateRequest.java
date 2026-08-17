@@ -34,7 +34,7 @@ public class AdminUserCreateRequest {
 
   private String county;
 
-  private String speciality;
+  private Long specialityId;
 
   @NotBlank
   private String role;

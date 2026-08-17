@@ -108,6 +108,12 @@
             rounded="lg"
           />
           <VListItem
+            prepend-icon="mdi-tag-multiple-outline"
+            title="Specialities"
+            to="/admin/specialities"
+            rounded="lg"
+          />
+          <VListItem
             prepend-icon="mdi-calendar-multiple"
             title="Appointments"
             to="/admin/appointments"

@@ -104,7 +104,16 @@
                 <VTextField v-model="profile.county" label="County" variant="outlined" />
               </VCol>
               <VCol cols="12" sm="6">
-                <VTextField v-model="profile.speciality" label="Speciality" prepend-inner-icon="mdi-medical-bag" variant="outlined" />
+                <VSelect
+                  v-model="profile.specialityId"
+                  label="Speciality"
+                  :items="specialityStore.specialities"
+                  item-title="name"
+                  item-value="id"
+                  prepend-inner-icon="mdi-medical-bag"
+                  variant="outlined"
+                  clearable
+                />
               </VCol>
             </template>
           </VRow>
@@ -124,6 +133,7 @@ import api from '../api/index'
 import { useAuthStore } from '../stores/authStore'
 import { useToastStore } from '../stores/toastStore'
 import { useUserStore } from '../stores/userStore'
+import { useSpecialityStore } from '../stores/specialityStore'
 
 interface ProfileData {
   id: number
@@ -136,12 +146,14 @@ interface ProfileData {
   city: string | null
   address: string | null
   county: string | null
-  speciality: string | null
+  specialityId: number | null
+  specialityName: string | null
 }
 
 const authStore = useAuthStore()
 const toastStore = useToastStore()
 const userStore = useUserStore()
+const specialityStore = useSpecialityStore()
 
 const profile = ref<ProfileData | null>(null)
 const loading = ref(true)
@@ -152,8 +164,11 @@ const fileInputRef = ref<HTMLInputElement | null>(null)
 
 onMounted(async () => {
   try {
-    const res = await api.get<ProfileData>('/users/me')
-    profile.value = res.data
+    const [profileRes] = await Promise.all([
+      api.get<ProfileData>('/users/me'),
+      specialityStore.specialities.length === 0 ? specialityStore.fetchSpecialities() : Promise.resolve()
+    ])
+    profile.value = profileRes.data
   } catch {
     toastStore.show('Failed to load profile.', 'error')
   } finally {
@@ -201,7 +216,7 @@ async function handleSubmit() {
       city: profile.value.city,
       address: profile.value.address,
       county: profile.value.county,
-      speciality: profile.value.speciality,
+      specialityId: profile.value.specialityId ?? null,
     })
     profile.value = res.data
     authStore.updateUser({ firstName: res.data.firstName, surname: res.data.surname })
