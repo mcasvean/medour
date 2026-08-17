@@ -1,10 +1,10 @@
 ---
-title: 'Filter past time slots from slot grid'
-type: 'feature'
-created: '2026-08-17'
-status: 'done'
+title: "Filter past time slots from slot grid"
+type: "feature"
+created: "2026-08-17"
+status: "done"
 review_loop_iteration: 0
-route: 'one-shot'
+route: "one-shot"
 context: []
 ---
 

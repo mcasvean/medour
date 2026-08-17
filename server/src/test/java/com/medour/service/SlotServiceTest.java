@@ -24,120 +24,120 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class SlotServiceTest {
 
-  @Mock
-  private SlotReservationRepository slotReservationRepository;
-  @Mock
-  private AppointmentRepository appointmentRepository;
+    @Mock
+    private SlotReservationRepository slotReservationRepository;
+    @Mock
+    private AppointmentRepository appointmentRepository;
 
-  @InjectMocks
-  private SlotService slotService;
+    @InjectMocks
+    private SlotService slotService;
 
-  private static final LocalDate DATE = LocalDate.of(2026, 9, 1);
-  private static final Long DOCTOR_ID = 1L;
+    private static final LocalDate DATE = LocalDate.of(2026, 9, 1);
+    private static final Long DOCTOR_ID = 1L;
 
-  @Test
-  void allSlotsFree_returns24Available() {
-    when(slotReservationRepository.existsByDoctorIdAndDateAndStartTimeAndExpiresAtAfter(
-        eq(DOCTOR_ID), eq(DATE), any(LocalTime.class), any())).thenReturn(false);
-    when(appointmentRepository.existsByDoctorIdAndScheduledDateAndStartTimeAndStatus(
-        eq(DOCTOR_ID), eq(DATE), any(LocalTime.class), eq(AppointmentStatus.OPEN))).thenReturn(false);
+    @Test
+    void allSlotsFree_returns24Available() {
+        when(slotReservationRepository.existsByDoctorIdAndDateAndStartTimeAndExpiresAtAfter(
+                eq(DOCTOR_ID), eq(DATE), any(LocalTime.class), any())).thenReturn(false);
+        when(appointmentRepository.existsByDoctorIdAndScheduledDateAndStartTimeAndStatus(
+                eq(DOCTOR_ID), eq(DATE), any(LocalTime.class), eq(AppointmentStatus.OPEN))).thenReturn(false);
 
-    List<SlotDto> slots = slotService.getSlotsForDoctor(DOCTOR_ID, DATE);
+        List<SlotDto> slots = slotService.getSlotsForDoctor(DOCTOR_ID, DATE);
 
-    assertThat(slots).hasSize(24);
-    assertThat(slots).allMatch(s -> s.state() == SlotState.AVAILABLE);
-  }
+        assertThat(slots).hasSize(24);
+        assertThat(slots).allMatch(s -> s.state() == SlotState.AVAILABLE);
+    }
 
-  @Test
-  void activeReservationForSlot_returnsLocked() {
-    LocalTime lockedSlot = LocalTime.of(10, 0);
-    when(slotReservationRepository.existsByDoctorIdAndDateAndStartTimeAndExpiresAtAfter(
-        eq(DOCTOR_ID), eq(DATE), any(LocalTime.class), any())).thenReturn(false);
-    when(slotReservationRepository.existsByDoctorIdAndDateAndStartTimeAndExpiresAtAfter(
-        eq(DOCTOR_ID), eq(DATE), eq(lockedSlot), any())).thenReturn(true);
-    when(appointmentRepository.existsByDoctorIdAndScheduledDateAndStartTimeAndStatus(
-        eq(DOCTOR_ID), eq(DATE), any(LocalTime.class), eq(AppointmentStatus.OPEN))).thenReturn(false);
+    @Test
+    void activeReservationForSlot_returnsLocked() {
+        LocalTime lockedSlot = LocalTime.of(10, 0);
+        when(slotReservationRepository.existsByDoctorIdAndDateAndStartTimeAndExpiresAtAfter(
+                eq(DOCTOR_ID), eq(DATE), any(LocalTime.class), any())).thenReturn(false);
+        when(slotReservationRepository.existsByDoctorIdAndDateAndStartTimeAndExpiresAtAfter(
+                eq(DOCTOR_ID), eq(DATE), eq(lockedSlot), any())).thenReturn(true);
+        when(appointmentRepository.existsByDoctorIdAndScheduledDateAndStartTimeAndStatus(
+                eq(DOCTOR_ID), eq(DATE), any(LocalTime.class), eq(AppointmentStatus.OPEN))).thenReturn(false);
 
-    List<SlotDto> slots = slotService.getSlotsForDoctor(DOCTOR_ID, DATE);
+        List<SlotDto> slots = slotService.getSlotsForDoctor(DOCTOR_ID, DATE);
 
-    SlotDto locked = slots.stream()
-        .filter(s -> s.startTime().equals("10:00")).findFirst().orElseThrow();
-    assertThat(locked.state()).isEqualTo(SlotState.LOCKED);
-    assertThat(slots.stream().filter(s -> !s.startTime().equals("10:00")))
-        .allMatch(s -> s.state() == SlotState.AVAILABLE);
-  }
+        SlotDto locked = slots.stream()
+                .filter(s -> s.startTime().equals("10:00")).findFirst().orElseThrow();
+        assertThat(locked.state()).isEqualTo(SlotState.LOCKED);
+        assertThat(slots.stream().filter(s -> !s.startTime().equals("10:00")))
+                .allMatch(s -> s.state() == SlotState.AVAILABLE);
+    }
 
-  @Test
-  void openAppointmentForSlot_returnsUnavailable() {
-    LocalTime takenSlot = LocalTime.of(14, 0);
-    when(slotReservationRepository.existsByDoctorIdAndDateAndStartTimeAndExpiresAtAfter(
-        eq(DOCTOR_ID), eq(DATE), any(LocalTime.class), any())).thenReturn(false);
-    when(appointmentRepository.existsByDoctorIdAndScheduledDateAndStartTimeAndStatus(
-        eq(DOCTOR_ID), eq(DATE), any(LocalTime.class), eq(AppointmentStatus.OPEN))).thenReturn(false);
-    when(appointmentRepository.existsByDoctorIdAndScheduledDateAndStartTimeAndStatus(
-        eq(DOCTOR_ID), eq(DATE), eq(takenSlot), eq(AppointmentStatus.OPEN))).thenReturn(true);
+    @Test
+    void openAppointmentForSlot_returnsUnavailable() {
+        LocalTime takenSlot = LocalTime.of(14, 0);
+        when(slotReservationRepository.existsByDoctorIdAndDateAndStartTimeAndExpiresAtAfter(
+                eq(DOCTOR_ID), eq(DATE), any(LocalTime.class), any())).thenReturn(false);
+        when(appointmentRepository.existsByDoctorIdAndScheduledDateAndStartTimeAndStatus(
+                eq(DOCTOR_ID), eq(DATE), any(LocalTime.class), eq(AppointmentStatus.OPEN))).thenReturn(false);
+        when(appointmentRepository.existsByDoctorIdAndScheduledDateAndStartTimeAndStatus(
+                eq(DOCTOR_ID), eq(DATE), eq(takenSlot), eq(AppointmentStatus.OPEN))).thenReturn(true);
 
-    List<SlotDto> slots = slotService.getSlotsForDoctor(DOCTOR_ID, DATE);
+        List<SlotDto> slots = slotService.getSlotsForDoctor(DOCTOR_ID, DATE);
 
-    SlotDto unavailable = slots.stream()
-        .filter(s -> s.startTime().equals("14:00")).findFirst().orElseThrow();
-    assertThat(unavailable.state()).isEqualTo(SlotState.UNAVAILABLE);
-    assertThat(slots.stream().filter(s -> !s.startTime().equals("14:00")))
-        .allMatch(s -> s.state() == SlotState.AVAILABLE);
-  }
+        SlotDto unavailable = slots.stream()
+                .filter(s -> s.startTime().equals("14:00")).findFirst().orElseThrow();
+        assertThat(unavailable.state()).isEqualTo(SlotState.UNAVAILABLE);
+        assertThat(slots.stream().filter(s -> !s.startTime().equals("14:00")))
+                .allMatch(s -> s.state() == SlotState.AVAILABLE);
+    }
 
-  @Test
-  void expiredReservation_reservationExistReturnsFalse_returnsAvailable() {
-    // expired reservation: existsByDoctorIdAndDateAndStartTimeAndExpiresAtAfter
-    // returns false
-    // because the expiresAt is before now — the repo method won't match, so it
-    // returns false
-    when(slotReservationRepository.existsByDoctorIdAndDateAndStartTimeAndExpiresAtAfter(
-        eq(DOCTOR_ID), eq(DATE), any(LocalTime.class), any())).thenReturn(false);
-    when(appointmentRepository.existsByDoctorIdAndScheduledDateAndStartTimeAndStatus(
-        eq(DOCTOR_ID), eq(DATE), any(LocalTime.class), eq(AppointmentStatus.OPEN))).thenReturn(false);
+    @Test
+    void expiredReservation_reservationExistReturnsFalse_returnsAvailable() {
+        // expired reservation: existsByDoctorIdAndDateAndStartTimeAndExpiresAtAfter
+        // returns false
+        // because the expiresAt is before now — the repo method won't match, so it
+        // returns false
+        when(slotReservationRepository.existsByDoctorIdAndDateAndStartTimeAndExpiresAtAfter(
+                eq(DOCTOR_ID), eq(DATE), any(LocalTime.class), any())).thenReturn(false);
+        when(appointmentRepository.existsByDoctorIdAndScheduledDateAndStartTimeAndStatus(
+                eq(DOCTOR_ID), eq(DATE), any(LocalTime.class), eq(AppointmentStatus.OPEN))).thenReturn(false);
 
-    List<SlotDto> slots = slotService.getSlotsForDoctor(DOCTOR_ID, DATE);
+        List<SlotDto> slots = slotService.getSlotsForDoctor(DOCTOR_ID, DATE);
 
-    SlotDto first = slots.stream()
-        .filter(s -> s.startTime().equals("08:00")).findFirst().orElseThrow();
-    assertThat(first.state()).isEqualTo(SlotState.AVAILABLE);
-  }
+        SlotDto first = slots.stream()
+                .filter(s -> s.startTime().equals("08:00")).findFirst().orElseThrow();
+        assertThat(first.state()).isEqualTo(SlotState.AVAILABLE);
+    }
 
-  @Test
-  void pastDate_returnsEmptyList() {
-    LocalDate past = LocalDate.of(2020, 1, 1);
-    LocalDateTime now = LocalDateTime.of(2026, 8, 17, 12, 0);
+    @Test
+    void pastDate_returnsEmptyList() {
+        LocalDate past = LocalDate.of(2020, 1, 1);
+        LocalDateTime now = LocalDateTime.of(2026, 8, 17, 12, 0);
 
-    List<SlotDto> slots = slotService.getSlotsForDoctor(DOCTOR_ID, past, now);
+        List<SlotDto> slots = slotService.getSlotsForDoctor(DOCTOR_ID, past, now);
 
-    assertThat(slots).isEmpty();
-  }
+        assertThat(slots).isEmpty();
+    }
 
-  @Test
-  void today_slotsBelowCurrentTimeAreExcluded() {
-    LocalDate today = LocalDate.of(2026, 8, 17);
-    LocalDateTime now = LocalDateTime.of(2026, 8, 17, 16, 3); // 16:03 — 16:00 slot is already past
-    when(slotReservationRepository.existsByDoctorIdAndDateAndStartTimeAndExpiresAtAfter(
-        eq(DOCTOR_ID), eq(today), any(LocalTime.class), any())).thenReturn(false);
-    when(appointmentRepository.existsByDoctorIdAndScheduledDateAndStartTimeAndStatus(
-        eq(DOCTOR_ID), eq(today), any(LocalTime.class), eq(AppointmentStatus.OPEN))).thenReturn(false);
+    @Test
+    void today_slotsBelowCurrentTimeAreExcluded() {
+        LocalDate today = LocalDate.of(2026, 8, 17);
+        LocalDateTime now = LocalDateTime.of(2026, 8, 17, 16, 3); // 16:03 — 16:00 slot is already past
+        when(slotReservationRepository.existsByDoctorIdAndDateAndStartTimeAndExpiresAtAfter(
+                eq(DOCTOR_ID), eq(today), any(LocalTime.class), any())).thenReturn(false);
+        when(appointmentRepository.existsByDoctorIdAndScheduledDateAndStartTimeAndStatus(
+                eq(DOCTOR_ID), eq(today), any(LocalTime.class), eq(AppointmentStatus.OPEN))).thenReturn(false);
 
-    List<SlotDto> slots = slotService.getSlotsForDoctor(DOCTOR_ID, today, now);
+        List<SlotDto> slots = slotService.getSlotsForDoctor(DOCTOR_ID, today, now);
 
-    assertThat(slots).isNotEmpty();
-    assertThat(slots.get(0).startTime()).isEqualTo("16:30");
-    assertThat(slots).allMatch(s -> !LocalTime.parse(s.startTime()).isBefore(LocalTime.of(16, 30)));
-    assertThat(slots).allMatch(s -> s.state() == SlotState.AVAILABLE);
-  }
+        assertThat(slots).isNotEmpty();
+        assertThat(slots.get(0).startTime()).isEqualTo("16:30");
+        assertThat(slots).allMatch(s -> !LocalTime.parse(s.startTime()).isBefore(LocalTime.of(16, 30)));
+        assertThat(slots).allMatch(s -> s.state() == SlotState.AVAILABLE);
+    }
 
-  @Test
-  void today_afterLastSlot_returnsEmptyList() {
-    LocalDate today = LocalDate.of(2026, 8, 17);
-    LocalDateTime now = LocalDateTime.of(2026, 8, 17, 19, 35); // past all slots
+    @Test
+    void today_afterLastSlot_returnsEmptyList() {
+        LocalDate today = LocalDate.of(2026, 8, 17);
+        LocalDateTime now = LocalDateTime.of(2026, 8, 17, 19, 35); // past all slots
 
-    List<SlotDto> slots = slotService.getSlotsForDoctor(DOCTOR_ID, today, now);
+        List<SlotDto> slots = slotService.getSlotsForDoctor(DOCTOR_ID, today, now);
 
-    assertThat(slots).isEmpty();
-  }
+        assertThat(slots).isEmpty();
+    }
 }
