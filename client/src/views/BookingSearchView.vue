@@ -5,7 +5,7 @@
     <!-- Search filters -->
     <VCard rounded="xl" elevation="1" class="mb-6">
       <VCardText class="pa-4">
-        <VForm @submit.prevent="doctorStore.searchDoctors()">
+        <VForm @submit.prevent="handleSearch">
           <VRow align="center" dense>
             <VCol cols="12" sm="6" md="3">
               <VSelect
@@ -246,11 +246,24 @@ function selectDoctor(doctorId: number) {
   appointmentStore.connectSse(doctorId, dateToUse)
 }
 
+async function handleSearch() {
+  await doctorStore.searchDoctors()
+  const id = appointmentStore.selectedDoctorId
+  if (id !== null) {
+    const dateToUse = doctorStore.filters.date || today
+    appointmentStore.selectedDate = dateToUse
+    appointmentStore.disconnectSse()
+    await appointmentStore.fetchSlots(id, dateToUse)
+    appointmentStore.connectSse(id, dateToUse)
+  }
+}
+
 function onSlotSelected(startTime: string) {
   appointmentStore.lockSlot(startTime)
 }
 
 onMounted(async () => {
+  if (!doctorStore.filters.date) doctorStore.filters.date = today
   doctorStore.searchDoctors()
   if (specialityStore.specialities.length === 0) {
     await specialityStore.fetchSpecialities()
