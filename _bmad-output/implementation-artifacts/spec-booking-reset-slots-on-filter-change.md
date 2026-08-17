@@ -1,9 +1,9 @@
 ---
-title: 'Reset Slot Display When Speciality Filter Eliminates Selected Doctor'
-type: 'bugfix'
-created: '2026-08-17'
-status: 'done'
-route: 'one-shot'
+title: "Reset Slot Display When Speciality Filter Eliminates Selected Doctor"
+type: "bugfix"
+created: "2026-08-17"
+status: "done"
+route: "one-shot"
 ---
 
 ## Intent
