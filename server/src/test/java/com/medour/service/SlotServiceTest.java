@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -101,5 +102,42 @@ class SlotServiceTest {
     SlotDto first = slots.stream()
         .filter(s -> s.startTime().equals("08:00")).findFirst().orElseThrow();
     assertThat(first.state()).isEqualTo(SlotState.AVAILABLE);
+  }
+
+  @Test
+  void pastDate_returnsEmptyList() {
+    LocalDate past = LocalDate.of(2020, 1, 1);
+    LocalDateTime now = LocalDateTime.of(2026, 8, 17, 12, 0);
+
+    List<SlotDto> slots = slotService.getSlotsForDoctor(DOCTOR_ID, past, now);
+
+    assertThat(slots).isEmpty();
+  }
+
+  @Test
+  void today_slotsBelowCurrentTimeAreExcluded() {
+    LocalDate today = LocalDate.of(2026, 8, 17);
+    LocalDateTime now = LocalDateTime.of(2026, 8, 17, 16, 3); // 16:03 — 16:00 slot is already past
+    when(slotReservationRepository.existsByDoctorIdAndDateAndStartTimeAndExpiresAtAfter(
+        eq(DOCTOR_ID), eq(today), any(LocalTime.class), any())).thenReturn(false);
+    when(appointmentRepository.existsByDoctorIdAndScheduledDateAndStartTimeAndStatus(
+        eq(DOCTOR_ID), eq(today), any(LocalTime.class), eq(AppointmentStatus.OPEN))).thenReturn(false);
+
+    List<SlotDto> slots = slotService.getSlotsForDoctor(DOCTOR_ID, today, now);
+
+    assertThat(slots).isNotEmpty();
+    assertThat(slots.get(0).startTime()).isEqualTo("16:30");
+    assertThat(slots).allMatch(s -> !LocalTime.parse(s.startTime()).isBefore(LocalTime.of(16, 30)));
+    assertThat(slots).allMatch(s -> s.state() == SlotState.AVAILABLE);
+  }
+
+  @Test
+  void today_afterLastSlot_returnsEmptyList() {
+    LocalDate today = LocalDate.of(2026, 8, 17);
+    LocalDateTime now = LocalDateTime.of(2026, 8, 17, 19, 35); // past all slots
+
+    List<SlotDto> slots = slotService.getSlotsForDoctor(DOCTOR_ID, today, now);
+
+    assertThat(slots).isEmpty();
   }
 }

@@ -29,10 +29,29 @@ public class SlotService {
   }
 
   public List<SlotDto> getSlotsForDoctor(Long doctorId, LocalDate date) {
-    LocalDateTime now = LocalDateTime.now();
-    List<SlotDto> slots = new ArrayList<>();
+    return getSlotsForDoctor(doctorId, date, LocalDateTime.now());
+  }
 
-    LocalTime t = FIRST_SLOT;
+  // package-private to allow time injection in tests
+  List<SlotDto> getSlotsForDoctor(Long doctorId, LocalDate date, LocalDateTime now) {
+    LocalDate today = now.toLocalDate();
+
+    if (date.isBefore(today)) {
+      return List.of();
+    }
+
+    LocalTime startFrom = FIRST_SLOT;
+    if (date.equals(today)) {
+      LocalTime current = now.toLocalTime();
+      LocalTime candidate = FIRST_SLOT;
+      while (!candidate.isAfter(LAST_SLOT_START) && candidate.isBefore(current)) {
+        candidate = candidate.plusMinutes(30);
+      }
+      startFrom = candidate;
+    }
+
+    List<SlotDto> slots = new ArrayList<>();
+    LocalTime t = startFrom;
     while (!t.isAfter(LAST_SLOT_START)) {
       SlotState state = deriveState(doctorId, date, t, now);
       slots.add(new SlotDto(t.toString(), t.plusMinutes(30).toString(), state));

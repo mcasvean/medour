@@ -8,6 +8,10 @@ Items collected during implementation reviews that are real but out of scope for
 
 - source_spec: `spec-4-4-admin-appointment-management.md`
   summary: No 403 test for non-admin JWT on GET/DELETE /api/v1/admin/appointments; protected by SecurityConfig blanket rule but not asserted.
+
+- source_spec: `spec-filter-past-slots.md`
+  summary: SlotService 30-minute slot duration is repeated as a magic literal; extract to a named constant.
+  evidence: Blind hunter finding; pre-existing in the slot generator loop — not introduced by this change.
   evidence: Verification gap finding; same gap exists for all prior /admin/\*\* endpoints.
   evidence: Edge case hunter finding; router has only the placeholder '/' route in this scaffold.
 
