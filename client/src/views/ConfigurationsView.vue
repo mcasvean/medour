@@ -18,6 +18,7 @@
                 inset
                 hide-details
                 color="primary"
+                size="small"
                 @update:model-value="onTogglePinnedSidebar"
               />
             </td>
