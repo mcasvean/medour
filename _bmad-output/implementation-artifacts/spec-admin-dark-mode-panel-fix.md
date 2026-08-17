@@ -1,10 +1,10 @@
 ---
-title: 'Admin User Detail Panel Dark-Mode Fix'
-type: 'bugfix'
-created: '2026-08-17'
-status: 'done'
-route: 'one-shot'
-baseline_commit: '9763f634df83fe8e174b20afacfa492f47879a7f'
+title: "Admin User Detail Panel Dark-Mode Fix"
+type: "bugfix"
+created: "2026-08-17"
+status: "done"
+route: "one-shot"
+baseline_commit: "9763f634df83fe8e174b20afacfa492f47879a7f"
 ---
 
 # Admin User Detail Panel Dark-Mode Fix
