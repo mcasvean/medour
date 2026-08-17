@@ -56,8 +56,8 @@
 
               <div class="d-flex justify-space-between align-center flex-wrap ga-2">
                 <div class="d-flex ga-5 text-body-2 text-medium-emphasis">
-                  <span><VIcon icon="mdi-calendar" size="15" class="mr-1" />{{ appt.scheduledDate }}</span>
-                  <span><VIcon icon="mdi-clock-outline" size="15" class="mr-1" />{{ appt.startTime }}</span>
+                  <span><VIcon icon="mdi-calendar" size="15" class="mr-1" />{{ formatDate(appt.scheduledDate) }}</span>
+                  <span><VIcon icon="mdi-clock-outline" size="15" class="mr-1" />{{ formatTime(appt.startTime) }}</span>
                 </div>
                 <div v-if="appt.status === 'OPEN'" class="d-flex ga-2">
                   <VBtn
@@ -106,7 +106,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAppointmentStore, isJoinActive } from '../stores/appointmentStore'
-import { formatBooked } from '../utils/formatDate'
+import { formatBooked, formatDate, formatTime } from '../utils/formatDate'
 
 const appointmentStore = useAppointmentStore()
 const loading = ref(false)

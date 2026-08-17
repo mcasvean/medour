@@ -48,8 +48,8 @@
             <VDivider class="mb-3" />
 
             <div class="d-flex ga-5 text-body-2 text-medium-emphasis mb-3">
-              <span><VIcon icon="mdi-calendar" size="15" class="mr-1" />{{ appt.scheduledDate }}</span>
-              <span><VIcon icon="mdi-clock-outline" size="15" class="mr-1" />{{ appt.startTime }}</span>
+              <span><VIcon icon="mdi-calendar" size="15" class="mr-1" />{{ formatDate(appt.scheduledDate) }}</span>
+              <span><VIcon icon="mdi-clock-outline" size="15" class="mr-1" />{{ formatTime(appt.startTime) }}</span>
             </div>
 
             <div class="d-flex justify-space-between align-center flex-wrap ga-2">
@@ -168,7 +168,7 @@
         </VAlert>
 
         <div v-if="rescheduleSelectedTime" class="mt-4 text-body-2 text-medium-emphasis">
-          Selected time: <strong class="text-primary">{{ rescheduleSelectedTime }}</strong>
+          Selected time: <strong class="text-primary">{{ formatTime(rescheduleSelectedTime) }}</strong>
         </div>
       </VCardText>
       <VCardActions class="pa-4 pt-0">
@@ -192,7 +192,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useAppointmentStore, isJoinActive, type PatientAppointment, type SlotDisplay } from '../stores/appointmentStore'
-import { formatBooked } from '../utils/formatDate'
+import { formatBooked, formatDate, formatTime } from '../utils/formatDate'
 import { useToastStore } from '../stores/toastStore'
 import SlotGrid from '../components/SlotGrid.vue'
 import api from '../api/index'

@@ -16,6 +16,12 @@
         <template #item.status="{ item }">
           <VChip :color="statusColor(item.status)" size="small" label>{{ item.status }}</VChip>
         </template>
+        <template #item.scheduledDate="{ item }">
+          {{ formatDate(item.scheduledDate) }}
+        </template>
+        <template #item.startTime="{ item }">
+          {{ formatTime(item.startTime) }}
+        </template>
         <template #item.actions="{ item }">
           <VBtn
             icon="mdi-delete-outline"
@@ -58,6 +64,7 @@
 import { ref, onMounted } from 'vue'
 import { useAppointmentStore } from '../stores/appointmentStore'
 import type { AdminAppointmentDto } from '../stores/appointmentStore'
+import { formatDate, formatTime } from '../utils/formatDate'
 
 const appointmentStore = useAppointmentStore()
 const fetchError = ref('')

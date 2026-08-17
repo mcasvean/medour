@@ -6,3 +6,14 @@ export function formatBooked(createdAt: string): string {
   const minutes = String(d.getMinutes()).padStart(2, '0')
   return `${day}-${month}-${d.getFullYear()}, ${hours}:${minutes}`
 }
+
+/** Converts YYYY-MM-DD → DD-MM-YYYY */
+export function formatDate(isoDate: string): string {
+  const [y, m, d] = isoDate.split('-')
+  return `${d}-${m}-${y}`
+}
+
+/** Strips seconds from HH:MM:SS → HH:MM */
+export function formatTime(time: string): string {
+  return time.slice(0, 5)
+}

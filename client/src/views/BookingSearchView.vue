@@ -144,7 +144,7 @@
           Available Slots
           <span class="text-primary">— {{ selectedDoctor?.firstName }} {{ selectedDoctor?.surname }}</span>
         </h2>
-        <VChip class="ml-3" size="small" variant="tonal">{{ appointmentStore.selectedDate }}</VChip>
+        <VChip class="ml-3" size="small" variant="tonal">{{ formatDate(appointmentStore.selectedDate) }}</VChip>
       </div>
       <SlotGrid :slots="appointmentStore.slots" @select="onSlotSelected" />
     </template>
@@ -194,11 +194,11 @@
               <VListItemSubtitle>Doctor</VListItemSubtitle>
             </VListItem>
             <VListItem prepend-icon="mdi-calendar">
-              <VListItemTitle class="font-weight-medium">{{ appointmentStore.selectedDate }}</VListItemTitle>
+              <VListItemTitle class="font-weight-medium">{{ formatDate(appointmentStore.selectedDate) }}</VListItemTitle>
               <VListItemSubtitle>Date</VListItemSubtitle>
             </VListItem>
             <VListItem prepend-icon="mdi-clock-outline">
-              <VListItemTitle class="font-weight-medium">{{ appointmentStore.lockedStartTime }}</VListItemTitle>
+              <VListItemTitle class="font-weight-medium">{{ formatTime(appointmentStore.lockedStartTime ?? '') }}</VListItemTitle>
               <VListItemSubtitle>Start Time</VListItemSubtitle>
             </VListItem>
           </VList>
@@ -221,6 +221,7 @@ import { useDoctorStore } from '../stores/doctorStore'
 import { useAppointmentStore } from '../stores/appointmentStore'
 import { useSpecialityStore } from '../stores/specialityStore'
 import SlotGrid from '../components/SlotGrid.vue'
+import { formatDate, formatTime } from '../utils/formatDate'
 
 const doctorStore = useDoctorStore()
 const appointmentStore = useAppointmentStore()
