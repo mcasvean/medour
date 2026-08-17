@@ -131,6 +131,18 @@ Items collected during implementation reviews that are real but out of scope for
   summary: VExpansionPanelTitle "View details" is a hardcoded English string with no i18n wrapper.
   evidence: Blind hunter finding; pre-existing; relevant if localisation is added later.
 
+- source_spec: `spec-sidebar-pinning.md`
+  summary: logout() does not clear medour_sidebar_pinned from localStorage — on a shared device the next user inherits the previous user's pinned preference.
+  evidence: Blind hunter finding; design decision about UI preference cleanup on logout.
+
+- source_spec: `spec-sidebar-pinning.md`
+  summary: No responsive breakpoint guard — a pinned non-temporary drawer on narrow viewports will push main content on mobile, which may be undesirable.
+  evidence: Blind hunter finding; mobile layout behaviour should be reviewed and guarded (e.g. only allow pinning above sm breakpoint).
+
+- source_spec: `spec-sidebar-pinning.md`
+  summary: Pin toggle VBtn has no aria-pressed attribute — assistive technology cannot communicate whether the sidebar is currently pinned.
+  evidence: Blind hunter finding; consistent with existing accessibility deferral pattern in this project.
+
 - source_spec: `spec-1-2-user-registration-patient-doctor.md`
   summary: Token expiry is not checked at store init — an expired token in localStorage makes isAuthenticated true until the first 401.
   evidence: Blind hunter finding; Story 1.3 JWT validation filter and auth guard will handle this.

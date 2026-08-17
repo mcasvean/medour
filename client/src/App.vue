@@ -47,14 +47,24 @@
       </template>
     </VAppBar>
 
-    <VNavigationDrawer v-if="authStore.isAuthenticated" v-model="drawer" temporary>
+    <VNavigationDrawer v-if="authStore.isAuthenticated" v-model="drawer" :temporary="!pinned">
       <VListItem
         prepend-icon="mdi-stethoscope"
         title="Medour"
         subtitle="Medical Appointments"
         nav
         class="py-4"
-      />
+      >
+        <template #append>
+          <VBtn
+            :icon="pinned ? 'mdi-pin-off' : 'mdi-pin'"
+            :title="pinned ? 'Unpin sidebar' : 'Pin sidebar'"
+            variant="text"
+            size="small"
+            @click="togglePin"
+          />
+        </template>
+      </VListItem>
       <VDivider />
       <VList nav density="compact" class="mt-1">
         <VListItem
@@ -151,7 +161,10 @@ const router = useRouter()
 const route = useRoute()
 const theme = useTheme()
 
-const drawer = ref(false)
+// read before first render to avoid open-then-close flash
+const _pinnedStored = (() => { try { return localStorage.getItem('medour_sidebar_pinned') === 'true' } catch { return false } })()
+const drawer = ref(_pinnedStored)
+const pinned = ref(_pinnedStored)
 const isAdmin = computed(() => authStore.user?.role === 'ADMIN')
 const isDark = computed(() => theme.global.name.value === 'dark')
 
@@ -164,7 +177,15 @@ const roleChipColor = computed(() => {
   }
 })
 
-watch(() => route.path, () => { drawer.value = false })
+watch(() => route.path, () => { if (!pinned.value) drawer.value = false })
+
+// closing the drawer while pinned = user wants it unpinned
+watch(drawer, (isOpen) => {
+  if (!isOpen && pinned.value) {
+    pinned.value = false
+    try { localStorage.setItem('medour_sidebar_pinned', 'false') } catch { /* */ }
+  }
+})
 
 onMounted(() => {
   try {
@@ -181,6 +202,14 @@ function toggleTheme() {
   try {
     localStorage.setItem('medour_theme', next)
   } catch { /* ignore — storage unavailable */ }
+}
+
+function togglePin() {
+  pinned.value = !pinned.value
+  if (pinned.value) drawer.value = true
+  try {
+    localStorage.setItem('medour_sidebar_pinned', String(pinned.value))
+  } catch { /* ignore */ }
 }
 
 function logout() {
