@@ -1,10 +1,10 @@
 ---
-title: 'Configurations Page & User Preferences'
-type: 'feature'
-created: '2026-08-17'
-status: 'done'
+title: "Configurations Page & User Preferences"
+type: "feature"
+created: "2026-08-17"
+status: "done"
 review_loop_iteration: 0
-baseline_commit: 'c187fb6d908f3c50e7543383eac608ce84697f8a'
+baseline_commit: "c187fb6d908f3c50e7543383eac608ce84697f8a"
 context: []
 ---
 
@@ -44,14 +44,14 @@ context: []
 
 ## I/O & Edge-Case Matrix
 
-| Scenario | Input / State | Expected Output / Behavior | Error Handling |
-|---|---|---|---|
-| First login — no preferences row | `GET /me/preferences` | 200 + `{ pinnedSidebar: false }`, row created | — |
-| Toggle pinned sidebar ON | `PATCH /me/preferences { pinnedSidebar: true }` | 200 + `{ pinnedSidebar: true }`; sidebar becomes persistent; success toast | — |
-| Toggle OFF | `PATCH /me/preferences { pinnedSidebar: false }` | 200 + `{ pinnedSidebar: false }`; sidebar returns to temporary | — |
-| Desktop user, pinnedSidebar true | Authenticated, md+ viewport | Hamburger hidden; drawer always open | — |
-| Mobile user, pinnedSidebar true | Authenticated, sm viewport | Hamburger visible; drawer behaves as temporary | — |
-| PATCH fails (network) | Axios error | Error toast; switch reverts to previous value | — |
+| Scenario                         | Input / State                                    | Expected Output / Behavior                                                 | Error Handling |
+| -------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------- | -------------- |
+| First login — no preferences row | `GET /me/preferences`                            | 200 + `{ pinnedSidebar: false }`, row created                              | —              |
+| Toggle pinned sidebar ON         | `PATCH /me/preferences { pinnedSidebar: true }`  | 200 + `{ pinnedSidebar: true }`; sidebar becomes persistent; success toast | —              |
+| Toggle OFF                       | `PATCH /me/preferences { pinnedSidebar: false }` | 200 + `{ pinnedSidebar: false }`; sidebar returns to temporary             | —              |
+| Desktop user, pinnedSidebar true | Authenticated, md+ viewport                      | Hamburger hidden; drawer always open                                       | —              |
+| Mobile user, pinnedSidebar true  | Authenticated, sm viewport                       | Hamburger visible; drawer behaves as temporary                             | —              |
+| PATCH fails (network)            | Axios error                                      | Error toast; switch reverts to previous value                              | —              |
 
 </frozen-after-approval>
 
