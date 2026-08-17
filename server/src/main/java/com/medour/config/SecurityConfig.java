@@ -40,7 +40,8 @@ public class SecurityConfig {
 
   @Bean
   public WebSecurityCustomizer webSecurityCustomizer() {
-    // completely bypasses Spring Security (no JWT filter, no auth check) for the public specialities list
+    // completely bypasses Spring Security (no JWT filter, no auth check) for the
+    // public specialities list
     return web -> web.ignoring().requestMatchers(new AntPathRequestMatcher("/api/v1/specialities", "GET"));
   }
 

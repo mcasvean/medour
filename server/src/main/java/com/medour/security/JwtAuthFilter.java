@@ -42,7 +42,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
           new UsernamePasswordAuthenticationToken(sub, null,
               List.of(new SimpleGrantedAuthority("ROLE_" + role))));
     } catch (JwtException ex) {
-      // malformed/expired token — clear context and let Spring Security enforce access rules
+      // malformed/expired token — clear context and let Spring Security enforce
+      // access rules
       filterChain.doFilter(request, response);
       return;
     }
