@@ -97,6 +97,7 @@
                   variant="tonal"
                   rounded="lg"
                   :loading="submittingRating[appt.id]"
+                  :disabled="!isRatingSaveable(appt.id, appt.ratingValue)"
                   @click="saveRating(appt.id)"
                 >
                   Save Rating
@@ -106,7 +107,7 @@
                 </span>
               </div>
 
-              <small class="text-caption text-medium-emphasis ml-auto">Booked: {{ appt.createdAt }}</small>
+              <small class="text-caption text-medium-emphasis ml-auto">Booked: {{ formatBooked(appt.createdAt) }}</small>
             </div>
           </VCardText>
         </VCard>
@@ -191,6 +192,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useAppointmentStore, isJoinActive, type PatientAppointment, type SlotDisplay } from '../stores/appointmentStore'
+import { formatBooked } from '../utils/formatDate'
 import { useToastStore } from '../stores/toastStore'
 import SlotGrid from '../components/SlotGrid.vue'
 import api from '../api/index'
@@ -281,6 +283,12 @@ function statusColor(status: string): string {
     case 'AUTO_CANCELED': return 'error'
     default: return 'default'
   }
+}
+
+function isRatingSaveable(appointmentId: number, storedValue: number | null): boolean {
+  const v = ratingInputs.value[appointmentId]
+  if (v == null || Number.isNaN(v) || !Number.isInteger(v) || v < 1 || v > 10) return false
+  return v !== storedValue
 }
 
 async function saveRating(appointmentId: number) {

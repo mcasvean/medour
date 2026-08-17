@@ -93,7 +93,7 @@
                     Complete
                   </VBtn>
                 </div>
-                <small class="text-caption text-medium-emphasis ml-auto">Booked: {{ appt.createdAt }}</small>
+                <small class="text-caption text-medium-emphasis ml-auto">Booked: {{ formatBooked(appt.createdAt) }}</small>
               </div>
             </VCardText>
           </VCard>
@@ -106,6 +106,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAppointmentStore, isJoinActive } from '../stores/appointmentStore'
+import { formatBooked } from '../utils/formatDate'
 
 const appointmentStore = useAppointmentStore()
 const loading = ref(false)
