@@ -12,76 +12,200 @@
       <VProgressCircular indeterminate color="primary" size="56" />
     </div>
 
-    <VRow v-else>
-      <VCol
-        v-for="user in userStore.adminUsers"
-        :key="user.id"
-        cols="12"
-        md="6"
-        lg="4"
-      >
-        <VCard rounded="xl" elevation="1" :class="{ 'opacity-50': user.isDeleted }">
-          <VCardText class="pa-4">
-            <div class="d-flex justify-space-between align-start mb-3">
-              <div class="d-flex align-center ga-3">
-                <VAvatar :color="roleColor(user.role)" size="44">
-                  <VIcon :icon="roleIcon(user.role)" size="24" />
-                </VAvatar>
-                <div>
-                  <div class="text-subtitle-2 font-weight-bold">{{ user.firstName }} {{ user.surname }}</div>
-                  <div class="text-caption text-medium-emphasis">{{ user.email }}</div>
+    <template v-else>
+      <!-- Admins section -->
+      <template v-if="admins.length > 0">
+        <div class="d-flex align-center ga-3 mb-4">
+          <VIcon icon="mdi-shield-account-outline" color="error" />
+          <h2 class="text-subtitle-1 font-weight-bold">Admins</h2>
+          <VDivider class="flex-grow-1" />
+        </div>
+        <VRow class="mb-6">
+          <VCol
+            v-for="user in admins"
+            :key="user.id"
+            cols="12"
+          >
+            <VCard rounded="xl" elevation="1" :class="{ 'opacity-50': user.isDeleted }">
+              <VCardText class="pa-4">
+                <div class="d-flex justify-space-between align-start mb-3">
+                  <div class="d-flex align-center ga-3">
+                    <VAvatar :color="roleColor(user.role)" size="44">
+                      <VIcon :icon="roleIcon(user.role)" size="24" />
+                    </VAvatar>
+                    <div>
+                      <div class="text-subtitle-2 font-weight-bold">{{ user.firstName }} {{ user.surname }}</div>
+                      <div class="text-caption text-medium-emphasis">{{ user.email }}</div>
+                    </div>
+                  </div>
+                  <div class="d-flex flex-column align-end ga-1">
+                    <VChip :color="roleColor(user.role)" size="x-small" label>{{ user.role }}</VChip>
+                    <VChip v-if="user.isDeleted" color="error" size="x-small" label>Deleted</VChip>
+                  </div>
                 </div>
-              </div>
-              <div class="d-flex flex-column align-end ga-1">
-                <VChip :color="roleColor(user.role)" size="x-small" label>{{ user.role }}</VChip>
-                <VChip v-if="user.isDeleted" color="error" size="x-small" label>Deleted</VChip>
-              </div>
-            </div>
+                <VExpansionPanels flat variant="accordion">
+                  <VExpansionPanel elevation="0" rounded="lg" bg-color="grey-lighten-5">
+                    <VExpansionPanelTitle class="text-caption text-medium-emphasis py-2 px-3">View details</VExpansionPanelTitle>
+                    <VExpansionPanelText class="px-0">
+                      <VList density="compact" lines="two" bg-color="transparent">
+                        <VListItem v-if="user.specialityName" title="Speciality" :subtitle="user.specialityName" density="compact" />
+                        <VListItem v-if="user.county" title="County" :subtitle="user.county" density="compact" />
+                        <VListItem v-if="user.city" title="City" :subtitle="user.city" density="compact" />
+                        <VListItem title="Age" :subtitle="user.age ? String(user.age) : '—'" density="compact" />
+                        <VListItem title="Gender" :subtitle="user.gender ?? '—'" density="compact" />
+                        <VListItem title="Address" :subtitle="user.address ?? '—'" density="compact" />
+                      </VList>
+                    </VExpansionPanelText>
+                  </VExpansionPanel>
+                </VExpansionPanels>
+                <div class="d-flex ga-2 mt-3">
+                  <VBtn size="small" variant="tonal" color="primary" prepend-icon="mdi-pencil-outline" rounded="lg" @click="openEdit(user)">Edit</VBtn>
+                  <VBtn size="small" variant="tonal" color="error" prepend-icon="mdi-delete-outline" rounded="lg" @click="confirmDelete(user)">Delete</VBtn>
+                </div>
+              </VCardText>
+            </VCard>
+          </VCol>
+        </VRow>
+      </template>
 
-            <VExpansionPanels flat variant="accordion">
-              <VExpansionPanel elevation="0" rounded="lg" bg-color="grey-lighten-5">
-                <VExpansionPanelTitle class="text-caption text-medium-emphasis py-2 px-3">
-                  View details
-                </VExpansionPanelTitle>
-                <VExpansionPanelText class="px-0">
-                  <VList density="compact" lines="two" bg-color="transparent">
-                    <VListItem v-if="user.specialityName" title="Speciality" :subtitle="user.specialityName" density="compact" />
-                    <VListItem v-if="user.county" title="County" :subtitle="user.county" density="compact" />
-                    <VListItem v-if="user.city" title="City" :subtitle="user.city" density="compact" />
-                    <VListItem title="Age" :subtitle="user.age ? String(user.age) : '—'" density="compact" />
-                    <VListItem title="Gender" :subtitle="user.gender ?? '—'" density="compact" />
-                    <VListItem title="Address" :subtitle="user.address ?? '—'" density="compact" />
-                  </VList>
-                </VExpansionPanelText>
-              </VExpansionPanel>
-            </VExpansionPanels>
+      <!-- Doctors section -->
+      <template v-if="userStore.adminUsers.some(u => u.role === 'DOCTOR')">
+        <div class="d-flex align-center ga-3 mb-4">
+          <VIcon icon="mdi-doctor" color="success" />
+          <h2 class="text-subtitle-1 font-weight-bold">Doctors</h2>
+          <VDivider class="flex-grow-1" />
+        </div>
+        <VTextField
+          v-model="doctorSearch"
+          label="Search doctors…"
+          prepend-inner-icon="mdi-magnify"
+          variant="outlined"
+          density="compact"
+          clearable
+          hide-details
+          style="max-width: 320px"
+          class="mb-4"
+        />
+        <p v-if="filteredDoctors.length === 0" class="text-caption text-medium-emphasis mb-6">No users found.</p>
+        <VRow v-else class="mb-6">
+          <VCol
+            v-for="user in filteredDoctors"
+            :key="user.id"
+            cols="12"
+            md="6"
+            lg="4"
+          >
+            <VCard rounded="xl" elevation="1" :class="{ 'opacity-50': user.isDeleted }">
+              <VCardText class="pa-4">
+                <div class="d-flex justify-space-between align-start mb-3">
+                  <div class="d-flex align-center ga-3">
+                    <VAvatar :color="roleColor(user.role)" size="44">
+                      <VIcon :icon="roleIcon(user.role)" size="24" />
+                    </VAvatar>
+                    <div>
+                      <div class="text-subtitle-2 font-weight-bold">{{ user.firstName }} {{ user.surname }}</div>
+                      <div class="text-caption text-medium-emphasis">{{ user.email }}</div>
+                    </div>
+                  </div>
+                  <div class="d-flex flex-column align-end ga-1">
+                    <VChip :color="roleColor(user.role)" size="x-small" label>{{ user.role }}</VChip>
+                    <VChip v-if="user.isDeleted" color="error" size="x-small" label>Deleted</VChip>
+                  </div>
+                </div>
+                <VExpansionPanels flat variant="accordion">
+                  <VExpansionPanel elevation="0" rounded="lg" bg-color="grey-lighten-5">
+                    <VExpansionPanelTitle class="text-caption text-medium-emphasis py-2 px-3">View details</VExpansionPanelTitle>
+                    <VExpansionPanelText class="px-0">
+                      <VList density="compact" lines="two" bg-color="transparent">
+                        <VListItem v-if="user.specialityName" title="Speciality" :subtitle="user.specialityName" density="compact" />
+                        <VListItem v-if="user.county" title="County" :subtitle="user.county" density="compact" />
+                        <VListItem v-if="user.city" title="City" :subtitle="user.city" density="compact" />
+                        <VListItem title="Age" :subtitle="user.age ? String(user.age) : '—'" density="compact" />
+                        <VListItem title="Gender" :subtitle="user.gender ?? '—'" density="compact" />
+                        <VListItem title="Address" :subtitle="user.address ?? '—'" density="compact" />
+                      </VList>
+                    </VExpansionPanelText>
+                  </VExpansionPanel>
+                </VExpansionPanels>
+                <div class="d-flex ga-2 mt-3">
+                  <VBtn size="small" variant="tonal" color="primary" prepend-icon="mdi-pencil-outline" rounded="lg" @click="openEdit(user)">Edit</VBtn>
+                  <VBtn size="small" variant="tonal" color="error" prepend-icon="mdi-delete-outline" rounded="lg" @click="confirmDelete(user)">Delete</VBtn>
+                </div>
+              </VCardText>
+            </VCard>
+          </VCol>
+        </VRow>
+      </template>
 
-            <div class="d-flex ga-2 mt-3">
-              <VBtn
-                size="small"
-                variant="tonal"
-                color="primary"
-                prepend-icon="mdi-pencil-outline"
-                rounded="lg"
-                @click="openEdit(user)"
-              >
-                Edit
-              </VBtn>
-              <VBtn
-                size="small"
-                variant="tonal"
-                color="error"
-                prepend-icon="mdi-delete-outline"
-                rounded="lg"
-                @click="confirmDelete(user)"
-              >
-                Delete
-              </VBtn>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-    </VRow>
+      <!-- Patients section -->
+      <template v-if="userStore.adminUsers.some(u => u.role === 'PATIENT')">
+        <div class="d-flex align-center ga-3 mb-4">
+          <VIcon icon="mdi-account-heart-outline" color="info" />
+          <h2 class="text-subtitle-1 font-weight-bold">Patients</h2>
+          <VDivider class="flex-grow-1" />
+        </div>
+        <VTextField
+          v-model="patientSearch"
+          label="Search patients…"
+          prepend-inner-icon="mdi-magnify"
+          variant="outlined"
+          density="compact"
+          clearable
+          hide-details
+          style="max-width: 320px"
+          class="mb-4"
+        />
+        <p v-if="filteredPatients.length === 0" class="text-caption text-medium-emphasis mb-6">No users found.</p>
+        <VRow v-else class="mb-6">
+          <VCol
+            v-for="user in filteredPatients"
+            :key="user.id"
+            cols="12"
+            md="6"
+            lg="4"
+          >
+            <VCard rounded="xl" elevation="1" :class="{ 'opacity-50': user.isDeleted }">
+              <VCardText class="pa-4">
+                <div class="d-flex justify-space-between align-start mb-3">
+                  <div class="d-flex align-center ga-3">
+                    <VAvatar :color="roleColor(user.role)" size="44">
+                      <VIcon :icon="roleIcon(user.role)" size="24" />
+                    </VAvatar>
+                    <div>
+                      <div class="text-subtitle-2 font-weight-bold">{{ user.firstName }} {{ user.surname }}</div>
+                      <div class="text-caption text-medium-emphasis">{{ user.email }}</div>
+                    </div>
+                  </div>
+                  <div class="d-flex flex-column align-end ga-1">
+                    <VChip :color="roleColor(user.role)" size="x-small" label>{{ user.role }}</VChip>
+                    <VChip v-if="user.isDeleted" color="error" size="x-small" label>Deleted</VChip>
+                  </div>
+                </div>
+                <VExpansionPanels flat variant="accordion">
+                  <VExpansionPanel elevation="0" rounded="lg" bg-color="grey-lighten-5">
+                    <VExpansionPanelTitle class="text-caption text-medium-emphasis py-2 px-3">View details</VExpansionPanelTitle>
+                    <VExpansionPanelText class="px-0">
+                      <VList density="compact" lines="two" bg-color="transparent">
+                        <VListItem v-if="user.specialityName" title="Speciality" :subtitle="user.specialityName" density="compact" />
+                        <VListItem v-if="user.county" title="County" :subtitle="user.county" density="compact" />
+                        <VListItem v-if="user.city" title="City" :subtitle="user.city" density="compact" />
+                        <VListItem title="Age" :subtitle="user.age ? String(user.age) : '—'" density="compact" />
+                        <VListItem title="Gender" :subtitle="user.gender ?? '—'" density="compact" />
+                        <VListItem title="Address" :subtitle="user.address ?? '—'" density="compact" />
+                      </VList>
+                    </VExpansionPanelText>
+                  </VExpansionPanel>
+                </VExpansionPanels>
+                <div class="d-flex ga-2 mt-3">
+                  <VBtn size="small" variant="tonal" color="primary" prepend-icon="mdi-pencil-outline" rounded="lg" @click="openEdit(user)">Edit</VBtn>
+                  <VBtn size="small" variant="tonal" color="error" prepend-icon="mdi-delete-outline" rounded="lg" @click="confirmDelete(user)">Delete</VBtn>
+                </div>
+              </VCardText>
+            </VCard>
+          </VCol>
+        </VRow>
+      </template>
+    </template>
 
     <!-- Add/Edit user dialog -->
     <VDialog v-model="showForm" max-width="560" persistent scrollable>
@@ -118,13 +242,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useUserStore, type AdminUser } from '../stores/userStore'
 import AdminUserForm from '../components/AdminUserForm.vue'
 
 const userStore = useUserStore()
 const loading = ref(false)
 const errorMessage = ref('')
+const doctorSearch = ref('')
+const patientSearch = ref('')
+
+const admins = computed(() => userStore.adminUsers.filter(u => u.role === 'ADMIN'))
+
+const filteredDoctors = computed(() => {
+  const q = doctorSearch.value.toLowerCase()
+  return userStore.adminUsers
+    .filter(u => u.role === 'DOCTOR')
+    .filter(u => !q || u.firstName.toLowerCase().includes(q) || u.surname.toLowerCase().includes(q))
+})
+
+const filteredPatients = computed(() => {
+  const q = patientSearch.value.toLowerCase()
+  return userStore.adminUsers
+    .filter(u => u.role === 'PATIENT')
+    .filter(u => !q || u.firstName.toLowerCase().includes(q) || u.surname.toLowerCase().includes(q))
+})
 
 const showForm = ref(false)
 const formMode = ref<'create' | 'edit'>('create')
