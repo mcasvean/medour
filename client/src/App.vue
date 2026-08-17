@@ -61,6 +61,7 @@
             :title="pinned ? 'Unpin sidebar' : 'Pin sidebar'"
             variant="text"
             size="small"
+            color="grey"
             @click="togglePin"
           />
         </template>
@@ -179,9 +180,9 @@ const roleChipColor = computed(() => {
 
 watch(() => route.path, () => { if (!pinned.value) drawer.value = false })
 
-// closing the drawer while pinned = user wants it unpinned
+// closing the drawer while pinned = user wants it unpinned; guard against logout triggering this
 watch(drawer, (isOpen) => {
-  if (!isOpen && pinned.value) {
+  if (!isOpen && pinned.value && authStore.isAuthenticated) {
     pinned.value = false
     try { localStorage.setItem('medour_sidebar_pinned', 'false') } catch { /* */ }
   }
