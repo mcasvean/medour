@@ -159,6 +159,46 @@ Items collected during implementation reviews that are real but out of scope for
   summary: getOrCreate and update lack a concurrent-insert guard — two simultaneous first-login requests can both find no row and both INSERT, causing a DataIntegrityViolationException on the unique constraint.
   evidence: Edge case hunter finding; acceptable risk at current scale; can be addressed with upsert query or serializable isolation later.
 
+- source_spec: `spec-booking-reset-slots-on-filter-change.md`
+  summary: selectDoctor() in BookingSearchView does not call disconnectSse() before opening a new SSE connection — switching doctors leaks the previous event-stream.
+  evidence: Blind hunter finding; pre-existing issue in BookingSearchView.vue; not introduced by this change.
+
+- source_spec: `spec-booking-reset-slots-on-filter-change.md`
+  summary: selectDoctor() has no guard for an active booking — clicking another doctor card while bookingStep === 'confirming' silently abandons the server-side slot reservation without calling cancelBooking().
+  evidence: Blind hunter finding; pre-existing issue in BookingSearchView.vue; not introduced by this change.
+
+- source_spec: `spec-booking-reset-slots-on-filter-change.md`
+  summary: Dialog Cancel button calls appointmentStore.cancelBooking() without await — the cancel HTTP request is fire-and-forget; failure leaves the slot locked server-side with no user feedback.
+  evidence: Blind hunter finding; pre-existing issue in BookingSearchView.vue template.
+
+- source_spec: `spec-booking-reset-slots-on-filter-change.md`
+  summary: handleSearch() does not clear appointmentStore.errorMessage before starting a new search — a stale error from a prior fetch may remain visible while the new search succeeds silently.
+  evidence: Blind hunter finding; pre-existing issue in BookingSearchView.vue.
+
+- source_spec: `spec-booking-reset-slots-on-filter-change.md`
+  summary: handleSearch() has no error handling around doctorStore.searchDoctors() — a network failure leaves doctors empty or stale and falsely triggers the selected-doctor-not-found reset path.
+  evidence: Blind hunter finding; pre-existing issue in BookingSearchView.vue.
+
+- source_spec: `spec-booking-reset-slots-on-filter-change.md`
+  summary: onUnmounted calls appointmentStore.cancelBooking() without await — the cancel request is abandoned when the component tears down, leaving the slot locked on the server.
+  evidence: Blind hunter finding; pre-existing issue in BookingSearchView.vue.
+
+- source_spec: `spec-booking-reset-slots-on-filter-change.md`
+  summary: onMounted calls doctorStore.searchDoctors() without await — errors from the initial search become unhandled promise rejections, invisible to the user and to any error boundary.
+  evidence: Blind hunter finding; pre-existing issue in BookingSearchView.vue.
+
+- source_spec: `spec-booking-reset-slots-on-filter-change.md`
+  summary: Confirm Booking button has no loading or disabled state — double-click or slow network may submit duplicate booking requests.
+  evidence: Blind hunter finding; pre-existing issue in BookingSearchView.vue.
+
+- source_spec: `spec-booking-reset-slots-on-filter-change.md`
+  summary: appointmentStore.errorMessage VAlert renders below the slot grid, behind the persistent confirmation dialog — users cannot see booking errors without closing the dialog first.
+  evidence: Blind hunter finding; pre-existing issue in BookingSearchView.vue.
+
+- source_spec: `spec-booking-reset-slots-on-filter-change.md`
+  summary: After a successful booking (bookingStep === 'done'), BookingSearchView has no reset or navigation — the page is stuck in a terminal state until the user navigates away and back.
+  evidence: Blind hunter finding; pre-existing issue in BookingSearchView.vue.
+
 - source_spec: `spec-configurations-user-preferences.md`
   summary: App.vue isAuthenticated watcher → fetchPreferences → drawer-open wiring has no automated test; removing the drawer-open line silently regresses the feature.
   evidence: Verification gap finding; component tests not available in this project; consistent with existing deferred component-test gap pattern.

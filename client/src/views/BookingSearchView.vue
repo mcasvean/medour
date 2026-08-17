@@ -235,6 +235,21 @@ async function handleSearch() {
   await doctorStore.searchDoctors()
   const id = appointmentStore.selectedDoctorId
   if (id !== null) {
+    const stillInResults = doctorStore.doctors.some(d => d.id === id)
+    if (!stillInResults) {
+      if (appointmentStore.bookingStep === 'confirming') {
+        await appointmentStore.cancelBooking()
+      }
+      appointmentStore.disconnectSse()
+      appointmentStore.selectedDoctorId = null
+      appointmentStore.selectedDate = ''
+      appointmentStore.slots = []
+      appointmentStore.reservationId = null
+      appointmentStore.lockedStartTime = null
+      appointmentStore.bookingStep = 'searching'
+      appointmentStore.errorMessage = ''
+      return
+    }
     const dateToUse = doctorStore.filters.date || today
     appointmentStore.selectedDate = dateToUse
     appointmentStore.disconnectSse()
