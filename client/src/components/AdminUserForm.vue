@@ -96,6 +96,23 @@
           </template>
         </VRow>
 
+        <template v-if="mode === 'edit'">
+          <VDivider class="my-4" />
+          <VAlert type="warning" variant="tonal" class="mb-4" rounded="lg">
+            Reset Password — This will immediately replace the user's current password. Leave blank to keep the current password.
+          </VAlert>
+          <VTextField
+            v-model="form.newPassword"
+            label="New Password"
+            :type="showNewPassword ? 'text' : 'password'"
+            :append-inner-icon="showNewPassword ? 'mdi-eye-off' : 'mdi-eye'"
+            variant="outlined"
+            prepend-inner-icon="mdi-lock-reset"
+            autocomplete="new-password"
+            @click:append-inner="showNewPassword = !showNewPassword"
+          />
+        </template>
+
         <VAlert v-if="errorMessage || saveError" type="error" variant="tonal" class="mt-2" rounded="lg">
           {{ saveError || errorMessage }}
         </VAlert>
@@ -123,7 +140,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'save', payload: Partial<AdminUser> & { password?: string }): void
+  (e: 'save', payload: Partial<AdminUser> & { password?: string; newPassword?: string }): void
   (e: 'cancel'): void
 }>()
 
@@ -138,6 +155,7 @@ onMounted(async () => {
 const form = reactive({
   email: props.user?.email ?? '',
   password: '',
+  newPassword: '',
   firstName: props.user?.firstName ?? '',
   surname: props.user?.surname ?? '',
   role: props.user?.role ?? 'PATIENT',
@@ -152,10 +170,11 @@ const form = reactive({
 const submitting = ref(false)
 const errorMessage = ref('')
 const showPassword = ref(false)
+const showNewPassword = ref(false)
 
 function handleSubmit() {
   errorMessage.value = ''
-  const payload: Partial<AdminUser> & { password?: string } = {
+  const payload: Partial<AdminUser> & { password?: string; newPassword?: string } = {
     firstName: form.firstName,
     surname: form.surname,
     role: form.role,
@@ -169,6 +188,9 @@ function handleSubmit() {
   if (props.mode === 'create') {
     payload.email = form.email
     payload.password = form.password
+  }
+  if (form.newPassword?.trim()) {
+    payload.newPassword = form.newPassword.trim()
   }
   emit('save', payload)
 }

@@ -99,6 +99,26 @@ Items collected during implementation reviews that are real but out of scope for
   summary: No clearAuth/logout action in authStore — logout will be ad-hoc until Story 1.3.
   evidence: Blind hunter finding; Story 1.3 will introduce proper session termination.
 
+- source_spec: none
+  summary: Admin user detail panel (expanded row in AdminUsersView) is not readable in dark mode — text and/or background colours use hardcoded or surface-token values that lack contrast when the dark theme is active.
+  evidence: Deferred during multi-goal split from user intent 2026-08-17; dark-mode fix is independently shippable.
+
+- source_spec: none
+  summary: Navigation sidebar (VNavigationDrawer) should support a pinned/persistent mode so the user can keep it permanently expanded rather than always collapsed.
+  evidence: Deferred during multi-goal split from user intent 2026-08-17; sidebar pinning is independently shippable as a UX preference feature.
+
+- source_spec: none
+  summary: Header avatar slot should always display an mdi-account placeholder icon for the authenticated user even when no profile picture is set; currently Story 7.1 hides the avatar entirely when profilePicture is null.
+  evidence: Deferred during multi-goal split from user intent 2026-08-17; default avatar is independently shippable as a one-line template change.
+
+- source_spec: `spec-admin-reset-user-password-ui.md`
+  summary: No component test for AdminUsersView / AdminUserForm interaction covering the "password field empty → no reset call" and "form shows reset section on open" matrix rows.
+  evidence: Matrix test audit finding; project has no @vue/test-utils component test infrastructure (consistent with prior deferred entries).
+
+- source_spec: `spec-admin-reset-user-password-ui.md`
+  summary: handleSave swallows the actual server error and shows a hardcoded 'Failed to save user.' message — server 400 validation messages are invisible to the admin.
+  evidence: Blind hunter finding; pre-existing pattern in the original handleSave code before this story; not introduced by this change.
+
 - source_spec: `spec-1-2-user-registration-patient-doctor.md`
   summary: Token expiry is not checked at store init — an expired token in localStorage makes isAuthenticated true until the first 401.
   evidence: Blind hunter finding; Story 1.3 JWT validation filter and auth guard will handle this.

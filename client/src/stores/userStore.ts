@@ -41,6 +41,9 @@ export const useUserStore = defineStore('user', {
       // refresh is best-effort; a refresh failure doesn't mean the delete failed
       try { await this.fetchAdminUsers() } catch { /* ignored */ }
     },
+    async resetAdminUserPassword(id: number, newPassword: string): Promise<void> {
+      await api.post(`/admin/users/${id}/password`, { newPassword })
+    },
     async uploadProfilePicture(file: File) {
       const authStore = useAuthStore()
       const form = new FormData()

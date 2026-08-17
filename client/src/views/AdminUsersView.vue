@@ -244,9 +244,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore, type AdminUser } from '../stores/userStore'
+import { useToastStore } from '../stores/toastStore'
 import AdminUserForm from '../components/AdminUserForm.vue'
 
 const userStore = useUserStore()
+const toastStore = useToastStore()
 const loading = ref(false)
 const errorMessage = ref('')
 const doctorSearch = ref('')
@@ -333,17 +335,35 @@ async function executeDelete() {
   }
 }
 
-async function handleSave(payload: Partial<AdminUser> & { password?: string }) {
+async function handleSave(payload: Partial<AdminUser> & { password?: string; newPassword?: string }) {
   formSaveError.value = ''
-  try {
-    if (formMode.value === 'create') {
+  if (formMode.value === 'create') {
+    try {
       await userStore.createAdminUser(payload as Parameters<typeof userStore.createAdminUser>[0])
-    } else if (editingUser.value) {
-      await userStore.updateAdminUser(editingUser.value.id, payload)
+      showForm.value = false
+    } catch {
+      formSaveError.value = 'Failed to save user.'
+    }
+  } else if (editingUser.value) {
+    const userId = editingUser.value.id
+    const { newPassword, ...profilePayload } = payload
+    try {
+      await userStore.updateAdminUser(userId, profilePayload)
+      toastStore.show('User profile updated.', 'success')
+    } catch {
+      formSaveError.value = 'Failed to save user.'
+      return
+    }
+    if (newPassword) {
+      try {
+        await userStore.resetAdminUserPassword(userId, newPassword)
+        toastStore.show('Password reset successfully.', 'success')
+      } catch (err) {
+        toastStore.showError(err)
+        return
+      }
     }
     showForm.value = false
-  } catch {
-    formSaveError.value = 'Failed to save user.'
   }
 }
 </script>
