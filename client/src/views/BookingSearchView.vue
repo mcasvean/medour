@@ -159,24 +159,6 @@
       {{ appointmentStore.errorMessage }}
     </VAlert>
 
-    <!-- Booking success -->
-    <VAlert
-      v-if="appointmentStore.bookingStep === 'done'"
-      type="success"
-      variant="tonal"
-      class="mt-4"
-      rounded="xl"
-      icon="mdi-check-circle-outline"
-    >
-      <div class="font-weight-bold">Appointment booked successfully!</div>
-      <div v-if="appointmentStore.wherebyRoomUrl" class="mt-1 text-body-2">
-        Video room:
-        <a :href="appointmentStore.wherebyRoomUrl" target="_blank" rel="noopener" class="text-success">
-          {{ appointmentStore.wherebyRoomUrl }}
-        </a>
-      </div>
-    </VAlert>
-
     <!-- Confirmation dialog -->
     <VDialog v-model="showConfirmDialog" max-width="480" persistent>
       <VCard rounded="xl">
@@ -206,7 +188,7 @@
         <VCardActions class="pa-4 pt-0">
           <VSpacer />
           <VBtn variant="text" @click="appointmentStore.cancelBooking()">Cancel</VBtn>
-          <VBtn color="primary" variant="elevated" rounded="lg" @click="appointmentStore.confirmBooking()">
+          <VBtn color="primary" variant="elevated" rounded="lg" @click="handleConfirmBooking">
             Confirm Booking
           </VBtn>
         </VCardActions>
@@ -220,12 +202,14 @@ import { computed, onMounted, onUnmounted } from 'vue'
 import { useDoctorStore } from '../stores/doctorStore'
 import { useAppointmentStore } from '../stores/appointmentStore'
 import { useSpecialityStore } from '../stores/specialityStore'
+import { useToastStore } from '../stores/toastStore'
 import SlotGrid from '../components/SlotGrid.vue'
 import { formatDate, formatTime } from '../utils/formatDate'
 
 const doctorStore = useDoctorStore()
 const appointmentStore = useAppointmentStore()
 const specialityStore = useSpecialityStore()
+const toastStore = useToastStore()
 const today = new Date().toISOString().split('T')[0]
 
 const selectedDoctor = computed(() =>
@@ -261,6 +245,16 @@ async function handleSearch() {
 
 function onSlotSelected(startTime: string) {
   appointmentStore.lockSlot(startTime)
+}
+
+async function handleConfirmBooking() {
+  await appointmentStore.confirmBooking()
+  if (appointmentStore.bookingStep === 'done') {
+    const msg = appointmentStore.wherebyRoomUrl
+      ? `Appointment booked! Video room: ${appointmentStore.wherebyRoomUrl}`
+      : 'Appointment booked successfully!'
+    toastStore.show(msg, 'success')
+  }
 }
 
 onMounted(async () => {
