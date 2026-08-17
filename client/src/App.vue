@@ -19,7 +19,7 @@
       <template #append>
         <div class="d-flex align-center ga-4 mr-1">
           <VBtn
-            :icon="isDark ? 'mdi-weather-night' : 'mdi-weather-sunny'"
+            :icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'"
             color="white"
             variant="text"
             density="comfortable"
