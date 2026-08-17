@@ -125,7 +125,7 @@
           prepend-icon="mdi-logout"
           title="Sign Out"
           rounded="lg"
-          color="error"
+          base-color="error"
           class="font-weight-medium"
           @click="logoutFromMenu"
         />
