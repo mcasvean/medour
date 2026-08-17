@@ -37,8 +37,9 @@
             >
               {{ authStore.user?.role }}
             </VChip>
-            <VAvatar v-if="authStore.user?.profilePicture" size="32" rounded="circle">
-              <VImg :src="authStore.user.profilePicture" cover />
+            <VAvatar size="32" rounded="circle" color="white">
+              <VImg v-if="authStore.user?.profilePicture" :src="authStore.user.profilePicture" cover />
+              <VIcon v-else icon="mdi-account" color="primary" size="22" />
             </VAvatar>
             <span class="text-white text-body-2 d-none d-sm-inline font-weight-medium">
               {{ authStore.user?.firstName }} {{ authStore.user?.surname }}
