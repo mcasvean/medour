@@ -48,7 +48,12 @@
       </template>
     </VAppBar>
 
-    <VNavigationDrawer v-if="authStore.isAuthenticated" v-model="drawer" :temporary="!preferencesStore.pinnedSidebar">
+    <VNavigationDrawer
+      v-if="authStore.isAuthenticated"
+      v-model="drawer"
+      :temporary="!preferencesStore.pinnedSidebar || isMobile"
+      :permanent="preferencesStore.pinnedSidebar && !isMobile"
+    >
       <VListItem
         prepend-icon="mdi-stethoscope"
         title="Medour"
@@ -160,10 +165,10 @@ const preferencesStore = usePreferencesStore()
 const router = useRouter()
 const route = useRoute()
 const theme = useTheme()
-const { smAndDown } = useDisplay()
+const { mobile } = useDisplay()
 
 const drawer = ref(false)
-const isMobile = computed(() => smAndDown.value)
+const isMobile = computed(() => mobile.value)
 const isAdmin = computed(() => authStore.user?.role === 'ADMIN')
 const isDark = computed(() => theme.global.name.value === 'dark')
 
