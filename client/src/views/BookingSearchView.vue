@@ -264,7 +264,20 @@ function onSlotSelected(startTime: string) {
 }
 
 onMounted(async () => {
-  if (!doctorStore.filters.date) doctorStore.filters.date = today
+  // reset booking and search state on every entry so previous selections never bleed through
+  appointmentStore.disconnectSse()
+  appointmentStore.selectedDoctorId = null
+  appointmentStore.selectedDate = ''
+  appointmentStore.slots = []
+  appointmentStore.reservationId = null
+  appointmentStore.bookingStep = 'searching'
+  appointmentStore.lockedStartTime = null
+  appointmentStore.errorMessage = ''
+  doctorStore.filters.speciality = ''
+  doctorStore.filters.county = ''
+  doctorStore.filters.city = ''
+  doctorStore.filters.date = today
+  doctorStore.doctors = []
   doctorStore.searchDoctors()
   if (specialityStore.specialities.length === 0) {
     await specialityStore.fetchSpecialities()
