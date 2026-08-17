@@ -119,6 +119,18 @@ Items collected during implementation reviews that are real but out of scope for
   summary: handleSave swallows the actual server error and shows a hardcoded 'Failed to save user.' message — server 400 validation messages are invisible to the admin.
   evidence: Blind hunter finding; pre-existing pattern in the original handleSave code before this story; not introduced by this change.
 
+- source_spec: `spec-admin-dark-mode-panel-fix.md`
+  summary: VExpansionPanel block is repeated verbatim in all three user-role card sections (Admins, Doctors, Patients) — should be extracted into a shared child component to eliminate the duplication.
+  evidence: Blind hunter finding; pre-existing template duplication; not introduced by this change.
+
+- source_spec: `spec-admin-dark-mode-panel-fix.md`
+  summary: VExpansionPanel child has redundant elevation="0" when the parent VExpansionPanels already uses flat, which zeroes elevation.
+  evidence: Blind hunter finding; pre-existing; cosmetic cleanup.
+
+- source_spec: `spec-admin-dark-mode-panel-fix.md`
+  summary: VExpansionPanelTitle "View details" is a hardcoded English string with no i18n wrapper.
+  evidence: Blind hunter finding; pre-existing; relevant if localisation is added later.
+
 - source_spec: `spec-1-2-user-registration-patient-doctor.md`
   summary: Token expiry is not checked at store init — an expired token in localStorage makes isAuthenticated true until the first 401.
   evidence: Blind hunter finding; Story 1.3 JWT validation filter and auth guard will handle this.
