@@ -44,7 +44,7 @@
                   </div>
                 </div>
                 <VExpansionPanels flat variant="accordion">
-                  <VExpansionPanel elevation="0" rounded="lg" bg-color="surface-variant">
+                  <VExpansionPanel elevation="0" rounded="lg" :style="{ background: 'rgba(var(--v-theme-on-surface), 0.05)' }">
                     <VExpansionPanelTitle class="text-caption text-medium-emphasis py-2 px-3">View details</VExpansionPanelTitle>
                     <VExpansionPanelText class="px-0">
                       <VList density="compact" lines="two" bg-color="transparent">
@@ -113,7 +113,7 @@
                   </div>
                 </div>
                 <VExpansionPanels flat variant="accordion">
-                  <VExpansionPanel elevation="0" rounded="lg" bg-color="surface-variant">
+                  <VExpansionPanel elevation="0" rounded="lg" :style="{ background: 'rgba(var(--v-theme-on-surface), 0.05)' }">
                     <VExpansionPanelTitle class="text-caption text-medium-emphasis py-2 px-3">View details</VExpansionPanelTitle>
                     <VExpansionPanelText class="px-0">
                       <VList density="compact" lines="two" bg-color="transparent">
@@ -182,7 +182,7 @@
                   </div>
                 </div>
                 <VExpansionPanels flat variant="accordion">
-                  <VExpansionPanel elevation="0" rounded="lg" bg-color="surface-variant">
+                  <VExpansionPanel elevation="0" rounded="lg" :style="{ background: 'rgba(var(--v-theme-on-surface), 0.05)' }">
                     <VExpansionPanelTitle class="text-caption text-medium-emphasis py-2 px-3">View details</VExpansionPanelTitle>
                     <VExpansionPanelText class="px-0">
                       <VList density="compact" lines="two" bg-color="transparent">
