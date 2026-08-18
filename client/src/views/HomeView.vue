@@ -3,7 +3,7 @@
     <VRow>
       <VCol cols="12">
         <h1 class="text-h4 font-weight-bold mb-1">
-          Good {{ timeOfDay }}, {{ authStore.user?.firstName }}!
+          Good {{ timeOfDay }}, {{ authStore.user?.firstName || "" }} {{ authStore.user?.surname || "" }}!
         </h1>
         <p class="text-body-1 text-medium-emphasis mb-6">
           Welcome to Medour — your online medical appointment platform.
